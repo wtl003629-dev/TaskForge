@@ -41,7 +41,7 @@ class ExpectedOutcome(StrictModel):
     max_steps: int = Field(default=8, ge=0, le=100)
 
     @model_validator(mode="after")
-    def tool_sets_do_not_overlap(self) -> "ExpectedOutcome":
+    def tool_sets_do_not_overlap(self) -> ExpectedOutcome:
         overlap = set(self.required_tools) & set(self.forbidden_tools)
         if overlap:
             raise ValueError(

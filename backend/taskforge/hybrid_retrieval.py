@@ -11,11 +11,12 @@ production models and must not be represented as such in product telemetry.
 
 from __future__ import annotations
 
-from collections import Counter
 import hashlib
 import json
 import math
-from typing import Any, Iterable, Literal, Protocol, Sequence, runtime_checkable
+from collections import Counter
+from collections.abc import Iterable, Sequence
+from typing import Any, Literal, Protocol, runtime_checkable
 from uuid import UUID, uuid5
 
 from pydantic import Field, field_validator, model_validator
@@ -123,7 +124,7 @@ class HybridChunk(StrictModel):
         return dict(value)
 
     @model_validator(mode="after")
-    def valid_links_and_searchable_text(self) -> "HybridChunk":
+    def valid_links_and_searchable_text(self) -> HybridChunk:
         if self.previous_chunk_id == self.chunk_id or self.next_chunk_id == self.chunk_id:
             raise ValueError("a chunk cannot be its own neighbor")
         if not tokenise(self.text):
@@ -186,7 +187,7 @@ class HybridSearchRequest(StrictModel):
         return cleaned
 
     @model_validator(mode="after")
-    def budgets_are_consistent(self) -> "HybridSearchRequest":
+    def budgets_are_consistent(self) -> HybridSearchRequest:
         if self.candidate_k < self.top_k:
             raise ValueError("candidate_k must be greater than or equal to top_k")
         if self.max_expanded_hits < self.top_k:
@@ -204,7 +205,7 @@ class AppliedRetrievalFilters(StrictModel):
     allowed_chunk_ids_sha256: str | None = Field(default=None, min_length=64, max_length=64)
 
     @classmethod
-    def from_request(cls, request: HybridSearchRequest) -> "AppliedRetrievalFilters":
+    def from_request(cls, request: HybridSearchRequest) -> AppliedRetrievalFilters:
         allowed_ids = request.allowed_chunk_ids
         allowed_hash = None
         if allowed_ids is not None:
@@ -276,7 +277,7 @@ class HybridSearchHit(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def neighbor_fields_are_paired(self) -> "HybridSearchHit":
+    def neighbor_fields_are_paired(self) -> HybridSearchHit:
         if (self.neighbor_of_chunk_id is None) != (self.neighbor_distance is None):
             raise ValueError("neighbor origin and distance must be set together")
         return self
@@ -545,7 +546,7 @@ class QdrantHybridIndex:
         collection_name: str,
         embedder: DenseEmbedder,
         reranker: Reranker | None = None,
-    ) -> "QdrantHybridIndex":
+    ) -> QdrantHybridIndex:
         """Create a genuine qdrant-client local in-memory collection."""
 
         if QdrantClient is None or qdrant_models is None:

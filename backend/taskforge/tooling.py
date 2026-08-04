@@ -49,7 +49,7 @@ class ToolSpec(StrictModel):
     max_output_chars: int = Field(default=12_000, ge=256, le=100_000)
 
     @model_validator(mode="after")
-    def schema_and_risk_are_consistent(self) -> "ToolSpec":
+    def schema_and_risk_are_consistent(self) -> ToolSpec:
         try:
             Draft202012Validator.check_schema(self.parameters)
         except SchemaError as exc:

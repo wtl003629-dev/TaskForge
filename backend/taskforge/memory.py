@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Iterable, Mapping
 
 from .knowledge import AccessContext, as_utc, lexical_match, utc_now
 

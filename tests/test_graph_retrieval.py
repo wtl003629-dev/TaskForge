@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
 import sys
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from taskforge.graph_retrieval import (
+    RELATIONSHIP_ALLOWLIST,
     GraphAccess,
     GraphBackendError,
     GraphEvaluationEvidence,
@@ -17,21 +18,19 @@ from taskforge.graph_retrieval import (
     GraphSearchRequest,
     Neo4jGraphRetriever,
     Neo4jUnavailableError,
-    RELATIONSHIP_ALLOWLIST,
     fuse_hybrid_and_graph,
 )
 from taskforge.hybrid_retrieval import HybridChunk, HybridSearchHit
 
-
-NOW = datetime(2026, 8, 4, 8, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 8, 0, tzinfo=UTC)
 LOCKED_SHA = "a" * 64
 
 
 class FakeSession:
-    def __init__(self, driver: "FakeDriver") -> None:
+    def __init__(self, driver: FakeDriver) -> None:
         self.driver = driver
 
-    def __enter__(self) -> "FakeSession":
+    def __enter__(self) -> FakeSession:
         self.driver.sessions_entered += 1
         return self
 

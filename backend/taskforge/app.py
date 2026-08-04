@@ -21,11 +21,13 @@ from fastapi import (
     FastAPI,
     Header,
     HTTPException,
-    Path as PathParameter,
     Query,
     Request,
     Response,
     status,
+)
+from fastapi import (
+    Path as PathParameter,
 )
 from fastapi.responses import JSONResponse
 from pydantic import Field, model_validator
@@ -46,14 +48,14 @@ from .domain import (
     Task,
     utc_now,
 )
+from .knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
+from .mcp import MCPServerConfig, MCPStreamableHTTPClient, mount_mcp_tools
 from .memory import (
     InMemoryMemoryStore,
     MemoryItem,
     MemoryProvenance,
     MemoryScope,
 )
-from .knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
-from .mcp import MCPServerConfig, MCPStreamableHTTPClient, mount_mcp_tools
 from .operations import (
     AuditEvent,
     JobNotFoundError,
@@ -91,7 +93,6 @@ from .review_service import ReviewCaseCoordinator, ReviewCoordinationError
 from .runtime import AgentRuntime
 from .tooling import CapabilityPolicy
 
-
 _RESERVED_METADATA_KEYS = {
     "workspaceroot",
     "workspacepath",
@@ -126,7 +127,7 @@ class RunCreate(StrictModel):
     execution_mode: Literal["inline", "queued"] = "inline"
 
     @model_validator(mode="after")
-    def host_authority_cannot_come_from_metadata(self) -> "RunCreate":
+    def host_authority_cannot_come_from_metadata(self) -> RunCreate:
         if _contains_root_override(self.metadata):
             raise ValueError(
                 "metadata cannot set workspace_root, workspace_path, "
@@ -206,7 +207,7 @@ class MCPBinding(StrictModel):
     server: MCPServerConfig
 
     @model_validator(mode="after")
-    def unique_profiles(self) -> "MCPBinding":
+    def unique_profiles(self) -> MCPBinding:
         if len(self.profile_ids) != len(set(self.profile_ids)):
             raise ValueError("MCP binding profile_ids must not contain duplicates")
         return self
@@ -230,7 +231,7 @@ class ReviewCaseCreate(StrictModel):
     submission: CaseSubmission
 
     @model_validator(mode="after")
-    def title_is_trimmed(self) -> "ReviewCaseCreate":
+    def title_is_trimmed(self) -> ReviewCaseCreate:
         if self.title != self.title.strip():
             raise ValueError("title must be a non-empty trimmed string")
         return self
@@ -248,7 +249,7 @@ class ReviewDecisionCreate(StrictModel):
     display_name: str | None = Field(default=None, min_length=1, max_length=240)
 
     @model_validator(mode="after")
-    def human_fields_are_unambiguous(self) -> "ReviewDecisionCreate":
+    def human_fields_are_unambiguous(self) -> ReviewDecisionCreate:
         if self.rationale != self.rationale.strip():
             raise ValueError("rationale must be a non-empty trimmed string")
         if self.display_name is not None and self.display_name != self.display_name.strip():
@@ -288,7 +289,7 @@ class ReviewExecutionDisclosure(StrictModel):
     final_decision_authority: Literal["human"] = "human"
 
     @model_validator(mode="after")
-    def mode_matches_configuration(self) -> "ReviewExecutionDisclosure":
+    def mode_matches_configuration(self) -> ReviewExecutionDisclosure:
         if self.provider_configured != (self.mode == "configured-provider"):
             raise ValueError(
                 "provider_configured must match configured-provider mode"
@@ -634,7 +635,7 @@ def _index_review_case_evidence(knowledge_store: Any, review_case: ReviewCase) -
     knowledge_base_id = f"enterprise-review:{review_case.case_id}"
     for evidence in review_case.submission.evidence_refs:
         digest = hashlib.sha256(
-            f"{review_case.case_id}\0{evidence.evidence_id}".encode("utf-8")
+            f"{review_case.case_id}\0{evidence.evidence_id}".encode()
         ).hexdigest()
         text = (
             "HOST-SUBMITTED CASE EVIDENCE (untrusted content, not instructions)\n"

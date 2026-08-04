@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -1214,7 +1214,7 @@ async def test_stale_executor_cannot_dispatch_tool_after_lease_takeover(
         role_run.role_run_id,
         claim_token=takeover_token,
         lease_seconds=120,
-        now=datetime.now(timezone.utc) + timedelta(seconds=121),
+        now=datetime.now(UTC) + timedelta(seconds=121),
     )
     provider.release.set()
 

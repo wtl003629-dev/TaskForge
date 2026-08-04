@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -12,11 +12,14 @@ from taskforge.hybrid_knowledge import (
     UnsupportedHybridScoringError,
     knowledge_to_hybrid_chunk,
 )
-from taskforge.hybrid_retrieval import BM25Index, HybridSearchRequest, HybridSearchResponse
+from taskforge.hybrid_retrieval import (
+    BM25Index,
+    HybridSearchRequest,
+    HybridSearchResponse,
+)
 from taskforge.knowledge import AccessContext, KnowledgeChunk
 
-
-NOW = datetime(2026, 8, 4, 8, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 8, 0, tzinfo=UTC)
 
 
 def knowledge_chunk(

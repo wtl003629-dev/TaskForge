@@ -37,6 +37,7 @@ from .domain import (
     ToolRequest,
     ToolResult,
 )
+from .operations import audit_usage_from_state, tool_result_is_safety_violation
 from .orchestration import (
     ExecutionClaimUnavailableError,
     FactRuleError,
@@ -53,10 +54,8 @@ from .orchestration import (
     SQLiteOrchestrationStore,
     VersionConflictError,
 )
-from .operations import audit_usage_from_state, tool_result_is_safety_violation
 from .runtime import AgentRuntime
 from .tooling import ToolRegistry, ToolRisk, ToolSpec
-
 
 SUBMIT_ROLE_RESULT = "submit_role_result"
 _RECEIPT_TYPE = "taskforge.role_result.v1"
@@ -213,7 +212,7 @@ class RoleResultSubmission(StrictModel):
         return _safe_model_text(value, field_name=info.field_name)
 
     @model_validator(mode="after")
-    def claim_keys_are_unique(self) -> "RoleResultSubmission":
+    def claim_keys_are_unique(self) -> RoleResultSubmission:
         keys = [claim.fact_key for claim in self.claims]
         if len(keys) != len(set(keys)):
             raise ValueError("one role result cannot submit the same fact_key twice")
@@ -1966,13 +1965,13 @@ class CaseAgentExecutor:
 
 
 __all__ = [
+    "SUBMIT_ROLE_RESULT",
     "CaseAgentExecutor",
     "CaseBindingError",
     "CaseExecutionOutcome",
     "CaseRuntimeError",
     "RoleClaim",
     "RoleResultSubmission",
-    "SUBMIT_ROLE_RESULT",
     "StructuredRoleResultMissingError",
     "submit_role_result_spec",
 ]

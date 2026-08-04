@@ -36,7 +36,7 @@ class RAGEvalCase(StrictModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def relevant_ids_are_unique(self) -> "RAGEvalCase":
+    def relevant_ids_are_unique(self) -> RAGEvalCase:
         if any(not item.strip() for item in self.relevant_ids):
             raise ValueError("relevant_ids must contain non-empty identifiers")
         if len(self.relevant_ids) != len(set(self.relevant_ids)):
@@ -52,7 +52,7 @@ class RAGEvalDataset(StrictModel):
     cases: list[RAGEvalCase] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def identifiers_are_unique(self) -> "RAGEvalDataset":
+    def identifiers_are_unique(self) -> RAGEvalDataset:
         document_ids = [item.document_id for item in self.documents]
         case_ids = [item.case_id for item in self.cases]
         if len(document_ids) != len(set(document_ids)):
@@ -67,7 +67,7 @@ class RetrievalPrediction(StrictModel):
     retrieved_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def retrieved_ids_are_unique(self) -> "RetrievalPrediction":
+    def retrieved_ids_are_unique(self) -> RetrievalPrediction:
         if len(self.retrieved_ids) != len(set(self.retrieved_ids)):
             raise ValueError("retrieved_ids must not contain duplicates")
         return self

@@ -157,7 +157,7 @@ class SQLiteCheckpointStore:
         return row
 
     @staticmethod
-    def _validate(model: type[RunState] | type[Task] | type[AgentProfile], payload: str, label: str):
+    def _validate(model: type[RunState | Task | AgentProfile], payload: str, label: str):
         try:
             return model.model_validate_json(payload)
         except (ValidationError, ValueError) as exc:

@@ -8,14 +8,16 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from taskforge.ingestion import ingest_workspace_document, ingest_workspace_pdf  # noqa: E402
-from taskforge.persistent_context import SQLiteKnowledgeStore  # noqa: E402
+from taskforge.ingestion import (
+    ingest_workspace_document,
+    ingest_workspace_pdf,
+)
+from taskforge.persistent_context import SQLiteKnowledgeStore
 
 
 def parse_args() -> argparse.Namespace:

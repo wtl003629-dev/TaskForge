@@ -8,14 +8,14 @@ quietly creating a second, weaker authorisation implementation.
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager
-from datetime import datetime
 import json
 import math
-from pathlib import Path
 import sqlite3
+from collections.abc import Iterable, Mapping
+from contextlib import AbstractContextManager
+from datetime import datetime
+from pathlib import Path
 from threading import RLock
-from typing import Iterable, Mapping
 
 from .knowledge import (
     AccessContext,
@@ -31,7 +31,6 @@ from .memory import (
     MemoryProvenance,
     MemoryScope,
 )
-
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS knowledge_chunks (

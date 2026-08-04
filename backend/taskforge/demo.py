@@ -15,7 +15,6 @@ from typing import Any
 
 from .domain import AgentProfile, ModelTurn, Task, ToolRequest
 
-
 _DEMO_LABEL = "TaskForge deterministic offline demo provider"
 
 

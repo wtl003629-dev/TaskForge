@@ -13,11 +13,11 @@ import importlib
 import json
 import re
 import unicodedata
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, Mapping, Sequence
-
+from typing import Any, Literal
 
 BoundingBox = tuple[float, float, float, float]
 BlockKind = Literal["paragraph", "table"]
@@ -273,7 +273,7 @@ def build_structure_chunks(
         text = "\n\n".join(block.text for block in group)
         content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
         chunk_id = hashlib.sha256(
-            f"{document_id}\0{chunk_index}\0{content_hash}".encode("utf-8")
+            f"{document_id}\0{chunk_index}\0{content_hash}".encode()
         ).hexdigest()[:24]
         first_position = block_positions[group[0].block_id]
         last_position = block_positions[group[-1].block_id]
@@ -594,7 +594,7 @@ def _finalize_blocks(
         )
         content_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         block_id = hashlib.sha256(
-            f"{document_id}\0{index}\0{draft.kind}\0{content_hash}".encode("utf-8")
+            f"{document_id}\0{index}\0{draft.kind}\0{content_hash}".encode()
         ).hexdigest()[:24]
         blocks.append(
             DocumentBlock(

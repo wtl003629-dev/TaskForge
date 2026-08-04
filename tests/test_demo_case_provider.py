@@ -7,7 +7,6 @@ from taskforge.case_runtime import RoleResultSubmission
 from taskforge.demo import DemoProvider
 from taskforge.domain import Task
 
-
 TOOLS = [
     {"name": "knowledge_search"},
     {"name": "submit_role_result"},

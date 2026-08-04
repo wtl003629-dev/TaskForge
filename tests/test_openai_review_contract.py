@@ -44,7 +44,6 @@ from taskforge.review_service import (
 from taskforge.runtime import AgentRuntime
 from taskforge.tooling import CapabilityPolicy
 
-
 TENANT_ID = "tenant-contract"
 USER_ID = "reviewer-contract"
 EVIDENCE_ID = "change-ticket-17"

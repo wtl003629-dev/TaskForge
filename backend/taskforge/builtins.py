@@ -21,7 +21,6 @@ from .memory import (
 from .security import evaluate_arithmetic, grep_workspace, read_workspace_text
 from .tooling import ToolRegistry, ToolRisk, ToolSpec
 
-
 _ARTIFACT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}\.(?:md|txt|json)$")
 
 

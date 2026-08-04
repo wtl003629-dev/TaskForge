@@ -10,14 +10,13 @@ import socket
 import sys
 from pathlib import Path
 
-
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from taskforge.app import app  # noqa: E402
-from taskforge.worker import DurableWorker  # noqa: E402
+from taskforge.app import app
+from taskforge.worker import DurableWorker
 
 
 def parse_args() -> argparse.Namespace:

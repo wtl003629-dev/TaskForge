@@ -10,7 +10,6 @@ from taskforge.synthetic_pdf_eval import (
     load_generated_page_dataset,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

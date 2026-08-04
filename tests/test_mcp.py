@@ -16,8 +16,8 @@ from taskforge.mcp import (
     MCPDiscoveredTool,
     MCPOutputLimitError,
     MCPProtocolError,
-    MCPSSRFError,
     MCPServerConfig,
+    MCPSSRFError,
     MCPStreamableHTTPClient,
     MCPToolPolicy,
     MCPTransportError,
@@ -27,8 +27,12 @@ from taskforge.mcp import (
 from taskforge.tooling import CapabilityPolicy, ToolRegistry, ToolRisk
 
 
-PUBLIC_RESOLVER = lambda _host, _port: ["93.184.216.34"]
-LOCAL_RESOLVER = lambda _host, _port: ["127.0.0.1"]
+def PUBLIC_RESOLVER(_host: str, _port: int) -> list[str]:
+    return ["93.184.216.34"]
+
+
+def LOCAL_RESOLVER(_host: str, _port: int) -> list[str]:
+    return ["127.0.0.1"]
 
 
 def config(**overrides: Any) -> MCPServerConfig:

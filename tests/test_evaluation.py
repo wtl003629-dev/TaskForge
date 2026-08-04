@@ -12,7 +12,6 @@ from taskforge.evaluation import (
     load_cases,
 )
 
-
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 

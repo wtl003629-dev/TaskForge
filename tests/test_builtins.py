@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from taskforge.builtins import agent_profiles, create_tool_registry, seed_local_knowledge
+from taskforge.builtins import (
+    agent_profiles,
+    create_tool_registry,
+    seed_local_knowledge,
+)
 from taskforge.domain import RunState, RunStatus, Task, ToolRequest
 from taskforge.memory import InMemoryMemoryStore
 from taskforge.tooling import CapabilityPolicy

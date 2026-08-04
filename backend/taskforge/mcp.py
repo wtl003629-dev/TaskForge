@@ -31,9 +31,8 @@ from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 from pydantic import ConfigDict, Field, model_validator
 
-from .tooling import ToolRegistry, ToolRisk, ToolSpec
 from .domain import StrictModel
-
+from .tooling import ToolRegistry, ToolRisk, ToolSpec
 
 MCP_PROTOCOL_VERSION = "2025-11-25"
 MCP_ACCEPT = "application/json, text/event-stream"
@@ -122,7 +121,7 @@ class MCPToolPolicy(StrictModel):
     )
 
     @model_validator(mode="after")
-    def consistent_risk(self) -> "MCPToolPolicy":
+    def consistent_risk(self) -> MCPToolPolicy:
         if self.side_effecting and self.risk in {ToolRisk.READ, ToolRisk.COMPUTE}:
             raise ValueError("side-effecting MCP tools require write/external risk")
         if self.risk == ToolRisk.DESTRUCTIVE and not self.requires_approval:
@@ -151,7 +150,7 @@ class MCPServerConfig(StrictModel):
     max_tools: int = Field(default=128, ge=1, le=1_000)
 
     @model_validator(mode="after")
-    def validate_host_configuration(self) -> "MCPServerConfig":
+    def validate_host_configuration(self) -> MCPServerConfig:
         if not _NAMESPACE.fullmatch(self.namespace):
             raise ValueError("namespace must be OpenAI-compatible ASCII")
         parsed = _validated_endpoint(self.endpoint)
@@ -243,7 +242,7 @@ async def _default_resolver(host: str, port: int) -> Sequence[str]:
             None,
             lambda: socket.getaddrinfo(host, port, type=socket.SOCK_STREAM),
         )
-    except OSError as exc:
+    except OSError:
         raise MCPSSRFError("MCP endpoint DNS resolution failed") from None
     return tuple(record[4][0] for record in records)
 
@@ -254,7 +253,7 @@ def _safe_schema(raw: Any, *, label: str) -> dict[str, Any]:
     schema = _strip_schema_annotations(deepcopy(dict(raw)))
     try:
         encoded = json.dumps(schema, ensure_ascii=False, separators=(",", ":"))
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError):
         raise MCPProtocolError(f"{label} is not JSON serialisable") from None
     if len(encoded) > 64_000:
         raise MCPProtocolError(f"{label} exceeds the schema budget")
@@ -266,7 +265,7 @@ def _safe_schema(raw: Any, *, label: str) -> dict[str, Any]:
     _reject_external_refs(schema, label=label)
     try:
         Draft202012Validator.check_schema(schema)
-    except SchemaError as exc:
+    except SchemaError:
         raise MCPProtocolError(f"{label} is not valid JSON Schema 2020-12") from None
     schema.setdefault("additionalProperties", False)
     return schema
@@ -510,7 +509,7 @@ class MCPStreamableHTTPClient:
             raise MCPProtocolError("MCP tool arguments must be an object")
         try:
             Draft202012Validator(tool.input_schema).validate(dict(arguments))
-        except ValidationError as exc:
+        except ValidationError:
             raise MCPProtocolError(
                 "MCP tool arguments failed local schema validation"
             ) from None
@@ -533,7 +532,7 @@ class MCPStreamableHTTPClient:
         if self._owns_client and not self._client.is_closed:
             await self._client.aclose()
 
-    async def __aenter__(self) -> "MCPStreamableHTTPClient":
+    async def __aenter__(self) -> MCPStreamableHTTPClient:
         return self
 
     async def __aexit__(self, *_: object) -> None:
@@ -555,7 +554,7 @@ class MCPStreamableHTTPClient:
         for raw_address in resolved:
             try:
                 address = ipaddress.ip_address(raw_address)
-            except ValueError as exc:
+            except ValueError:
                 raise MCPSSRFError("MCP resolver returned an invalid IP address") from None
             if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
                 address = address.ipv4_mapped
@@ -688,7 +687,7 @@ class MCPStreamableHTTPClient:
 def _jsonrpc_result(response: httpx.Response, *, expected_id: int) -> dict[str, Any]:
     try:
         payload = response.json()
-    except (ValueError, UnicodeDecodeError) as exc:
+    except (ValueError, UnicodeDecodeError):
         raise MCPProtocolError("MCP endpoint returned invalid JSON") from None
     if not isinstance(payload, Mapping):
         raise MCPProtocolError("MCP JSON-RPC response must be an object")
@@ -762,7 +761,7 @@ def _validate_tool_result(
             raise MCPProtocolError("tool outputSchema requires structuredContent")
         try:
             Draft202012Validator(output_schema).validate(dict(structured))
-        except ValidationError as exc:
+        except ValidationError:
             raise MCPProtocolError(
                 "structuredContent failed outputSchema validation"
             ) from None

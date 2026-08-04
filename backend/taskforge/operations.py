@@ -14,7 +14,7 @@ import re
 import secrets
 import sqlite3
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -70,7 +70,7 @@ class OperationJob(StrictModel):
     updated_at: datetime
 
     @model_validator(mode="after")
-    def lease_fields_match_status(self) -> "OperationJob":
+    def lease_fields_match_status(self) -> OperationJob:
         leased = self.status == JobStatus.LEASED
         lease_values = (self.owner, self.lease_token, self.lease_expires_at)
         if leased and not all(value is not None for value in lease_values):
@@ -230,7 +230,7 @@ class AuditEvent(StrictModel):
     occurred_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
-    def contains_no_credentials(self) -> "AuditEvent":
+    def contains_no_credentials(self) -> AuditEvent:
         _assert_secret_free(
             {
                 "action": self.action,
@@ -267,16 +267,16 @@ class MetricsSnapshot(StrictModel):
 
 def _as_utc(value: datetime | None) -> datetime:
     if value is None:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("timestamps must be timezone-aware")
-    return value.astimezone(timezone.utc)
+    return value.astimezone(UTC)
 
 
 def _from_epoch(value: float | None) -> datetime | None:
     if value is None:
         return None
-    return datetime.fromtimestamp(value, tz=timezone.utc)
+    return datetime.fromtimestamp(value, tz=UTC)
 
 
 def _percentile(values: Sequence[float], probability: float) -> float | None:

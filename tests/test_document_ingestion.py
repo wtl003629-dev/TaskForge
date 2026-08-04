@@ -6,7 +6,7 @@ import pytest
 from pypdf import PdfWriter
 from pypdf.generic import DictionaryObject, NameObject, StreamObject
 
-import taskforge.document_ingestion as document_ingestion
+from taskforge import document_ingestion
 from taskforge.document_ingestion import (
     PDFDependencyError,
     PDFSafetyError,

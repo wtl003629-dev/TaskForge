@@ -51,7 +51,6 @@ from .review_cases import (
     SQLiteReviewCaseStore,
 )
 
-
 _OBJECTIVE_LIMIT = 16_000
 _MAX_RUN_ITERATIONS = 100
 _DECISION_SLOT_ID = "decision"
@@ -324,7 +323,7 @@ class ReviewCaseCoordinator:
 
     def plan_id_for_case(self, case_id: str) -> str:
         digest = hashlib.sha256(
-            f"{self.tenant_id}\0{self.user_id}\0{case_id}".encode("utf-8")
+            f"{self.tenant_id}\0{self.user_id}\0{case_id}".encode()
         ).hexdigest()
         return f"enterprise-review:{digest}"
 
@@ -724,9 +723,7 @@ class ReviewCaseCoordinator:
 
     def _stage_key(self, case_id: str, stage: str, seed: str) -> str:
         digest = hashlib.sha256(
-            f"{self.tenant_id}\0{self.user_id}\0{case_id}\0{stage}\0{seed}".encode(
-                "utf-8"
-            )
+            f"{self.tenant_id}\0{self.user_id}\0{case_id}\0{stage}\0{seed}".encode()
         ).hexdigest()
         return f"review-coordinator:{stage}:{digest}"
 

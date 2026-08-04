@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from taskforge.rag_baseline import (  # noqa: E402
+from taskforge.rag_baseline import (
     RAGBaselineConfig,
     load_baseline_config,
     run_rag_baseline,
@@ -52,7 +51,7 @@ def parser() -> argparse.ArgumentParser:
 
 
 def _default_output(now: datetime) -> Path:
-    stamp = now.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    stamp = now.astimezone(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     return REPOSITORY_ROOT / ".taskforge" / "eval-runs" / f"tatqa-bm25-{stamp}"
 
 
@@ -79,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
                     "locked_split": None,
                 }
             )
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         output = args.output or _default_output(now)
         result = run_rag_baseline(
             input_path=args.input,

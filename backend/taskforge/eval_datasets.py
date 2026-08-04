@@ -8,7 +8,6 @@ bounded, checksum-verified, and kept under a caller-selected cache directory.
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from pathlib import Path
 from typing import Literal
@@ -27,7 +26,7 @@ class DatasetArtifact(StrictModel):
     max_bytes: int = Field(gt=0, le=2_000_000_000)
 
     @model_validator(mode="after")
-    def safe_location(self) -> "DatasetArtifact":
+    def safe_location(self) -> DatasetArtifact:
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", self.filename):
             raise ValueError("artifact filename must be a safe basename")
         parsed = urlsplit(self.url)
@@ -48,7 +47,7 @@ class DatasetSource(StrictModel):
     artifacts: list[DatasetArtifact] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def automated_sources_have_artifacts(self) -> "DatasetSource":
+    def automated_sources_have_artifacts(self) -> DatasetSource:
         if self.automated and not self.artifacts:
             raise ValueError("automated dataset source requires an artifact")
         if urlsplit(self.homepage).scheme != "https":
@@ -61,7 +60,7 @@ class DatasetCatalog(StrictModel):
     sources: list[DatasetSource]
 
     @model_validator(mode="after")
-    def source_ids_are_unique(self) -> "DatasetCatalog":
+    def source_ids_are_unique(self) -> DatasetCatalog:
         identifiers = [source.dataset_id for source in self.sources]
         if len(identifiers) != len(set(identifiers)):
             raise ValueError("dataset source identifiers must be unique")

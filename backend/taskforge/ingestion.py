@@ -83,7 +83,7 @@ def ingest_workspace_document(
         _chunk_text(text, chunk_chars=chunk_chars, overlap_chars=overlap_chars)
     ):
         chunk_id = hashlib.sha256(
-            f"{tenant_id}\0{document_id}\0{version}\0{index}".encode("utf-8")
+            f"{tenant_id}\0{document_id}\0{version}\0{index}".encode()
         ).hexdigest()[:24]
         chunks.append(
             KnowledgeChunk(
@@ -204,7 +204,7 @@ def _pdf_knowledge_chunks(
             (
                 f"{tenant_id}\0{document_id}\0{version}\0{index}\0"
                 f"{chunk.content_hash}"
-            ).encode("utf-8")
+            ).encode()
         ).hexdigest()[:24]
         for index, chunk in enumerate(document.chunks)
     ]

@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from taskforge.context import ContextAssembler
 from taskforge.knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
-from taskforge.memory import InMemoryMemoryStore, MemoryItem, MemoryProvenance, MemoryScope
+from taskforge.memory import (
+    InMemoryMemoryStore,
+    MemoryItem,
+    MemoryProvenance,
+    MemoryScope,
+)
 
-
-NOW = datetime(2026, 8, 4, 8, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 8, 0, tzinfo=UTC)
 
 
 def test_knowledge_search_enforces_tenant_acl_expiry_and_latest_version() -> None:

@@ -13,7 +13,6 @@ from taskforge.config import Settings
 from taskforge.domain import ModelTurn
 from taskforge.providers import ScriptedProvider
 
-
 OWNER = {"X-TaskForge-Tenant": "tenant-a", "X-TaskForge-User": "alice"}
 STRANGER = {"X-TaskForge-Tenant": "tenant-a", "X-TaskForge-User": "mallory"}
 OTHER_TENANT = {"X-TaskForge-Tenant": "tenant-b", "X-TaskForge-User": "alice"}

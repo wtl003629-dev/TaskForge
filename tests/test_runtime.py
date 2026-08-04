@@ -7,6 +7,8 @@ from typing import Any
 
 import pytest
 
+from taskforge.checkpoints import SQLiteCheckpointStore
+from taskforge.context import ContextAssembler
 from taskforge.domain import (
     AgentProfile,
     ApprovalResponse,
@@ -18,8 +20,6 @@ from taskforge.domain import (
     ToolRequest,
     ToolResult,
 )
-from taskforge.checkpoints import SQLiteCheckpointStore
-from taskforge.context import ContextAssembler
 from taskforge.providers import (
     OpenAIResponsesAdapter,
     ProviderResponseError,

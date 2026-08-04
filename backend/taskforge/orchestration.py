@@ -7,15 +7,15 @@ cannot add roles, dependencies, tools, or execution authority.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 import hashlib
 import json
 import sqlite3
-from collections.abc import Mapping, Sequence
-from datetime import datetime, timedelta, timezone
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterator, Literal
+from typing import Any, Literal
 from uuid import uuid4
 
 from pydantic import Field, model_validator
@@ -75,7 +75,7 @@ class OrchestrationAccess(StrictModel):
     allowed_role_ids: tuple[str, ...] | None = None
 
     @model_validator(mode="after")
-    def role_allowlist_is_unambiguous(self) -> "OrchestrationAccess":
+    def role_allowlist_is_unambiguous(self) -> OrchestrationAccess:
         if self.allowed_role_ids is not None:
             if any(not role_id for role_id in self.allowed_role_ids):
                 raise ValueError("allowed orchestration roles must be non-empty")
@@ -127,7 +127,7 @@ class SpeakerSlot(StrictModel):
     max_attempts: int = Field(default=2, ge=1, le=20)
 
     @model_validator(mode="after")
-    def dependency_list_is_unambiguous(self) -> "SpeakerSlot":
+    def dependency_list_is_unambiguous(self) -> SpeakerSlot:
         if self.slot_id in self.depends_on:
             raise ValueError("a speaker slot cannot depend on itself")
         if len(self.depends_on) != len(set(self.depends_on)):
@@ -153,7 +153,7 @@ class SpeakerPlan(StrictModel):
     updated_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
-    def fixed_dag_is_valid(self) -> "SpeakerPlan":
+    def fixed_dag_is_valid(self) -> SpeakerPlan:
         if len(self.allowed_role_ids) != len(set(self.allowed_role_ids)):
             raise ValueError("allowed roles must be unique")
         slot_ids = [slot.slot_id for slot in self.slots]
@@ -209,7 +209,7 @@ class RoleRun(StrictModel):
     updated_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
-    def terminal_payload_is_consistent(self) -> "RoleRun":
+    def terminal_payload_is_consistent(self) -> RoleRun:
         if self.status == RoleRunStatus.FAILED and not self.error:
             raise ValueError("a failed RoleRun requires an error")
         if self.status != RoleRunStatus.FAILED and self.error is not None:
@@ -227,7 +227,7 @@ class RoleRunExecutionClaim(StrictModel):
     expires_at: datetime
 
     @model_validator(mode="after")
-    def expiry_follows_acquisition(self) -> "RoleRunExecutionClaim":
+    def expiry_follows_acquisition(self) -> RoleRunExecutionClaim:
         if _utc(self.expires_at) <= _utc(self.acquired_at):
             raise ValueError("execution claim expiry must follow acquisition")
         return self
@@ -263,7 +263,7 @@ class SharedFact(StrictModel):
     created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
-    def authority_matches_status(self) -> "SharedFact":
+    def authority_matches_status(self) -> SharedFact:
         if self.status == FactStatus.PROPOSED and self.authority != "model":
             raise ValueError("proposed facts must be model-attributed")
         if self.status == FactStatus.VERIFIED and self.authority == "model":
@@ -2130,10 +2130,10 @@ class SQLiteOrchestrationStore:
 
 def _utc(value: datetime | None) -> datetime:
     if value is None:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("timestamps must be timezone-aware")
-    return value.astimezone(timezone.utc)
+    return value.astimezone(UTC)
 
 
 def _require_access(access: OrchestrationAccess) -> None:
@@ -2154,8 +2154,8 @@ __all__ = [
     "Handoff",
     "IdempotencyConflictError",
     "InvalidTransitionError",
-    "OrchestrationNotFoundError",
     "OrchestrationAccess",
+    "OrchestrationNotFoundError",
     "OrchestrationStore",
     "PlanStatus",
     "PrivateRoleMemory",
@@ -2163,11 +2163,11 @@ __all__ = [
     "RoleRun",
     "RoleRunExecutionClaim",
     "RoleRunStatus",
+    "SQLiteOrchestrationStore",
     "SharedFact",
     "SlotNotReadyError",
     "SpeakerPlan",
     "SpeakerSlot",
-    "SQLiteOrchestrationStore",
     "VersionConflictError",
     "compute_plan_request_hash",
 ]

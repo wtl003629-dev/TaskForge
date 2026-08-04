@@ -14,18 +14,18 @@ when the safety suite reports a regression.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import hashlib
 import json
 import math
+from collections.abc import Iterable, Mapping, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable, Literal, Mapping, Sequence
+from typing import Any, Literal
 
 from pydantic import Field, field_validator, model_validator
 
 from .domain import StrictModel
 from .hybrid_retrieval import HybridSearchHit
-
 
 # These are code-owned.  They are intentionally absent from GraphSearchRequest.
 # Extending the graph vocabulary therefore requires a reviewed code change.
@@ -79,8 +79,8 @@ def _string_set(value: object, field_name: str) -> frozenset[str]:
 
 def _utc(value: datetime) -> datetime:
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 def _sha256_strings(values: Iterable[str]) -> str:
@@ -127,7 +127,7 @@ class AppliedGraphScope(StrictModel):
     relationship_allowlist: list[str]
 
     @classmethod
-    def from_request(cls, request: "GraphSearchRequest") -> "AppliedGraphScope":
+    def from_request(cls, request: GraphSearchRequest) -> AppliedGraphScope:
         access = request.access
         return cls(
             tenant_id=access.tenant_id,
@@ -190,7 +190,7 @@ class GraphGateConfig(StrictModel):
         return float(value)
 
     @model_validator(mode="after")
-    def enabled_gate_is_locked(self) -> "GraphGateConfig":
+    def enabled_gate_is_locked(self) -> GraphGateConfig:
         if self.enabled and (
             self.locked_evaluation_id is None
             or self.locked_evaluation_sha256 is None
@@ -201,7 +201,7 @@ class GraphGateConfig(StrictModel):
         return self
 
     @classmethod
-    def load(cls, path: str | Path) -> "GraphGateConfig":
+    def load(cls, path: str | Path) -> GraphGateConfig:
         source = Path(path)
         try:
             raw = json.loads(source.read_text(encoding="utf-8"))
@@ -353,7 +353,7 @@ class _GraphNodeRecord(StrictModel):
         return None if value is None else _utc(value)
 
     @model_validator(mode="after")
-    def window_is_ordered(self) -> "_GraphNodeRecord":
+    def window_is_ordered(self) -> _GraphNodeRecord:
         if (
             self.valid_from is not None
             and self.valid_until is not None
@@ -399,7 +399,7 @@ class _GraphRelationshipRecord(StrictModel):
         return None if value is None else _utc(value)
 
     @model_validator(mode="after")
-    def window_is_ordered(self) -> "_GraphRelationshipRecord":
+    def window_is_ordered(self) -> _GraphRelationshipRecord:
         if (
             self.valid_from is not None
             and self.valid_until is not None
@@ -431,7 +431,7 @@ class GraphPathProvenance(StrictModel):
     relationships: list[GraphRelationshipProvenance] = Field(min_length=1, max_length=2)
 
     @model_validator(mode="after")
-    def path_shape_matches_hops(self) -> "GraphPathProvenance":
+    def path_shape_matches_hops(self) -> GraphPathProvenance:
         if len(self.relationships) != self.hop_count:
             raise ValueError("relationship count must equal hop_count")
         if len(self.nodes) != self.hop_count + 1:
@@ -467,7 +467,7 @@ class GraphSearchResponse(StrictModel):
     hits: list[GraphEvidence]
 
     @model_validator(mode="after")
-    def closed_gate_cannot_carry_results(self) -> "GraphSearchResponse":
+    def closed_gate_cannot_carry_results(self) -> GraphSearchResponse:
         if not self.gate.enabled and (self.query_executed or self.hits):
             raise ValueError("a closed graph gate cannot execute or return hits")
         if self.gate.enabled and not self.query_executed:
@@ -729,7 +729,7 @@ class Neo4jGraphRetriever:
         auth: tuple[str, str],
         gate: GraphRetrievalGate,
         database: str = "neo4j",
-    ) -> "Neo4jGraphRetriever":
+    ) -> Neo4jGraphRetriever:
         try:
             from neo4j import GraphDatabase
         except ImportError as exc:  # pragma: no cover - environment dependent.
@@ -797,7 +797,7 @@ class Neo4jGraphRetriever:
                     f"Neo4j driver close failed: {type(exc).__name__}"
                 ) from exc
 
-    def __enter__(self) -> "Neo4jGraphRetriever":
+    def __enter__(self) -> Neo4jGraphRetriever:
         return self
 
     def __exit__(self, *_: object) -> None:
@@ -994,6 +994,7 @@ def fuse_hybrid_and_graph(
 
 
 __all__ = [
+    "RELATIONSHIP_ALLOWLIST",
     "AppliedGraphScope",
     "FusedRetrievalHit",
     "FusedRetrievalResponse",
@@ -1015,6 +1016,5 @@ __all__ = [
     "GraphSearchResponse",
     "Neo4jGraphRetriever",
     "Neo4jUnavailableError",
-    "RELATIONSHIP_ALLOWLIST",
     "fuse_hybrid_and_graph",
 ]

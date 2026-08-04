@@ -6,7 +6,6 @@ from pathlib import Path
 
 from taskforge.synthetic_pdf_eval import generate_synthetic_pdfs
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

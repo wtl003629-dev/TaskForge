@@ -8,7 +8,7 @@ can only propose a :class:`ToolRequest`, and the host records the resulting
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Literal
 from uuid import uuid4
@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 def utc_now() -> datetime:
     """Return an aware UTC timestamp (kept as a function for testability)."""
 
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class StrictModel(BaseModel):
@@ -78,7 +78,7 @@ class AgentProfile(StrictModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def unique_capabilities(self) -> "AgentProfile":
+    def unique_capabilities(self) -> AgentProfile:
         if len(self.allowed_tools) != len(set(self.allowed_tools)):
             raise ValueError("allowed_tools must not contain duplicates")
         return self
@@ -107,7 +107,7 @@ class ToolResult(StrictModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def result_is_unambiguous(self) -> "ToolResult":
+    def result_is_unambiguous(self) -> ToolResult:
         if self.ok and self.error is not None:
             raise ValueError("a successful tool result cannot contain an error")
         if not self.ok and not self.error:
@@ -126,7 +126,7 @@ class ModelTurn(StrictModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def exactly_one_action_kind(self) -> "ModelTurn":
+    def exactly_one_action_kind(self) -> ModelTurn:
         if self.kind == "final":
             if not self.final_answer or not self.final_answer.strip():
                 raise ValueError("a final turn requires a non-empty final_answer")
@@ -151,21 +151,21 @@ class PolicyDecision(StrictModel):
     reason: str = ""
 
     @model_validator(mode="after")
-    def decision_is_unambiguous(self) -> "PolicyDecision":
+    def decision_is_unambiguous(self) -> PolicyDecision:
         if self.allowed and self.requires_approval:
             raise ValueError("a call cannot be allowed and awaiting approval")
         return self
 
     @classmethod
-    def allow(cls, reason: str = "") -> "PolicyDecision":
+    def allow(cls, reason: str = "") -> PolicyDecision:
         return cls(allowed=True, reason=reason)
 
     @classmethod
-    def deny(cls, reason: str) -> "PolicyDecision":
+    def deny(cls, reason: str) -> PolicyDecision:
         return cls(allowed=False, reason=reason)
 
     @classmethod
-    def approval(cls, reason: str) -> "PolicyDecision":
+    def approval(cls, reason: str) -> PolicyDecision:
         return cls(allowed=False, requires_approval=True, reason=reason)
 
 
@@ -240,7 +240,7 @@ class RunState(StrictModel):
     updated_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
-    def terminal_and_pending_state_is_consistent(self) -> "RunState":
+    def terminal_and_pending_state_is_consistent(self) -> RunState:
         if self.status == RunStatus.WAITING_APPROVAL and self.pending_approval is None:
             raise ValueError("waiting_approval requires pending_approval")
         if self.status != RunStatus.WAITING_APPROVAL and self.pending_approval is not None:

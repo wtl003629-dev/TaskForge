@@ -14,9 +14,10 @@ constructor and makes catalog/index drift fail closed at query time.
 
 from __future__ import annotations
 
-from datetime import datetime
 import math
-from typing import Iterable, Mapping, Protocol, runtime_checkable
+from collections.abc import Iterable, Mapping
+from datetime import datetime
+from typing import Protocol, runtime_checkable
 
 from .hybrid_retrieval import (
     AppliedRetrievalFilters,
@@ -31,7 +32,6 @@ from .knowledge import (
     as_utc,
     lexical_match,
 )
-
 
 MAX_ALLOWED_CHUNK_IDS = 20_000
 
@@ -290,12 +290,12 @@ class HybridKnowledgeStore:
 
 
 __all__ = [
+    "MAX_ALLOWED_CHUNK_IDS",
     "HybridCatalogMismatchError",
     "HybridKnowledgeError",
     "HybridKnowledgeScopeTooLargeError",
     "HybridKnowledgeStore",
     "HybridSearchBackend",
-    "MAX_ALLOWED_CHUNK_IDS",
     "UnsupportedHybridScoringError",
     "knowledge_to_hybrid_chunk",
 ]

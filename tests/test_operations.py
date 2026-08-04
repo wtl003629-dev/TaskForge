@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Barrier
 
@@ -26,8 +26,7 @@ from taskforge.runtime import AgentRuntime
 from taskforge.tooling import CapabilityPolicy, ToolRegistry
 from taskforge.worker import DurableWorker
 
-
-NOW = datetime(2026, 8, 4, 12, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 12, 0, tzinfo=UTC)
 
 
 def test_two_worker_connections_atomically_claim_only_once(tmp_path: Path) -> None:

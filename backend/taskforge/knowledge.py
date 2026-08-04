@@ -7,15 +7,14 @@ be added without changing the context assembler or weakening ACL checks.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
 import math
 import re
 import unicodedata
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
-
-UTC = timezone.utc
+UTC = UTC
 _TOKEN_RE = re.compile(r"[a-z0-9_]+|[\u3400-\u4dbf\u4e00-\u9fff]", re.IGNORECASE)
 
 

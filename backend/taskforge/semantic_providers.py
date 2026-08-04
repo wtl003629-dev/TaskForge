@@ -189,7 +189,7 @@ class OpenAIEmbeddingsDenseEmbedder(DenseEmbedder):
         if self._owns_client and not self._client.is_closed:
             self._client.close()
 
-    def __enter__(self) -> "OpenAIEmbeddingsDenseEmbedder":
+    def __enter__(self) -> OpenAIEmbeddingsDenseEmbedder:
         return self
 
     def __exit__(self, *_: object) -> None:
@@ -219,7 +219,7 @@ class FastEmbedDenseEmbedder(DenseEmbedder):
         if model is None:
             try:
                 module = importlib.import_module("fastembed")
-                model_type = getattr(module, "TextEmbedding")
+                model_type = module.TextEmbedding
             except (ImportError, AttributeError) as exc:
                 raise SemanticProviderConfigurationError(
                     "FastEmbed is unavailable; install the semantic extra"
@@ -278,7 +278,7 @@ class FastEmbedCrossEncoderReranker(Reranker):
         if model is None:
             try:
                 module = importlib.import_module("fastembed.rerank.cross_encoder")
-                model_type = getattr(module, "TextCrossEncoder")
+                model_type = module.TextCrossEncoder
             except (ImportError, AttributeError) as exc:
                 raise SemanticProviderConfigurationError(
                     "FastEmbed cross encoder is unavailable; install the semantic extra"

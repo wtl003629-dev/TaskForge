@@ -9,22 +9,21 @@ idempotent, and accompanied by an append-only audit event.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
-from contextlib import contextmanager
-from datetime import datetime, timezone
-from enum import Enum
 import hashlib
 import json
 import math
-from pathlib import Path
 import sqlite3
-from typing import Any, Iterator, Literal
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from datetime import UTC, datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Literal
 from uuid import uuid4
 
 from pydantic import Field, field_validator, model_validator
 
 from .domain import StrictModel, utc_now
-
 
 _MAX_JSON_BYTES = 1_000_000
 _MAX_JSON_DEPTH = 50
@@ -109,7 +108,7 @@ def _nonblank(value: Any) -> Any:
 def _aware_utc(value: datetime) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("timestamps must be timezone-aware")
-    return value.astimezone(timezone.utc)
+    return value.astimezone(UTC)
 
 
 def _utc(value: datetime | None) -> datetime:
@@ -224,7 +223,7 @@ class CaseAccess(StrictModel):
         return frozenset(roles)
 
     @model_validator(mode="after")
-    def admin_override_is_explicitly_authorized(self) -> "CaseAccess":
+    def admin_override_is_explicitly_authorized(self) -> CaseAccess:
         if self.admin_override and _ADMIN_ROLE not in self.actor_roles:
             raise ValueError("admin_override requires the case_admin role")
         return self
@@ -268,7 +267,7 @@ class CaseSubmission(StrictModel):
         return _nonblank(value)
 
     @model_validator(mode="after")
-    def payload_is_bounded_and_evidence_is_unique(self) -> "CaseSubmission":
+    def payload_is_bounded_and_evidence_is_unique(self) -> CaseSubmission:
         identifiers = [item.evidence_id for item in self.evidence_refs]
         if len(identifiers) != len(set(identifiers)):
             raise ValueError("submission evidence IDs must be unique")
@@ -307,7 +306,7 @@ class ModelRecommendation(StrictModel):
         return _aware_utc(value)
 
     @model_validator(mode="after")
-    def recommendation_is_bounded(self) -> "ModelRecommendation":
+    def recommendation_is_bounded(self) -> ModelRecommendation:
         identifiers = [item.evidence_id for item in self.evidence_refs]
         if len(identifiers) != len(set(identifiers)):
             raise ValueError("recommendation evidence IDs must be unique")
@@ -423,7 +422,7 @@ class ReviewCase(StrictModel):
         return None if value is None else _aware_utc(value)
 
     @model_validator(mode="after")
-    def lifecycle_fields_are_consistent(self) -> "ReviewCase":
+    def lifecycle_fields_are_consistent(self) -> ReviewCase:
         if self.updated_at < self.created_at:
             raise ValueError("updated_at cannot precede created_at")
         milestones = [
@@ -558,7 +557,7 @@ class CaseAuditEvent(StrictModel):
         return _aware_utc(value)
 
     @model_validator(mode="after")
-    def details_are_bounded(self) -> "CaseAuditEvent":
+    def details_are_bounded(self) -> CaseAuditEvent:
         _canonical_json(self.model_dump(mode="json"))
         return self
 

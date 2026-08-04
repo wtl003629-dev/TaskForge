@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -17,8 +17,7 @@ from taskforge.rag_baseline import (
     sha256_file,
 )
 
-
-FIXED_TIME = datetime(2026, 8, 4, 8, 30, tzinfo=timezone.utc)
+FIXED_TIME = datetime(2026, 8, 4, 8, 30, tzinfo=UTC)
 
 
 def _tatqa_fixture(path: Path) -> None:

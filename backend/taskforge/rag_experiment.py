@@ -20,7 +20,7 @@ import time
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -54,7 +54,6 @@ from .synthetic_pdf_eval import (
     generate_synthetic_pdfs,
     load_generated_page_dataset,
 )
-
 
 StageName = Literal["lexical_bm25", "qdrant_rrf", "qdrant_rrf_rerank"]
 DatasetKind = Literal["synthetic_pdf", "tatqa_locked"]
@@ -106,7 +105,7 @@ class ExperimentRetrievalConfig(StrictModel):
     hash_dimension: int = Field(default=64, ge=8, le=65_536)
 
     @model_validator(mode="after")
-    def stages_and_budgets_are_comparable(self) -> "ExperimentRetrievalConfig":
+    def stages_and_budgets_are_comparable(self) -> ExperimentRetrievalConfig:
         if len(self.stages) != len(set(self.stages)):
             raise ValueError("retrieval stages must not contain duplicates")
         missing = [stage for stage in REQUIRED_STAGES if stage not in self.stages]
@@ -165,7 +164,7 @@ class ExperimentFilterConfig(StrictModel):
         return cleaned
 
     @model_validator(mode="after")
-    def requested_identity_can_read_index(self) -> "ExperimentFilterConfig":
+    def requested_identity_can_read_index(self) -> ExperimentFilterConfig:
         if _DENIED_PRINCIPAL in self.request_principals:
             raise ValueError("request principals contain the reserved denied probe")
         if not set(self.request_principals).intersection(self.indexed_acl_principals):
@@ -701,10 +700,10 @@ def run_rag_experiment(
     )
     if not repository.is_dir():
         raise FileNotFoundError(f"repository root does not exist: {repository}")
-    timestamp = created_at or datetime.now(timezone.utc)
+    timestamp = created_at or datetime.now(UTC)
     if timestamp.tzinfo is None or timestamp.utcoffset() is None:
         raise ValueError("created_at must be timezone-aware")
-    timestamp = timestamp.astimezone(timezone.utc)
+    timestamp = timestamp.astimezone(UTC)
     target.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(
         tempfile.mkdtemp(prefix=f".{target.name}.staging-", dir=target.parent)
@@ -826,14 +825,14 @@ def run_rag_experiment(
 
 
 __all__ = [
-    "DatasetKind",
     "EXPERIMENT_MODE",
+    "REQUIRED_STAGES",
+    "DatasetKind",
     "ExperimentDatasetConfig",
     "ExperimentFilterConfig",
     "ExperimentRetrievalConfig",
     "RAGExperimentConfig",
     "RAGExperimentResult",
-    "REQUIRED_STAGES",
     "StageName",
     "load_experiment_config",
     "run_rag_experiment",

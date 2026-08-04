@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
 import sqlite3
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -10,8 +10,7 @@ from taskforge.knowledge import AccessContext, KnowledgeChunk
 from taskforge.memory import MemoryItem, MemoryProvenance, MemoryScope
 from taskforge.persistent_context import SQLiteKnowledgeStore, SQLiteMemoryStore
 
-
-NOW = datetime(2026, 8, 4, 10, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 10, 0, tzinfo=UTC)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 

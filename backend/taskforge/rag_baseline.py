@@ -16,12 +16,11 @@ import platform
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -38,7 +37,6 @@ from .rag_evaluation import (
     load_tatqa_dataset,
 )
 
-
 _TOKEN_PATTERN = re.compile(r"[A-Za-z0-9]+|[\u3400-\u9fff]")
 
 
@@ -49,7 +47,7 @@ class SamplingConfig(StrictModel):
     categories: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def categories_are_unique(self) -> "SamplingConfig":
+    def categories_are_unique(self) -> SamplingConfig:
         normalized = [item.strip() for item in self.categories]
         if any(not item for item in normalized):
             raise ValueError("sampling categories must be non-empty")
@@ -74,7 +72,7 @@ class RAGBaselineConfig(StrictModel):
     locked_split: str | None = Field(default=None, max_length=500)
 
     @model_validator(mode="after")
-    def top_k_is_safe(self) -> "RAGBaselineConfig":
+    def top_k_is_safe(self) -> RAGBaselineConfig:
         if not self.top_k:
             raise ValueError("top_k must not be empty")
         if any(value <= 0 or value > 10_000 for value in self.top_k):
@@ -101,7 +99,7 @@ class LockedSplitManifest(StrictModel):
     category_counts: dict[str, int]
 
     @model_validator(mode="after")
-    def cases_are_unique(self) -> "LockedSplitManifest":
+    def cases_are_unique(self) -> LockedSplitManifest:
         if len(self.case_ids) != len(set(self.case_ids)):
             raise ValueError("locked split case IDs must be unique")
         if any(not value.strip() for value in self.case_ids):
@@ -190,7 +188,7 @@ def select_locked_cases(
 
 
 def _seeded_key(seed: int, category: str, case_id: str) -> tuple[str, str]:
-    material = f"{seed}\0{category}\0{case_id}".encode("utf-8")
+    material = f"{seed}\0{category}\0{case_id}".encode()
     return hashlib.sha256(material).hexdigest(), case_id
 
 
@@ -223,7 +221,7 @@ def select_stratified_cases(
     category_order = sorted(
         grouped,
         key=lambda value: (
-            hashlib.sha256(f"{seed}\0{value}".encode("utf-8")).hexdigest(),
+            hashlib.sha256(f"{seed}\0{value}".encode()).hexdigest(),
             value,
         ),
     )
@@ -467,10 +465,10 @@ def run_rag_baseline(
     run_id = _sha256_bytes(
         f"{dataset_checksum}\0{config_hash}\0{code_hash}".encode("ascii")
     )[:20]
-    timestamp = created_at or datetime.now(timezone.utc)
+    timestamp = created_at or datetime.now(UTC)
     if timestamp.tzinfo is None or timestamp.utcoffset() is None:
         raise ValueError("created_at must be timezone-aware")
-    timestamp = timestamp.astimezone(timezone.utc)
+    timestamp = timestamp.astimezone(UTC)
     category_counts = Counter(case.category for case in selected_cases)
     manifest: dict[str, Any] = {
         "schema_version": "1.0",

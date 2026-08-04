@@ -6,7 +6,7 @@ import socket
 import subprocess
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -23,8 +23,7 @@ from taskforge.rag_experiment import (
     run_rag_experiment,
 )
 
-
-FIXED_TIME = datetime(2026, 8, 4, 9, 15, tzinfo=timezone.utc)
+FIXED_TIME = datetime(2026, 8, 4, 9, 15, tzinfo=UTC)
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 

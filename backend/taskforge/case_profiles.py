@@ -5,7 +5,6 @@ from __future__ import annotations
 from .domain import AgentProfile
 from .orchestration import SpeakerSlot
 
-
 ENTERPRISE_REVIEW_ROLES = (
     "intake_analyst",
     "compliance_reviewer",

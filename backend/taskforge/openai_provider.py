@@ -253,7 +253,7 @@ class OpenAIResponsesProvider:
         if self._owns_client and not self._client.is_closed:
             await self._client.aclose()
 
-    async def __aenter__(self) -> "OpenAIResponsesProvider":
+    async def __aenter__(self) -> OpenAIResponsesProvider:
         return self
 
     async def __aexit__(self, *_: object) -> None:

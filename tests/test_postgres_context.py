@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-import taskforge.postgres_context as postgres_context
+from taskforge import postgres_context
 from taskforge.knowledge import KnowledgeChunk
-from taskforge.memory import MemoryItem, MemoryProvenance, MemoryScope
+from taskforge.memory import MemoryItem, MemoryScope
 from taskforge.postgres_context import (
     MAX_JSON_BYTES,
     PostgresContextAccess,
@@ -18,16 +18,15 @@ from taskforge.postgres_context import (
     PostgresDependencyError,
 )
 
-
-NOW = datetime(2026, 8, 4, 10, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 4, 10, 0, tzinfo=UTC)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class FakeTransaction(AbstractContextManager["FakeTransaction"]):
-    def __init__(self, connection: "FakeConnection") -> None:
+    def __init__(self, connection: FakeConnection) -> None:
         self.connection = connection
 
-    def __enter__(self) -> "FakeTransaction":
+    def __enter__(self) -> FakeTransaction:
         self.connection.transaction_entries += 1
         return self
 
@@ -39,11 +38,11 @@ class FakeTransaction(AbstractContextManager["FakeTransaction"]):
 
 
 class FakeCursor(AbstractContextManager["FakeCursor"]):
-    def __init__(self, connection: "FakeConnection") -> None:
+    def __init__(self, connection: FakeConnection) -> None:
         self.connection = connection
         self.rows: list[dict[str, object]] = []
 
-    def __enter__(self) -> "FakeCursor":
+    def __enter__(self) -> FakeCursor:
         return self
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:

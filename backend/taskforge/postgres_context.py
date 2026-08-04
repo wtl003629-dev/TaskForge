@@ -13,18 +13,18 @@ strict DB-API/psycopg-shaped connection without weakening the production path.
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, contextmanager
-from dataclasses import dataclass, field
-from datetime import datetime
 import importlib
 import json
 import math
+from collections.abc import Iterable, Iterator, Mapping
+from contextlib import AbstractContextManager, contextmanager
+from dataclasses import dataclass, field
+from datetime import datetime
 from threading import RLock
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any
 
 from .knowledge import AccessContext, KnowledgeChunk, as_utc
 from .memory import MemoryItem, MemoryProvenance, MemoryScope
-
 
 MAX_JSON_BYTES = 1_000_000
 MAX_JSON_DEPTH = 50
@@ -595,7 +595,7 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
         *,
         connect_timeout: int = 5,
         application_name: str = "taskforge-context",
-    ) -> "PostgresContextRepository":
+    ) -> PostgresContextRepository:
         cleaned_dsn = _safe_text(dsn, "dsn")
         cleaned_application = _safe_text(application_name, "application_name")
         if type(connect_timeout) is not int or not 1 <= connect_timeout <= 60:

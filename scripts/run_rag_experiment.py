@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from taskforge.rag_experiment import (  # noqa: E402
+from taskforge.rag_experiment import (
     RAGExperimentConfig,
     load_experiment_config,
     run_rag_experiment,
@@ -95,7 +94,7 @@ def _with_overrides(
 
 
 def _default_output(now: datetime, dataset_kind: str) -> Path:
-    stamp = now.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    stamp = now.astimezone(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     label = "synthetic-pdf" if dataset_kind == "synthetic_pdf" else "tatqa-locked"
     return REPOSITORY_ROOT / ".taskforge" / "eval-runs" / f"rag-{label}-{stamp}"
 
@@ -104,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         config = _with_overrides(load_experiment_config(args.config), args)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         output = args.output or _default_output(now, config.dataset.kind)
         result = run_rag_experiment(
             output_dir=output,

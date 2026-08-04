@@ -25,7 +25,7 @@ class SyntheticTable(StrictModel):
     rows: list[list[str]] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def rectangular(self) -> "SyntheticTable":
+    def rectangular(self) -> SyntheticTable:
         width = len(self.headers)
         if any(len(row) != width for row in self.rows):
             raise ValueError("synthetic table rows must match header width")
@@ -45,7 +45,7 @@ class SyntheticDocument(StrictModel):
     pages: list[SyntheticPage] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def pages_are_contiguous(self) -> "SyntheticDocument":
+    def pages_are_contiguous(self) -> SyntheticDocument:
         numbers = [item.page for item in self.pages]
         if numbers != list(range(1, len(numbers) + 1)):
             raise ValueError("synthetic document pages must be contiguous and ordered")
@@ -57,7 +57,7 @@ class SyntheticEvidence(StrictModel):
     pages: list[int] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def unique_pages(self) -> "SyntheticEvidence":
+    def unique_pages(self) -> SyntheticEvidence:
         if len(self.pages) != len(set(self.pages)) or any(page < 1 for page in self.pages):
             raise ValueError("evidence pages must be unique positive integers")
         return self
@@ -79,7 +79,7 @@ class SyntheticPDFSuite(StrictModel):
     cases: list[SyntheticCase] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def references_are_valid(self) -> "SyntheticPDFSuite":
+    def references_are_valid(self) -> SyntheticPDFSuite:
         document_ids = [item.document_id for item in self.documents]
         case_ids = [item.case_id for item in self.cases]
         if len(document_ids) != len(set(document_ids)):
