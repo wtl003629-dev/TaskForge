@@ -1,0 +1,11 @@
+.git
+.venv
+.taskforge
+.pytest_cache
+__pycache__
+*.pyc
+*.sqlite3
+frontend/node_modules
+frontend/dist
+tests
+eval

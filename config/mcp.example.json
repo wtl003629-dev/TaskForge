@@ -1,0 +1,26 @@
+{
+  "servers": [
+    {
+      "profile_ids": [
+        "research-agent"
+      ],
+      "server": {
+        "namespace": "docs",
+        "endpoint": "https://mcp.example.com/mcp",
+        "enabled": false,
+        "allowed_tools": [
+          "search"
+        ],
+        "tool_policies": {
+          "search": {
+            "risk": "external",
+            "side_effecting": false,
+            "requires_approval": true,
+            "description": "Search an operator-approved documentation service."
+          }
+        },
+        "secret_env_var": "TASKFORGE_DOCS_MCP_TOKEN"
+      }
+    }
+  ]
+}

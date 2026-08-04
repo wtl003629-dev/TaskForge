@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "dataset": {
+    "kind": "synthetic_pdf",
+    "synthetic_suite_path": "eval/synthetic_pdf_suite.json",
+    "tatqa_input_path": ".taskforge/eval-cache/tatqa_dataset_dev.json",
+    "tatqa_locked_split_path": "eval/splits/tatqa-dev-m0-100-v1.json"
+  },
+  "retrieval": {
+    "stages": [
+      "lexical_bm25",
+      "qdrant_rrf",
+      "qdrant_rrf_rerank"
+    ],
+    "top_k": [1, 5, 10],
+    "candidate_k": 25,
+    "bm25_k1": 1.5,
+    "bm25_b": 0.75,
+    "hash_dimension": 64
+  },
+  "filters": {
+    "tenant_id": "tenant-evaluation",
+    "request_principals": ["user:evaluator"],
+    "indexed_acl_principals": ["role:rag-reviewer", "user:evaluator"],
+    "knowledge_base_id": "taskforge-evaluation",
+    "version": "1",
+    "version_order": 1
+  }
+}

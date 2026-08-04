@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "enabled": false,
+  "locked_evaluation_id": null,
+  "locked_evaluation_sha256": null,
+  "metric_name": "recall_at_5",
+  "minimum_improvement": 0.03,
+  "require_zero_safety_regressions": true,
+  "graph_result_limit": 10,
+  "rrf_k": 60,
+  "hybrid_weight": 1.0,
+  "graph_weight": 1.0,
+  "fused_result_budget": 10,
+  "fused_character_budget": 16000
+}

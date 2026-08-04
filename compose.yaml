@@ -1,0 +1,76 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TASKFORGE_PROVIDER: ${TASKFORGE_PROVIDER:-demo}
+      TASKFORGE_SQLITE_PATH: /app/.taskforge/taskforge.sqlite3
+      TASKFORGE_CONTEXT_SQLITE_PATH: /app/.taskforge/context.sqlite3
+      TASKFORGE_OPERATIONS_SQLITE_PATH: /app/.taskforge/operations.sqlite3
+      TASKFORGE_CONTEXT_BACKEND: sqlite
+      TASKFORGE_WORKSPACE_ROOT: /app
+      TASKFORGE_ARTIFACT_ROOT: /app/.taskforge/artifacts
+      TASKFORGE_WORKER_LEASE_SECONDS: ${TASKFORGE_WORKER_LEASE_SECONDS:-30}
+      TASKFORGE_WORKER_MAX_ATTEMPTS: ${TASKFORGE_WORKER_MAX_ATTEMPTS:-3}
+      TASKFORGE_MCP_CONFIG_PATH: ${TASKFORGE_MCP_CONFIG_PATH:-}
+      TASKFORGE_OPENAI_API_KEY: ${TASKFORGE_OPENAI_API_KEY:-}
+      TASKFORGE_OPENAI_MODEL: ${TASKFORGE_OPENAI_MODEL:-}
+      TASKFORGE_OPENAI_BASE_URL: ${TASKFORGE_OPENAI_BASE_URL:-https://api.openai.com/v1}
+    ports:
+      - "8000:8000"
+    volumes:
+      - taskforge-data:/app/.taskforge
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "scripts/run_worker.py", "--poll-seconds", "0.5"]
+    environment:
+      TASKFORGE_PROVIDER: ${TASKFORGE_PROVIDER:-demo}
+      TASKFORGE_SQLITE_PATH: /app/.taskforge/taskforge.sqlite3
+      TASKFORGE_CONTEXT_SQLITE_PATH: /app/.taskforge/context.sqlite3
+      TASKFORGE_OPERATIONS_SQLITE_PATH: /app/.taskforge/operations.sqlite3
+      TASKFORGE_CONTEXT_BACKEND: sqlite
+      TASKFORGE_WORKSPACE_ROOT: /app
+      TASKFORGE_ARTIFACT_ROOT: /app/.taskforge/artifacts
+      TASKFORGE_WORKER_LEASE_SECONDS: ${TASKFORGE_WORKER_LEASE_SECONDS:-30}
+      TASKFORGE_WORKER_MAX_ATTEMPTS: ${TASKFORGE_WORKER_MAX_ATTEMPTS:-3}
+      TASKFORGE_MCP_CONFIG_PATH: ${TASKFORGE_MCP_CONFIG_PATH:-}
+      TASKFORGE_OPENAI_API_KEY: ${TASKFORGE_OPENAI_API_KEY:-}
+      TASKFORGE_OPENAI_MODEL: ${TASKFORGE_OPENAI_MODEL:-}
+      TASKFORGE_OPENAI_BASE_URL: ${TASKFORGE_OPENAI_BASE_URL:-https://api.openai.com/v1}
+    volumes:
+      - taskforge-data:/app/.taskforge
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  taskforge-data:

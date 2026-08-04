@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "dataset_id": "tatqa-dev",
+      "name": "TAT-QA development labels",
+      "homepage": "https://github.com/NExTplusplus/TAT-QA",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "allowed-with-attribution",
+      "automated": true,
+      "notes": "Low-cost table+text baseline; no original PDF in this artifact.",
+      "artifacts": [
+        {
+          "filename": "tatqa_dataset_dev.json",
+          "url": "https://raw.githubusercontent.com/NExTplusplus/TAT-QA/ec12a30c26365ff05face6ffc431aaff9cb67c91/dataset_raw/tatqa_dataset_dev.json",
+          "sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+          "max_bytes": 3000000
+        }
+      ]
+    },
+    {
+      "dataset_id": "tat-dqa",
+      "name": "TAT-DQA",
+      "homepage": "https://nextplusplus.github.io/TAT-DQA/",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "catalog-only",
+      "automated": false,
+      "notes": "Primary real-PDF/table benchmark; acquire the official PDF, layout and QA packages manually and preserve attribution.",
+      "artifacts": []
+    },
+    {
+      "dataset_id": "dude",
+      "name": "DUDE",
+      "homepage": "https://zenodo.org/records/7763635",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "catalog-only",
+      "automated": false,
+      "notes": "Large multi-page PDF benchmark; pin a document subset rather than downloading all OCR variants.",
+      "artifacts": []
+    },
+    {
+      "dataset_id": "qasper",
+      "name": "QASPER",
+      "homepage": "https://huggingface.co/datasets/allenai/qasper",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "catalog-only",
+      "automated": false,
+      "notes": "Long scientific text with strong paragraph evidence; load with the official dataset card and pin its revision.",
+      "artifacts": []
+    },
+    {
+      "dataset_id": "musique",
+      "name": "MuSiQue",
+      "homepage": "https://github.com/StonyBrookNLP/musique",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "catalog-only",
+      "automated": false,
+      "notes": "2-4 hop QA with supporting paragraphs and decompositions; do not execute the remote download script blindly.",
+      "artifacts": []
+    },
+    {
+      "dataset_id": "multihop-rag",
+      "name": "MultiHop-RAG",
+      "homepage": "https://github.com/yixuantt/MultiHop-RAG",
+      "license": "ODC-BY",
+      "commercial_use": true,
+      "redistribution": "catalog-only",
+      "automated": false,
+      "notes": "Cross-document retrieval set with 2-4 evidence documents and metadata questions.",
+      "artifacts": []
+    },
+    {
+      "dataset_id": "mmlongbench-labels",
+      "name": "MMLongBench-Doc labels",
+      "homepage": "https://github.com/mayubo2333/MMLongBench-Doc",
+      "license": "CC BY-NC 4.0 (research use only)",
+      "commercial_use": false,
+      "redistribution": "catalog-only",
+      "automated": true,
+      "notes": "Optional non-commercial long-PDF/cross-page labels. PDF documents are intentionally not downloaded by this artifact.",
+      "artifacts": [
+        {
+          "filename": "mmlongbench_samples.json",
+          "url": "https://raw.githubusercontent.com/mayubo2333/MMLongBench-Doc/a5cf96739db16fc9b339f93477396ead74ba44ff/data/samples.json",
+          "sha256": "4ffadad60b18cd7ede864155f3e8a366fe4deec2189b3d0a25691b7df4b839e8",
+          "max_bytes": 1000000
+        }
+      ]
+    }
+  ]
+}

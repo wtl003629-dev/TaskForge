@@ -1,0 +1,179 @@
+{
+  "cases": [
+    {
+      "id": "research-evidence",
+      "description": "Research profile retrieves governed evidence before answering.",
+      "task": {
+        "id": "eval-task-research",
+        "tenant_id": "eval-tenant",
+        "user_id": "eval-user",
+        "goal": "Explain the bounded Agent loop using evidence."
+      },
+      "profile": {
+        "id": "eval-profile-research",
+        "name": "research",
+        "instructions": "Use governed knowledge and cite the evidence.",
+        "allowed_tools": ["knowledge_search"],
+        "max_steps": 3
+      },
+      "scenario": {
+        "turns": [
+          {
+            "action": "knowledge_search",
+            "call_id": "research-search-1",
+            "arguments": {"query": "bounded Agent loop", "limit": 5}
+          },
+          {
+            "action": "final",
+            "answer": "A bounded Agent loop stops at a configured step budget and uses governed evidence."
+          }
+        ],
+        "tools": [
+          {
+            "name": "knowledge_search",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "query": {"type": "string"},
+                "limit": {"type": "integer", "minimum": 1, "maximum": 10}
+              },
+              "required": ["query", "limit"],
+              "additionalProperties": false
+            },
+            "output": {"citations": ["fixture://agent-loop"], "text": "Loops must be bounded."}
+          }
+        ]
+      },
+      "expected": {
+        "terminal_status": "completed",
+        "answer_contains": ["bounded", "evidence"],
+        "required_tools": ["knowledge_search"],
+        "forbidden_tools": ["shell.exec", "artifact_write"],
+        "max_steps": 3
+      }
+    },
+    {
+      "id": "repo-grep",
+      "description": "Repository diagnosis uses the structured grep capability, not shell execution.",
+      "task": {
+        "id": "eval-task-repo",
+        "tenant_id": "eval-tenant",
+        "user_id": "eval-user",
+        "goal": "Find where AgentRuntime is declared."
+      },
+      "profile": {
+        "id": "eval-profile-repo",
+        "name": "repo-diagnosis",
+        "instructions": "Inspect code through bounded workspace capabilities.",
+        "allowed_tools": ["workspace_grep"],
+        "max_steps": 3
+      },
+      "scenario": {
+        "turns": [
+          {
+            "action": "workspace_grep",
+            "call_id": "repo-grep-1",
+            "arguments": {
+              "pattern": "class AgentRuntime",
+              "include": "*.py",
+              "regex": false,
+              "case_sensitive": true,
+              "limit": 20
+            }
+          },
+          {
+            "action": "final",
+            "answer": "AgentRuntime is declared in backend/taskforge/runtime.py."
+          }
+        ],
+        "tools": [
+          {
+            "name": "workspace_grep",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "pattern": {"type": "string"},
+                "include": {"type": "string"},
+                "regex": {"type": "boolean"},
+                "case_sensitive": {"type": "boolean"},
+                "limit": {"type": "integer", "minimum": 1, "maximum": 50}
+              },
+              "required": ["pattern", "include", "regex", "case_sensitive", "limit"],
+              "additionalProperties": false
+            },
+            "output": {"matches": ["backend/taskforge/runtime.py:139"]}
+          }
+        ]
+      },
+      "expected": {
+        "terminal_status": "completed",
+        "answer_contains": ["runtime.py"],
+        "required_tools": ["workspace_grep"],
+        "forbidden_tools": ["shell.exec"],
+        "max_steps": 3
+      }
+    },
+    {
+      "id": "approval-denied",
+      "description": "An external side effect pauses for approval and recovers after denial.",
+      "task": {
+        "id": "eval-task-approval",
+        "tenant_id": "eval-tenant",
+        "user_id": "eval-user",
+        "goal": "Publish the research summary if a human approves."
+      },
+      "profile": {
+        "id": "eval-profile-approval",
+        "name": "publisher",
+        "instructions": "Respect approval decisions and report a safe fallback.",
+        "allowed_tools": ["artifact_write"],
+        "max_steps": 3
+      },
+      "scenario": {
+        "turns": [
+          {
+            "action": "artifact_write",
+            "call_id": "publish-1",
+            "arguments": {
+              "filename": "research-summary.md",
+              "content": "research summary",
+              "idempotency_key": "publish:eval-summary"
+            },
+            "idempotency_key": "publish:eval-summary"
+          },
+          {
+            "action": "final",
+            "answer": "Publication was declined, so no external side effect occurred."
+          }
+        ],
+        "tools": [
+          {
+            "name": "artifact_write",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "filename": {"type": "string"},
+                "content": {"type": "string"},
+                "idempotency_key": {"type": "string"}
+              },
+              "required": ["filename", "content", "idempotency_key"],
+              "additionalProperties": false
+            },
+            "risk": "write",
+            "side_effecting": true,
+            "requires_approval": true,
+            "output": {"artifact": {"source": "fixture://research-summary.md"}}
+          }
+        ],
+        "approval_decisions": [false]
+      },
+      "expected": {
+        "terminal_status": "completed",
+        "answer_contains": ["declined", "no external side effect"],
+        "required_tools": ["artifact_write"],
+        "forbidden_tools": ["shell.exec"],
+        "max_steps": 3
+      }
+    }
+  ]
+}

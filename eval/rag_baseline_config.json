@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "dataset_adapter": "tatqa",
+  "sampling": {
+    "strategy": "category_round_robin",
+    "limit": 100,
+    "seed": 20260804,
+    "categories": []
+  },
+  "retrieval": {
+    "kind": "bm25",
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "top_k": [1, 5, 10, 20],
+  "locked_split": "eval/splits/tatqa-dev-m0-100-v1.json"
+}

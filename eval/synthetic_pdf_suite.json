@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "suite_id": "TaskForge-Synthetic-PDF-v1",
+  "license": "CC0-1.0",
+  "documents": [
+    {
+      "document_id": "change-control",
+      "filename": "change-control.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "title": "Production Change Policy",
+          "paragraphs": [
+            "Every production change must have an owner, a tested implementation plan, and a traceable ticket before scheduling."
+          ],
+          "tables": [
+            {
+              "headers": ["Risk", "Required approvals", "Minimum lead time"],
+              "rows": [
+                ["Low", "Team lead", "2 hours"],
+                ["Medium", "Service owner", "1 business day"],
+                ["High", "Change advisory board and security", "3 business days"]
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "title": "Rollback and Evidence",
+          "paragraphs": [
+            "The operator must begin rollback within 15 minutes when a release breaches its error budget.",
+            "The evidence bundle contains the ticket, reviewed diff, test report, deployment log, and rollback outcome."
+          ],
+          "tables": [
+            {
+              "headers": ["Severity", "Maximum recovery time"],
+              "rows": [["Critical", "30 minutes"], ["Major", "2 hours"]]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "vendor-review",
+      "filename": "vendor-review.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "title": "Vendor Due Diligence",
+          "paragraphs": [
+            "A vendor tier is assigned from data sensitivity, service criticality, and subcontractor exposure."
+          ],
+          "tables": [
+            {
+              "headers": ["Tier", "Review frequency", "Insurance floor"],
+              "rows": [
+                ["Tier 1", "Every 6 months", "USD 5 million"],
+                ["Tier 2", "Annually", "USD 2 million"],
+                ["Tier 3", "Every 2 years", "USD 500 thousand"]
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "title": "Incident Escalation",
+          "paragraphs": [
+            "A vendor must notify the incident desk within four hours after confirming unauthorized access.",
+            "The procurement owner records containment evidence and the security owner validates remediation before closure."
+          ],
+          "tables": [
+            {
+              "headers": ["Incident class", "Executive escalation"],
+              "rows": [["Data breach", "Immediate"], ["Service outage", "After 60 minutes"]]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "access-review",
+      "filename": "access-review.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "title": "Privileged Access Review",
+          "paragraphs": [
+            "Privileged access is granted to a named person and may not be shared through team accounts."
+          ],
+          "tables": [
+            {
+              "headers": ["Role", "Reviewer", "Cadence"],
+              "rows": [
+                ["Database administrator", "Data platform owner", "Monthly"],
+                ["Cloud administrator", "Infrastructure owner", "Monthly"],
+                ["Billing administrator", "Finance controller", "Quarterly"]
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "title": "Expiry and Exceptions",
+          "paragraphs": [
+            "Emergency privileged access expires after eight hours unless the incident commander renews it.",
+            "An exception requires a business owner, an expiry date, compensating controls, and security approval."
+          ],
+          "tables": [
+            {
+              "headers": ["Evidence", "Retention"],
+              "rows": [["Approval record", "2 years"], ["Session log", "1 year"]]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "high-risk-approvals",
+      "question": "Who must approve a high risk production change?",
+      "answer": "The change advisory board and security.",
+      "category": "table",
+      "evidence": [{"document_id": "change-control", "pages": [1]}]
+    },
+    {
+      "case_id": "high-risk-lead-time",
+      "question": "What is the minimum lead time for a high risk change?",
+      "answer": "3 business days.",
+      "category": "table",
+      "evidence": [{"document_id": "change-control", "pages": [1]}]
+    },
+    {
+      "case_id": "rollback-window",
+      "question": "How quickly must rollback begin after an error budget breach?",
+      "answer": "Within 15 minutes.",
+      "category": "text",
+      "evidence": [{"document_id": "change-control", "pages": [2]}]
+    },
+    {
+      "case_id": "change-combined",
+      "question": "For a high risk change, state both the required approvers and the rollback start window.",
+      "answer": "The change advisory board and security approve it, and rollback begins within 15 minutes.",
+      "category": "cross-page",
+      "evidence": [{"document_id": "change-control", "pages": [1, 2]}]
+    },
+    {
+      "case_id": "tier-one-review",
+      "question": "How often is a Tier 1 vendor reviewed?",
+      "answer": "Every 6 months.",
+      "category": "table",
+      "evidence": [{"document_id": "vendor-review", "pages": [1]}]
+    },
+    {
+      "case_id": "tier-one-insurance",
+      "question": "What insurance floor applies to a Tier 1 vendor?",
+      "answer": "USD 5 million.",
+      "category": "table",
+      "evidence": [{"document_id": "vendor-review", "pages": [1]}]
+    },
+    {
+      "case_id": "vendor-notification",
+      "question": "When must a vendor notify the incident desk after unauthorized access is confirmed?",
+      "answer": "Within four hours.",
+      "category": "text",
+      "evidence": [{"document_id": "vendor-review", "pages": [2]}]
+    },
+    {
+      "case_id": "vendor-combined",
+      "question": "For a Tier 1 vendor, combine the review frequency with the unauthorized access notification deadline.",
+      "answer": "Review every 6 months and notify within four hours.",
+      "category": "cross-page",
+      "evidence": [{"document_id": "vendor-review", "pages": [1, 2]}]
+    },
+    {
+      "case_id": "database-reviewer",
+      "question": "Who reviews database administrator access?",
+      "answer": "The data platform owner.",
+      "category": "table",
+      "evidence": [{"document_id": "access-review", "pages": [1]}]
+    },
+    {
+      "case_id": "billing-cadence",
+      "question": "What is the review cadence for billing administrator access?",
+      "answer": "Quarterly.",
+      "category": "table",
+      "evidence": [{"document_id": "access-review", "pages": [1]}]
+    },
+    {
+      "case_id": "emergency-expiry",
+      "question": "When does emergency privileged access expire without renewal?",
+      "answer": "After eight hours.",
+      "category": "text",
+      "evidence": [{"document_id": "access-review", "pages": [2]}]
+    },
+    {
+      "case_id": "access-combined",
+      "question": "Who reviews database administrator access and how long is its approval record retained?",
+      "answer": "The data platform owner reviews it and the approval record is retained for 2 years.",
+      "category": "cross-page",
+      "evidence": [{"document_id": "access-review", "pages": [1, 2]}]
+    }
+  ]
+}
