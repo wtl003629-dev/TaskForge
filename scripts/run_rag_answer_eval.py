@@ -48,6 +48,14 @@ def parser() -> argparse.ArgumentParser:
         help="Use real semantic dense embeddings for the qdrant retriever.",
     )
     value.add_argument(
+        "--agentic",
+        action="store_true",
+        help=(
+            "Agentic mode: the model drives multi-turn knowledge_search through "
+            "the real AgentRuntime before answering (vs a single retrieve+answer)."
+        ),
+    )
+    value.add_argument(
         "--max-cases",
         type=int,
         default=None,
@@ -103,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         dataset=ExperimentDatasetConfig(kind=dataset_kind),
         retrieval=ExperimentRetrievalConfig(semantic_embedding=args.semantic),
         retriever=retriever,
+        mode="agentic" if args.agentic else "naive",
         model=model,
         max_cases=args.max_cases,
     )

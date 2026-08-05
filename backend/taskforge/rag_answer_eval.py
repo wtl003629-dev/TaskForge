@@ -22,7 +22,9 @@ from typing import Any, Literal, Sequence
 from pydantic import Field
 
 from . import __version__
-from .domain import AgentProfile, StrictModel, Task, utc_now
+from .builtins import create_tool_registry
+from .context import ContextAssembler
+from .domain import AgentProfile, RunStatus, StrictModel, Task, utc_now
 from .hybrid_retrieval import (
     BM25Index,
     DeterministicHashEmbedder,
@@ -30,6 +32,8 @@ from .hybrid_retrieval import (
     LexicalOverlapFallbackReranker,
     QdrantHybridIndex,
 )
+from .knowledge import InMemoryKnowledgeStore, KnowledgeChunk
+from .memory import InMemoryMemoryStore
 from .providers import ModelProvider
 from .rag_evaluation import (
     RAGEvalCase,
@@ -44,11 +48,14 @@ from .rag_experiment import (
     _deduped_document_ids,
     _hybrid_chunks,
     _prepare_dataset,
+    _PreparedDataset,
     _search_request,
     _sha256_bytes,
     _source_hashes,
     _write_new,
 )
+from .runtime import AgentRuntime
+from .tooling import CapabilityPolicy
 
 RetrieverName = Literal["bm25", "qdrant_rrf", "qdrant_rrf_rerank"]
 
@@ -62,6 +69,8 @@ class RAGAnswerEvalConfig(StrictModel):
     filters: ExperimentFilterConfig = Field(default_factory=ExperimentFilterConfig)
     retriever: RetrieverName = "bm25"
     model: str = Field(min_length=1)
+    mode: Literal["naive", "agentic"] = "naive"
+    agent_max_steps: int = Field(default=6, ge=1, le=20)
     evidence_top_k: int = Field(default=5, ge=1, le=20)
     max_evidence_chars: int = Field(default=16_000, ge=500, le=80_000)
     max_cases: int | None = Field(default=None, ge=1)
@@ -120,6 +129,88 @@ async def _generate_answer(
     return turn.final_answer
 
 
+class _InMemoryCheckpointStore:
+    """Keeps run states in memory; the eval needs no durable checkpoints."""
+
+    def __init__(self) -> None:
+        self.saved: list[Any] = []
+
+    def save(self, state: Any) -> None:
+        self.saved.append(state.model_copy(deep=True))
+
+
+def _build_agentic_runtime(
+    provider: ModelProvider,
+    prepared: _PreparedDataset,
+    *,
+    staging: Path,
+) -> AgentRuntime:
+    """Build a real AgentRuntime whose knowledge base is the evaluation corpus."""
+
+    chunks = [
+        KnowledgeChunk(
+            chunk_id=document.document_id,
+            tenant_id="local",
+            text=document.text,
+            source_uri=document.source_uri,
+            document_id=document.document_id,
+            acl=frozenset({"user:demo"}),
+            metadata={
+                "knowledge_base_id": "answer-eval",
+                "evidence_id": document.document_id,
+            },
+        )
+        for document in prepared.dataset.documents
+    ]
+    knowledge = InMemoryKnowledgeStore(chunks)
+    memory = InMemoryMemoryStore()
+    registry = create_tool_registry(
+        workspace_root=staging,
+        artifact_root=staging / "artifacts",
+        knowledge_store=knowledge,
+        memory_store=memory,
+    )
+    return AgentRuntime(
+        provider=provider,
+        registry=registry,
+        policy=CapabilityPolicy(registry),
+        checkpoint=_InMemoryCheckpointStore(),
+        context=ContextAssembler(knowledge, memory),
+    )
+
+
+async def _agentic_answer(
+    runtime: AgentRuntime,
+    case: RAGEvalCase,
+    config: RAGAnswerEvalConfig,
+) -> tuple[str | None, int]:
+    """Let the model drive retrieval (multiple knowledge_search) before answering."""
+
+    task = Task(
+        tenant_id="local",
+        user_id="demo",
+        goal=case.query,
+    )
+    profile = AgentProfile(
+        id="answer-eval-agent",
+        name="Answer eval agent",
+        instructions=(
+            "Answer the research question by retrieving evidence from the "
+            "knowledge base. You may call knowledge_search one or more times to "
+            "gather enough evidence. Then answer with the fact or a brief Yes/No."
+        ),
+        model=config.model,
+        allowed_tools=["knowledge_search"],
+        knowledge_base_ids=["answer-eval"],
+        max_steps=config.agent_max_steps,
+    )
+    state = await runtime.run(task, profile)
+    steps = len(state.steps)
+    if state.status != RunStatus.COMPLETED or not state.final_answer:
+        return None, steps
+    return state.final_answer, steps
+
+
 def _indexes(
     chunks: Sequence[Any],
     config: RAGAnswerEvalConfig,
@@ -173,37 +264,48 @@ async def run_rag_answer_eval(
     )
     try:
         prepared = _prepare_dataset(config, repository, staging)
-        chunks = _hybrid_chunks(prepared.dataset, prepared.cases, config)
-        indexes = _indexes(chunks, config)
-        index = indexes[config.retriever]
+        if config.mode == "agentic":
+            runtime = _build_agentic_runtime(provider, prepared, staging=staging)
+            index = None
+        else:
+            chunks = _hybrid_chunks(prepared.dataset, prepared.cases, config)
+            indexes = _indexes(chunks, config)
+            index = indexes[config.retriever]
         cases = prepared.cases
         if config.max_cases is not None:
             cases = cases[: config.max_cases]
 
         rows: list[dict[str, Any]] = []
         for case in cases:
-            request = _search_request(
-                case.query,
-                config,
-                rerank=config.retriever == "qdrant_rrf_rerank",
-            )
-            response = index.search(request)
-            retrieved_ids = _deduped_document_ids(
-                response.hits, max_documents=config.evidence_top_k
-            )
-            # Feed the model the top retrieved chunk texts directly (not a
-            # whole-document truncation) so the answer sentence is not cut away.
-            evidence = [
-                hit.chunk.text
-                for hit in response.hits[: config.evidence_top_k]
-            ]
-            answer = await _generate_answer(
-                provider,
-                case,
-                evidence,
-                model=config.model,
-                max_evidence_chars=config.max_evidence_chars,
-            )
+            if config.mode == "agentic":
+                answer, steps = await _agentic_answer(runtime, case, config)
+                retrieved_ids: list[str] = []
+                mode = "agentic"
+            else:
+                request = _search_request(
+                    case.query,
+                    config,
+                    rerank=config.retriever == "qdrant_rrf_rerank",
+                )
+                response = index.search(request)
+                retrieved_ids = _deduped_document_ids(
+                    response.hits, max_documents=config.evidence_top_k
+                )
+                # Feed the model the top retrieved chunk texts directly (not a
+                # whole-document truncation) so the answer sentence is not cut away.
+                evidence = [
+                    hit.chunk.text
+                    for hit in response.hits[: config.evidence_top_k]
+                ]
+                answer = await _generate_answer(
+                    provider,
+                    case,
+                    evidence,
+                    model=config.model,
+                    max_evidence_chars=config.max_evidence_chars,
+                )
+                steps = 0
+                mode = "naive"
             predicted = answer or ""
             exact = answer_exact_match(predicted, case.answer)
             f1 = answer_token_f1(predicted, case.answer)
@@ -219,6 +321,8 @@ async def run_rag_answer_eval(
                     "token_f1": f1,
                     "model": config.model,
                     "retriever": config.retriever,
+                    "mode": mode,
+                    "steps": steps,
                 }
             )
 
@@ -236,6 +340,7 @@ async def run_rag_answer_eval(
             }
         metrics: dict[str, Any] = {
             "schema_version": "1.0",
+            "mode": config.mode,
             "retriever": config.retriever,
             "model": config.model,
             "total_cases": len(rows),
