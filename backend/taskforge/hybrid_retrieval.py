@@ -15,7 +15,7 @@ import hashlib
 import json
 import math
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any, Literal, Protocol, runtime_checkable
 from uuid import UUID, uuid5
 
@@ -433,14 +433,21 @@ class BM25Index:
         k1: float = 1.5,
         b: float = 0.75,
         reranker: Reranker | None = None,
+        field_weights: Mapping[str, float] | None = None,
     ) -> None:
         if not math.isfinite(k1) or k1 <= 0:
             raise ValueError("k1 must be a finite positive number")
         if not math.isfinite(b) or not 0 <= b <= 1:
             raise ValueError("b must be a finite number between 0 and 1")
+        weights: dict[str, float] = {}
+        for field, weight in (field_weights or {}).items():
+            if not isinstance(weight, (int, float)) or not math.isfinite(weight) or weight <= 0:
+                raise ValueError("field weights must be finite positive numbers")
+            weights[str(field)] = float(weight)
         self.k1 = float(k1)
         self.b = float(b)
         self.reranker = reranker
+        self._field_weights = weights
         self._chunks: dict[tuple[str, str], HybridChunk] = {}
         for chunk in chunks:
             self.upsert(chunk)
@@ -455,7 +462,16 @@ class BM25Index:
         if not eligible:
             return _response("python_bm25", None, request, [], 0)
 
-        token_counts = {chunk.chunk_id: Counter(tokenise(chunk.text)) for chunk in eligible}
+        def _weighted_counts(chunk: HybridChunk) -> Counter[str]:
+            counts = Counter(tokenise(chunk.text))
+            for field, weight in self._field_weights.items():
+                value = chunk.metadata.get(field)
+                if isinstance(value, str) and value:
+                    for term in tokenise(value):
+                        counts[term] += weight
+            return counts
+
+        token_counts = {chunk.chunk_id: _weighted_counts(chunk) for chunk in eligible}
         lengths = {chunk_id: sum(counts.values()) for chunk_id, counts in token_counts.items()}
         average_length = sum(lengths.values()) / len(eligible)
         document_frequencies: Counter[str] = Counter()
@@ -486,7 +502,7 @@ class BM25Index:
                 term_scores.append(
                     BM25TermContribution(
                         term=term,
-                        term_frequency=frequency,
+                        term_frequency=int(frequency),
                         document_frequency=df,
                         inverse_document_frequency=idf,
                         length_normalized_tf=normalized_tf,
@@ -504,7 +520,7 @@ class BM25Index:
                     retrieval_sources=["python_bm25"],
                     bm25_explanation=BM25Explanation(
                         corpus_size_after_filters=corpus_size,
-                        document_length=document_length,
+                        document_length=int(document_length),
                         average_document_length=average_length,
                         k1=self.k1,
                         b=self.b,

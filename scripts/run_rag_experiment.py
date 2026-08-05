@@ -90,6 +90,23 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     value.add_argument(
+        "--query-expansion",
+        action="store_true",
+        help=(
+            "Deterministic pseudo-relevance feedback: expand the lexical query "
+            "with terms from a first-pass retrieval. Off by default."
+        ),
+    )
+    value.add_argument(
+        "--bm25-field-weights",
+        type=str,
+        default=None,
+        help=(
+            "BM25 metadata field weights as field=weight pairs, e.g. "
+            "title=3.0,source=2.0. Off by default."
+        ),
+    )
+    value.add_argument(
         "--output",
         type=Path,
         help="Exact output run directory; an existing directory is never overwritten.",
@@ -148,6 +165,22 @@ def _with_overrides(
         retrieval["semantic_model"] = args.semantic_model
     if args.chunking:
         retrieval["chunking"] = True
+    if args.query_expansion:
+        retrieval["query_expansion"] = True
+    if args.bm25_field_weights is not None:
+        weights: dict[str, float] = {}
+        for pair in args.bm25_field_weights.split(","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            field, _, raw = pair.partition("=")
+            field = field.strip()
+            if not field or not raw.strip():
+                raise ValueError(
+                    "--bm25-field-weights must be field=weight pairs"
+                )
+            weights[field] = float(raw)
+        retrieval["bm25_field_weights"] = weights
     payload["retrieval"] = retrieval
     return RAGExperimentConfig.model_validate(payload)
 

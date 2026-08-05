@@ -123,6 +123,36 @@ def test_pure_python_bm25_is_explainable_and_filters_before_statistics() -> None
     assert result.filters_applied_before_ranking.versions == ["1"]
 
 
+def test_bm25_field_weights_boost_metadata_fields() -> None:
+    def titled(chunk_id: str, body: str, title: str) -> HybridChunk:
+        base = chunk(chunk_id, body)
+        return base.model_copy(
+            update={"metadata": {**base.metadata, "title": title}}
+        )
+
+    weighted = BM25Index(
+        [
+            titled("title-only", "unrelated content words here", "renewal"),
+            titled("body-match", "renewal and more content here", "unrelated"),
+        ],
+        field_weights={"title": 10.0},
+    )
+    result = weighted.search(request(query="renewal", top_k=2, candidate_k=2))
+    assert result.hits[0].chunk.chunk_id == "title-only"
+
+    plain = BM25Index(
+        [
+            titled("title-only", "unrelated content words here", "renewal"),
+            titled("body-match", "renewal and more content here", "unrelated"),
+        ]
+    )
+    result = plain.search(request(query="renewal", top_k=2, candidate_k=2))
+    assert result.hits[0].chunk.chunk_id == "body-match"
+
+    with pytest.raises(ValueError, match="field weights"):
+        BM25Index([], field_weights={"title": 0})
+
+
 def test_qdrant_uses_named_vectors_real_server_rrf_and_prefetch_filters() -> None:
     client = RecordingClient()
     index = QdrantHybridIndex(

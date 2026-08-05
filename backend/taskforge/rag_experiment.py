@@ -40,6 +40,7 @@ from .hybrid_retrieval import (
     LexicalOverlapFallbackReranker,
     QdrantHybridIndex,
 )
+from .knowledge import tokenise
 from .rag_baseline import (
     load_locked_split,
     select_locked_cases,
@@ -143,6 +144,37 @@ def _document_id_from_chunk_id(chunk_id: str) -> str:
     return chunk_id.split(_CHUNK_SEP, 1)[0]
 
 
+def _expand_with_prf(
+    index: BM25Index,
+    request: HybridSearchRequest,
+    *,
+    first_pass_k: int = 5,
+    added_terms: int = 6,
+) -> str | None:
+    """Deterministic pseudo-relevance feedback query expansion.
+
+    A first-pass retrieval surfaces the top chunks; the most frequent terms in
+    them that are not already in the query are appended to the query.  This adds
+    new terms without an LLM, and is honest: the added terms are grounded in
+    retrieved corpus text, and the extra latency is measured in the stage.
+    """
+
+    probe = request.model_copy(update={"top_k": first_pass_k})
+    response = index.search(probe)
+    if not response.hits:
+        return None
+    query_terms = set(tokenise(request.query))
+    term_scores: Counter[str] = Counter()
+    for hit in response.hits:
+        for term, count in Counter(tokenise(hit.chunk.text)).items():
+            if term not in query_terms:
+                term_scores[term] += count
+    selected = [term for term, _ in term_scores.most_common(added_terms)]
+    if not selected:
+        return None
+    return f"{request.query} {' '.join(selected)}"
+
+
 def _deduped_document_ids(
     hits: Sequence[Any],
     *,
@@ -204,11 +236,16 @@ class ExperimentRetrievalConfig(StrictModel):
     chunking: bool = False
     chunk_max_chars: int = Field(default=1500, ge=200, le=20_000)
     chunk_overlap_chars: int = Field(default=150, ge=0, le=10_000)
+    query_expansion: bool = False
+    bm25_field_weights: dict[str, float] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def chunk_overlap_is_smaller_than_budget(self) -> ExperimentRetrievalConfig:
         if self.chunking and self.chunk_overlap_chars >= self.chunk_max_chars:
             raise ValueError("chunk_overlap_chars must be smaller than chunk_max_chars")
+        for field, weight in self.bm25_field_weights.items():
+            if not isinstance(weight, (int, float)) or weight <= 0:
+                raise ValueError("bm25_field_weights must be finite positive numbers")
         return self
 
     @model_validator(mode="after")
@@ -731,6 +768,7 @@ def _run_stages(
         chunks,
         k1=config.retrieval.bm25_k1,
         b=config.retrieval.bm25_b,
+        field_weights=config.retrieval.bm25_field_weights,
     )
     if config.retrieval.semantic_embedding:
         mode_label = "semantic_dense"
@@ -779,6 +817,10 @@ def _run_stages(
         for case in prepared.cases:
             request = _search_request(case.query, config, rerank=rerank)
             started = timer_ns()
+            if stage == "lexical_bm25" and config.retrieval.query_expansion:
+                expanded = _expand_with_prf(lexical, request)
+                if expanded is not None:
+                    request = request.model_copy(update={"query": expanded})
             response = index.search(request)
             ended = timer_ns()
             if ended < started:
@@ -805,6 +847,7 @@ def _run_stages(
                     "case_id": case.case_id,
                     "category": case.category,
                     "query": case.query,
+                    "search_query": request.query,
                     "relevant_ids": case.relevant_ids,
                     "retrieved_ids": retrieved_ids,
                     "scores": [hit.score for hit in response.hits],
@@ -866,6 +909,8 @@ def _run_stages(
             "overlap_chars": config.retrieval.chunk_overlap_chars,
         },
         "chunk_count": chunk_count,
+        "query_expansion": config.retrieval.query_expansion,
+        "bm25_field_weights": dict(config.retrieval.bm25_field_weights),
         "stages": stage_metrics,
     }
     return all_rows, metrics
@@ -1015,6 +1060,8 @@ def run_rag_experiment(
                 "inaccessible_filter_probes": 2,
                 "chunking": metrics["chunking"],
                 "chunk_count": metrics["chunk_count"],
+                "query_expansion": metrics["query_expansion"],
+                "bm25_field_weights": metrics["bm25_field_weights"],
             },
             "code": {
                 "package": "taskforge-agent",

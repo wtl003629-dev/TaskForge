@@ -610,6 +610,19 @@ def test_semantic_embedding_is_opt_in_and_never_the_offline_default() -> None:
     assert semantic.semantic_model == "BAAI/bge-small-en-v1.5"
 
 
+def test_query_expansion_and_field_weights_are_opt_in() -> None:
+    default = ExperimentRetrievalConfig()
+    assert default.query_expansion is False
+    assert default.bm25_field_weights == {}
+    expanded = ExperimentRetrievalConfig(
+        query_expansion=True, bm25_field_weights={"title": 3.0}
+    )
+    assert expanded.query_expansion is True
+    assert expanded.bm25_field_weights == {"title": 3.0}
+    with pytest.raises(ValidationError, match="bm25_field_weights"):
+        ExperimentRetrievalConfig(bm25_field_weights={"title": -1})
+
+
 def test_config_and_publication_fail_closed(tmp_path: Path) -> None:
     with pytest.raises(ValidationError, match="complete M1 ablation"):
         ExperimentRetrievalConfig(stages=["lexical_bm25"])
