@@ -297,7 +297,7 @@ def test_manifest_hashes_cover_config_data_code_predictions_metrics_and_pdfs(
     assert manifest["dataset"]["suite_sha256"] == sha256_file(suite_path)
     assert len(manifest["dataset"]["normalized_sha256"]) == 64
     assert len(manifest["code"]["sha256"]) == 64
-    assert len(manifest["code"]["source_sha256"]) == 6
+    assert len(manifest["code"]["source_sha256"]) == 7
     assert manifest["code"]["sha256"] == _canonical_hash(
         manifest["code"]["source_sha256"]
     )

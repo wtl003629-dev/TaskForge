@@ -1010,6 +1010,7 @@ def _source_hashes() -> Mapping[str, str]:
     names = (
         "rag_experiment.py",
         "rag_evaluation.py",
+        "rag_answer_eval.py",
         "rag_baseline.py",
         "hybrid_retrieval.py",
         "synthetic_pdf_eval.py",
