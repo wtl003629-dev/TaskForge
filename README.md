@@ -1,5 +1,7 @@
 # TaskForge
 
+[![CI](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml/badge.svg)](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml)
+
 TaskForge 是一个 **Provider-neutral、权限受控、可恢复的通用 Agent Runtime**。它参考了截图项目的 Agent Profile、RAG、分层记忆、工具与审批等产品能力，同时采用 Coding Agent 的 Harness 思路：模型只提出 `ToolRequest`，宿主负责权限、参数校验、执行、幂等、checkpoint 和评测。
 
 它不是“套一个聊天页面”，也不把模型当授权系统。
