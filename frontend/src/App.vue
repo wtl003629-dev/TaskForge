@@ -100,6 +100,7 @@ const recentReviewAudit = computed(() =>
   [...(reviewDetail.value?.auditEvents ?? [])].reverse().slice(0, 10),
 )
 const currentReviewCase = computed(() => reviewDetail.value?.case ?? null)
+const caseNeedsEvidence = computed(() => caseKind.value !== 'research_survey')
 const reviewIsResolved = computed(() =>
   currentReviewCase.value
     ? ['approved', 'rejected', 'failed'].includes(currentReviewCase.value.status)
@@ -163,6 +164,10 @@ const roleText: Record<string, string> = {
   compliance_reviewer: '合规审查员',
   risk_reviewer: '风险评估员',
   decision_synthesizer: '决策汇总员',
+  retrieval_planner: '检索规划员',
+  source_evaluator: '来源甄别员',
+  synthesis_writer: '综合综述员',
+  critical_reviewer: '批判审查员',
 }
 
 function readableStatus(status: string): string {
@@ -308,7 +313,17 @@ async function handleCreateReviewCase(): Promise<void> {
     evidenceLocator: caseEvidenceLocator.value.trim(),
     evidenceExcerpt: caseEvidenceExcerpt.value.trim(),
   }
-  if (Object.values(input).some((value) => !value)) return
+  const requiredValues = caseNeedsEvidence.value
+    ? [
+        input.title,
+        input.requestSummary,
+        input.businessJustification,
+        input.evidenceId,
+        input.evidenceLocator,
+        input.evidenceExcerpt,
+      ]
+    : [input.title, input.requestSummary, input.businessJustification]
+  if (requiredValues.some((value) => !value)) return
 
   reviewLoading.value = true
   reviewError.value = ''
@@ -957,7 +972,11 @@ onBeforeUnmount(stopPolling)
               <select v-model="caseKind" :disabled="reviewLoading">
                 <option value="enterprise_change">企业变更审查</option>
                 <option value="enterprise_admission">企业准入审查</option>
+                <option value="research_survey">文献综述</option>
               </select>
+              <p v-if="!caseNeedsEvidence" class="field-hint">
+                文献综述：只需研究问题，证据来自真实检索到的文献。
+              </p>
             </label>
             <label class="field">
               <span>标题</span>
@@ -974,18 +993,18 @@ onBeforeUnmount(stopPolling)
             <div class="form-pair">
               <label class="field">
                 <span>证据 ID</span>
-                <input v-model="caseEvidenceId" required maxlength="240" />
+                <input v-model="caseEvidenceId" :required="caseNeedsEvidence" maxlength="240" />
               </label>
               <label class="field">
                 <span>证据定位符</span>
-                <input v-model="caseEvidenceLocator" required maxlength="2048" />
+                <input v-model="caseEvidenceLocator" :required="caseNeedsEvidence" maxlength="2048" />
               </label>
             </div>
             <label class="field">
               <span>证据摘录</span>
               <textarea
                 v-model="caseEvidenceExcerpt"
-                required
+                :required="caseNeedsEvidence"
                 rows="4"
                 maxlength="16000"
                 placeholder="粘贴能支持审查结论的原文片段；该内容会进入本案件隔离的知识库。"
@@ -997,7 +1016,7 @@ onBeforeUnmount(stopPolling)
             <button
               class="primary-button"
               type="submit"
-              :disabled="reviewLoading || !caseTitle.trim() || !caseSummary.trim() || !caseJustification.trim() || !caseEvidenceId.trim() || !caseEvidenceLocator.trim() || !caseEvidenceExcerpt.trim()"
+              :disabled="reviewLoading || !caseTitle.trim() || !caseSummary.trim() || !caseJustification.trim() || (caseNeedsEvidence && (!caseEvidenceId.trim() || !caseEvidenceLocator.trim() || !caseEvidenceExcerpt.trim()))"
             >
               {{ reviewLoading ? '正在处理…' : '保存为草稿' }}
               <span aria-hidden="true">↗</span>

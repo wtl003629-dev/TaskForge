@@ -142,7 +142,7 @@ export interface ApiResult<T> {
   warning?: string
 }
 
-export type ReviewCaseKind = 'enterprise_change' | 'enterprise_admission'
+export type ReviewCaseKind = 'enterprise_change' | 'enterprise_admission' | 'research_survey'
 
 export type ReviewCaseStatus =
   | 'draft'
