@@ -63,7 +63,7 @@ class RAGAnswerEvalConfig(StrictModel):
     retriever: RetrieverName = "bm25"
     model: str = Field(min_length=1)
     evidence_top_k: int = Field(default=5, ge=1, le=20)
-    max_evidence_chars: int = Field(default=4_000, ge=500, le=40_000)
+    max_evidence_chars: int = Field(default=16_000, ge=500, le=80_000)
     max_cases: int | None = Field(default=None, ge=1)
 
 
@@ -176,10 +176,6 @@ async def run_rag_answer_eval(
         chunks = _hybrid_chunks(prepared.dataset, prepared.cases, config)
         indexes = _indexes(chunks, config)
         index = indexes[config.retriever]
-        document_text = {
-            document.document_id: document.text
-            for document in prepared.dataset.documents
-        }
         cases = prepared.cases
         if config.max_cases is not None:
             cases = cases[: config.max_cases]
@@ -195,7 +191,12 @@ async def run_rag_answer_eval(
             retrieved_ids = _deduped_document_ids(
                 response.hits, max_documents=config.evidence_top_k
             )
-            evidence = [document_text[doc_id] for doc_id in retrieved_ids if doc_id in document_text]
+            # Feed the model the top retrieved chunk texts directly (not a
+            # whole-document truncation) so the answer sentence is not cut away.
+            evidence = [
+                hit.chunk.text
+                for hit in response.hits[: config.evidence_top_k]
+            ]
             answer = await _generate_answer(
                 provider,
                 case,
