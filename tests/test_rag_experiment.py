@@ -614,13 +614,107 @@ def test_query_expansion_and_field_weights_are_opt_in() -> None:
     default = ExperimentRetrievalConfig()
     assert default.query_expansion is False
     assert default.bm25_field_weights == {}
+    assert default.graph_fusion is False
     expanded = ExperimentRetrievalConfig(
         query_expansion=True, bm25_field_weights={"title": 3.0}
     )
     assert expanded.query_expansion is True
     assert expanded.bm25_field_weights == {"title": 3.0}
+    fused = ExperimentRetrievalConfig(graph_fusion=True, graph_max_neighbors=8)
+    assert fused.graph_fusion is True
+    assert fused.graph_max_neighbors == 8
     with pytest.raises(ValidationError, match="bm25_field_weights"):
         ExperimentRetrievalConfig(bm25_field_weights={"title": -1})
+
+
+def test_graph_fused_stage_runs_and_scores(tmp_path: Path) -> None:
+    repository = tmp_path / "repo"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    split_path = repository / "eval" / "splits" / "locked.json"
+    corpus_path.parent.mkdir(parents=True)
+    corpus_path.write_text(
+        json.dumps(
+            [
+                {
+                    "title": "A",
+                    "author": "u1",
+                    "source": "Ex",
+                    "published_at": "2024-01-01T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/a",
+                    "body": "Apple device news covered by The Verge.",
+                },
+                {
+                    "title": "B",
+                    "author": "u2",
+                    "source": "Ex",
+                    "published_at": "2024-01-02T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/b",
+                    "body": "Apple investigation covered by TechCrunch.",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    queries_path.write_text(
+        json.dumps(
+            [
+                {
+                    "query": "Apple news",
+                    "answer": "yes",
+                    "question_type": "inference_query",
+                    "evidence_list": [
+                        {"url": "https://ex.com/a", "fact": "a"},
+                        {"url": "https://ex.com/b", "fact": "b"},
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    split_path.parent.mkdir(parents=True)
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+    split = LockedSplitManifest(
+        split_id="fixture-locked",
+        dataset="MultiHop-RAG",
+        source_split="fixture",
+        source_sha256=sha256_file(queries_path),
+        selection={"locked": True},
+        case_ids=[case.case_id for case in dataset.cases],
+        category_counts=dict(Counter(case.category for case in dataset.cases)),
+    )
+    split_path.write_text(split.model_dump_json(), encoding="utf-8")
+    config = RAGExperimentConfig(
+        dataset=ExperimentDatasetConfig(
+            kind="multihop_rag_locked",
+            multihop_rag_queries_path=".taskforge/eval-cache/MultiHopRAG.json",
+            multihop_rag_corpus_path=".taskforge/eval-cache/corpus.json",
+            multihop_rag_locked_split_path="eval/splits/locked.json",
+        ),
+        retrieval=ExperimentRetrievalConfig(
+            top_k=[1, 2], candidate_k=4, hash_dimension=16, graph_fusion=True
+        ),
+    )
+
+    result = run_rag_experiment(
+        output_dir=tmp_path / "graph-run",
+        config=config,
+        repository_root=repository,
+        created_at=FIXED_TIME,
+        timer_ns=StepClock(),
+    )
+
+    assert "graph_fused" in result.metrics["stages"]
+    assert result.metrics["stages"]["graph_fused"]["backend"] == "local_graph_rrf"
+    assert (
+        result.metrics["stages"]["graph_fused"]["retrieval"]["summary"][
+            "total_cases"
+        ]
+        == 1
+    )
+    assert result.manifest["ablation"]["graph_fusion"] is True
 
 
 def test_config_and_publication_fail_closed(tmp_path: Path) -> None:

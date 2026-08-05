@@ -41,6 +41,7 @@ from .hybrid_retrieval import (
     QdrantHybridIndex,
 )
 from .knowledge import tokenise
+from .local_graph import LocalDocumentGraph
 from .rag_baseline import (
     load_locked_split,
     select_locked_cases,
@@ -60,7 +61,12 @@ from .synthetic_pdf_eval import (
     load_generated_page_dataset,
 )
 
-StageName = Literal["lexical_bm25", "qdrant_rrf", "qdrant_rrf_rerank"]
+StageName = Literal[
+    "lexical_bm25",
+    "qdrant_rrf",
+    "qdrant_rrf_rerank",
+    "graph_fused",
+]
 DatasetKind = Literal["synthetic_pdf", "tatqa_locked", "multihop_rag_locked"]
 REQUIRED_STAGES: tuple[StageName, ...] = (
     "lexical_bm25",
@@ -175,6 +181,47 @@ def _expand_with_prf(
     return f"{request.query} {' '.join(selected)}"
 
 
+def _fuse_rrf(
+    rankings: Sequence[Sequence[str]],
+    *,
+    k: int = 60,
+    limit: int,
+) -> list[str]:
+    """Weighted reciprocal-rank fusion of ranked document lists."""
+
+    scores: dict[str, float] = {}
+    for ranking in rankings:
+        for rank, document_id in enumerate(ranking, start=1):
+            scores[document_id] = scores.get(document_id, 0.0) + 1.0 / (k + rank)
+    ordered = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
+    return [document_id for document_id, _ in ordered[:limit]]
+
+
+def _graph_fused_search(
+    graph: LocalDocumentGraph,
+    lexical: BM25Index,
+    config: RAGExperimentConfig,
+    case_query: str,
+) -> tuple[list[str], str]:
+    """Fuse the lexical document ranking with one-hop graph neighbors by RRF."""
+
+    seed_request = _search_request(case_query, config, rerank=False).model_copy(
+        update={"top_k": config.retrieval.candidate_k}
+    )
+    response = lexical.search(seed_request)
+    lexical_documents = _deduped_document_ids(
+        response.hits, max_documents=config.retrieval.candidate_k
+    )
+    graph_documents = graph.search(
+        case_query, max_results=config.retrieval.graph_max_neighbors
+    )
+    fused = _fuse_rrf(
+        [lexical_documents, graph_documents],
+        limit=max(config.retrieval.top_k),
+    )
+    return fused, "local_graph_rrf"
+
+
 def _deduped_document_ids(
     hits: Sequence[Any],
     *,
@@ -238,6 +285,8 @@ class ExperimentRetrievalConfig(StrictModel):
     chunk_overlap_chars: int = Field(default=150, ge=0, le=10_000)
     query_expansion: bool = False
     bm25_field_weights: dict[str, float] = Field(default_factory=dict)
+    graph_fusion: bool = False
+    graph_max_neighbors: int = Field(default=12, ge=1, le=100)
 
     @model_validator(mode="after")
     def chunk_overlap_is_smaller_than_budget(self) -> ExperimentRetrievalConfig:
@@ -805,37 +854,61 @@ def _run_stages(
         "qdrant_rrf_rerank": (qdrant, True),
     }
     expected_filter = _expected_filter(config)
+    stages = list(config.retrieval.stages)
+    if config.retrieval.graph_fusion:
+        stages.append("graph_fused")
+    graph = (
+        LocalDocumentGraph(
+            chunk
+            for chunk in chunks
+            if not chunk.chunk_id.startswith(_PROBE_PREFIX)
+        )
+        if config.retrieval.graph_fusion
+        else None
+    )
     all_rows: list[Mapping[str, Any]] = []
     stage_metrics: dict[str, Any] = {}
     case_ids = [case.case_id for case in prepared.cases]
-    for stage in config.retrieval.stages:
-        index, rerank = indexes[stage]
+    for stage in stages:
         predictions: list[RetrievalPrediction] = []
         durations_ms: list[float] = []
         rows: list[Mapping[str, Any]] = []
         observed_backend: str | None = None
+        rerank = stage == "qdrant_rrf_rerank"
+        index = indexes[stage][0] if stage != "graph_fused" else None
         for case in prepared.cases:
             request = _search_request(case.query, config, rerank=rerank)
             started = timer_ns()
-            if stage == "lexical_bm25" and config.retrieval.query_expansion:
-                expanded = _expand_with_prf(lexical, request)
-                if expanded is not None:
-                    request = request.model_copy(update={"query": expanded})
-            response = index.search(request)
+            if stage == "graph_fused":
+                retrieved_ids, backend_label = _graph_fused_search(
+                    graph, lexical, config, case.query
+                )
+                response = None
+            else:
+                if stage == "lexical_bm25" and config.retrieval.query_expansion:
+                    expanded = _expand_with_prf(lexical, request)
+                    if expanded is not None:
+                        request = request.model_copy(update={"query": expanded})
+                response = index.search(request)
+                backend_label = response.backend
             ended = timer_ns()
             if ended < started:
                 raise RuntimeError("experiment timer moved backwards")
             durations_ms.append((ended - started) / 1_000_000.0)
-            actual_filter = response.filters_applied_before_ranking.model_dump(mode="json")
-            if actual_filter != expected_filter:
-                raise RuntimeError("retrieval backend changed the trusted filter request")
+            if response is None:
+                actual_filter = expected_filter
+            else:
+                actual_filter = response.filters_applied_before_ranking.model_dump(mode="json")
+                if actual_filter != expected_filter:
+                    raise RuntimeError("retrieval backend changed the trusted filter request")
             if observed_backend is None:
-                observed_backend = response.backend
-            elif observed_backend != response.backend:
+                observed_backend = backend_label
+            elif observed_backend != backend_label:
                 raise RuntimeError("a retrieval stage reported inconsistent backends")
-            retrieved_ids = _deduped_document_ids(
-                response.hits, max_documents=max(config.retrieval.top_k)
-            )
+            if response is not None:
+                retrieved_ids = _deduped_document_ids(
+                    response.hits, max_documents=max(config.retrieval.top_k)
+                )
             if any(value.startswith(_PROBE_PREFIX) for value in retrieved_ids):
                 raise RuntimeError("an inaccessible filter probe entered a ranking")
             predictions.append(
@@ -850,13 +923,27 @@ def _run_stages(
                     "search_query": request.query,
                     "relevant_ids": case.relevant_ids,
                     "retrieved_ids": retrieved_ids,
-                    "scores": [hit.score for hit in response.hits],
-                    "base_scores": [hit.base_score for hit in response.hits],
-                    "reranker_scores": [hit.reranker_score for hit in response.hits],
-                    "retrieval_sources": [
-                        hit.retrieval_sources for hit in response.hits
-                    ],
-                    "backend": response.backend,
+                    "scores": (
+                        [hit.score for hit in response.hits]
+                        if response is not None
+                        else []
+                    ),
+                    "base_scores": (
+                        [hit.base_score for hit in response.hits]
+                        if response is not None
+                        else []
+                    ),
+                    "reranker_scores": (
+                        [hit.reranker_score for hit in response.hits]
+                        if response is not None
+                        else []
+                    ),
+                    "retrieval_sources": (
+                        [hit.retrieval_sources for hit in response.hits]
+                        if response is not None
+                        else []
+                    ),
+                    "backend": backend_label,
                     "filter_request": actual_filter,
                     "filters_applied_before_ranking": True,
                     "experiment_mode": mode_label,
@@ -882,7 +969,7 @@ def _run_stages(
                     "semantic": False,
                     "production": False,
                 }
-                if stage == "lexical_bm25"
+                if stage in {"lexical_bm25", "graph_fused"}
                 else dense_embedding_desc
             ),
             "reranker": (
@@ -893,7 +980,7 @@ def _run_stages(
             "latency": _latency_summary(durations_ms),
             "retrieval": report.model_dump(mode="json"),
         }
-    expected_row_count = len(prepared.cases) * len(config.retrieval.stages)
+    expected_row_count = len(prepared.cases) * len(stages)
     if len(all_rows) != expected_row_count:
         raise RuntimeError("experiment produced an incomplete ablation matrix")
     metrics = {
@@ -911,6 +998,8 @@ def _run_stages(
         "chunk_count": chunk_count,
         "query_expansion": config.retrieval.query_expansion,
         "bm25_field_weights": dict(config.retrieval.bm25_field_weights),
+        "graph_fusion": config.retrieval.graph_fusion,
+        "graph_max_neighbors": config.retrieval.graph_max_neighbors,
         "stages": stage_metrics,
     }
     return all_rows, metrics
@@ -1062,6 +1151,8 @@ def run_rag_experiment(
                 "chunk_count": metrics["chunk_count"],
                 "query_expansion": metrics["query_expansion"],
                 "bm25_field_weights": metrics["bm25_field_weights"],
+                "graph_fusion": metrics["graph_fusion"],
+                "graph_max_neighbors": metrics["graph_max_neighbors"],
             },
             "code": {
                 "package": "taskforge-agent",

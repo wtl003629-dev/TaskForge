@@ -107,6 +107,14 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     value.add_argument(
+        "--graph-fusion",
+        action="store_true",
+        help=(
+            "Fuse the lexical ranking with a local document co-occurrence graph "
+            "via RRF as an extra graph_fused stage. Off by default."
+        ),
+    )
+    value.add_argument(
         "--output",
         type=Path,
         help="Exact output run directory; an existing directory is never overwritten.",
@@ -167,6 +175,8 @@ def _with_overrides(
         retrieval["chunking"] = True
     if args.query_expansion:
         retrieval["query_expansion"] = True
+    if args.graph_fusion:
+        retrieval["graph_fusion"] = True
     if args.bm25_field_weights is not None:
         weights: dict[str, float] = {}
         for pair in args.bm25_field_weights.split(","):
