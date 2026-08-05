@@ -14,6 +14,7 @@ import json
 import math
 import os
 import platform
+import re
 import shutil
 import tempfile
 import time
@@ -68,6 +69,8 @@ REQUIRED_STAGES: tuple[StageName, ...] = (
 EXPERIMENT_MODE = "degraded_nonsemantic"
 _DENIED_PRINCIPAL = "principal:taskforge-denied-probe"
 _PROBE_PREFIX = "__taskforge_filter_probe__"
+_CHUNK_SEP = "::chunk::"
+_PARAGRAPH_SPLIT = re.compile(r"\n\s*\n+")
 
 
 def _safe_repository_path(value: object, field_name: str) -> str:
@@ -80,6 +83,88 @@ def _safe_repository_path(value: object, field_name: str) -> str:
     ):
         raise ValueError(f"{field_name} must be a safe repository-relative path")
     return candidate
+
+
+def _hard_split(text: str, max_chars: int, overlap_chars: int) -> list[str]:
+    """Split an over-budget block on character boundaries with tail overlap."""
+
+    pieces: list[str] = []
+    start = 0
+    while start < len(text):
+        end = min(start + max_chars, len(text))
+        pieces.append(text[start:end])
+        if end >= len(text):
+            break
+        start = max(end - overlap_chars, start + 1)
+    return pieces
+
+
+def chunk_text(
+    text: str,
+    *,
+    max_chars: int,
+    overlap_chars: int,
+) -> list[str]:
+    """Paragraph-aware, bounded chunking with tail overlap.
+
+    Paragraphs are packed greedily into chunks of at most ``max_chars``; when a
+    chunk closes, the next chunk re-opens with the previous chunk's tail so
+    evidence straddling a boundary stays contiguous.  A single paragraph larger
+    than the budget is hard-split on character boundaries.
+    """
+
+    if max_chars < 200:
+        raise ValueError("max_chars must be at least 200")
+    if overlap_chars < 0 or overlap_chars >= max_chars:
+        raise ValueError("overlap_chars must be between 0 and max_chars")
+    paragraphs = [paragraph.strip() for paragraph in _PARAGRAPH_SPLIT.split(text)]
+    paragraphs = [paragraph for paragraph in paragraphs if paragraph]
+    if not paragraphs:
+        return [text]
+    chunks: list[str] = []
+    current = ""
+    for paragraph in paragraphs:
+        if len(paragraph) > max_chars:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.extend(_hard_split(paragraph, max_chars, overlap_chars))
+            continue
+        if current and len(current) + 1 + len(paragraph) > max_chars:
+            chunks.append(current)
+            current = current[-overlap_chars:] if overlap_chars else ""
+        current = f"{current}\n{paragraph}" if current else paragraph
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _document_id_from_chunk_id(chunk_id: str) -> str:
+    return chunk_id.split(_CHUNK_SEP, 1)[0]
+
+
+def _deduped_document_ids(
+    hits: Sequence[Any],
+    *,
+    max_documents: int | None = None,
+) -> list[str]:
+    """Map ranked chunk hits to top-N deduplicated document identifiers.
+
+    Chunks of one document may crowd a fixed top-k, so when the index was built
+    with chunking the caller retrieves more chunks and groups them here, taking
+    at most ``max_documents`` documents in hit order.
+    """
+
+    seen: set[str] = set()
+    result: list[str] = []
+    for hit in hits:
+        document_id = _document_id_from_chunk_id(hit.chunk.chunk_id)
+        if document_id not in seen:
+            seen.add(document_id)
+            result.append(document_id)
+            if max_documents is not None and len(result) >= max_documents:
+                break
+    return result
 
 
 class ExperimentDatasetConfig(StrictModel):
@@ -116,6 +201,15 @@ class ExperimentRetrievalConfig(StrictModel):
     hash_dimension: int = Field(default=64, ge=8, le=65_536)
     semantic_embedding: bool = False
     semantic_model: str = Field(default="BAAI/bge-small-en-v1.5", min_length=1)
+    chunking: bool = False
+    chunk_max_chars: int = Field(default=1500, ge=200, le=20_000)
+    chunk_overlap_chars: int = Field(default=150, ge=0, le=10_000)
+
+    @model_validator(mode="after")
+    def chunk_overlap_is_smaller_than_budget(self) -> ExperimentRetrievalConfig:
+        if self.chunking and self.chunk_overlap_chars >= self.chunk_max_chars:
+            raise ValueError("chunk_overlap_chars must be smaller than chunk_max_chars")
+        return self
 
     @model_validator(mode="after")
     def stages_and_budgets_are_comparable(self) -> ExperimentRetrievalConfig:
@@ -491,21 +585,42 @@ def _hybrid_chunks(
     config: RAGExperimentConfig,
 ) -> list[HybridChunk]:
     filters = config.filters
-    chunks = [
-        HybridChunk(
-            chunk_id=document.document_id,
-            tenant_id=filters.tenant_id,
-            text=document.text,
-            source_uri=document.source_uri,
-            document_id=document.document_id,
-            knowledge_base_id=filters.knowledge_base_id,
-            version=filters.version,
-            version_order=filters.version_order,
-            acl_principals=frozenset(filters.indexed_acl_principals),
-            metadata={"evaluation": True, **document.metadata},
+    chunks: list[HybridChunk] = []
+    for document in sorted(dataset.documents, key=lambda value: value.document_id):
+        texts = (
+            chunk_text(
+                document.text,
+                max_chars=config.retrieval.chunk_max_chars,
+                overlap_chars=config.retrieval.chunk_overlap_chars,
+            )
+            if config.retrieval.chunking
+            else [document.text]
         )
-        for document in sorted(dataset.documents, key=lambda value: value.document_id)
-    ]
+        for index, text in enumerate(texts):
+            chunk_id = (
+                f"{document.document_id}{_CHUNK_SEP}{index}"
+                if len(texts) > 1
+                else document.document_id
+            )
+            chunks.append(
+                HybridChunk(
+                    chunk_id=chunk_id,
+                    tenant_id=filters.tenant_id,
+                    text=text,
+                    source_uri=document.source_uri,
+                    document_id=document.document_id,
+                    knowledge_base_id=filters.knowledge_base_id,
+                    version=filters.version,
+                    version_order=filters.version_order,
+                    acl_principals=frozenset(filters.indexed_acl_principals),
+                    metadata={
+                        "evaluation": True,
+                        "chunk_index": index,
+                        "chunk_count": len(texts),
+                        **document.metadata,
+                    },
+                )
+            )
     # These high-overlap records are intentionally unreadable.  Their absence
     # in every ranking is an executable assertion that scope is applied before
     # candidate selection, rather than merely documented in configuration.
@@ -550,6 +665,12 @@ def _search_request(
     rerank: bool,
 ) -> HybridSearchRequest:
     filters = config.filters
+    final_k = max(config.retrieval.top_k)
+    # With chunking, retrieve more chunks than the final document count so a
+    # single document cannot crowd the top-k; grouping happens after ranking.
+    retrieval_k = (
+        config.retrieval.candidate_k if config.retrieval.chunking else final_k
+    )
     return HybridSearchRequest(
         query=query,
         tenant_id=filters.tenant_id,
@@ -557,11 +678,11 @@ def _search_request(
         versions=frozenset({filters.version}),
         version_orders=frozenset({filters.version_order}),
         knowledge_base_ids=frozenset({filters.knowledge_base_id}),
-        top_k=max(config.retrieval.top_k),
+        top_k=retrieval_k,
         candidate_k=config.retrieval.candidate_k,
         rerank=rerank,
         neighbor_window=0,
-        max_expanded_hits=max(config.retrieval.top_k),
+        max_expanded_hits=retrieval_k,
     )
 
 
@@ -601,6 +722,11 @@ def _run_stages(
 ) -> tuple[list[Mapping[str, Any]], Mapping[str, Any]]:
     _validate_evidence(prepared.dataset, prepared.cases)
     chunks = _hybrid_chunks(prepared.dataset, prepared.cases, config)
+    chunk_count = sum(
+        1
+        for chunk in chunks
+        if not chunk.chunk_id.startswith(_PROBE_PREFIX)
+    )
     lexical = BM25Index(
         chunks,
         k1=config.retrieval.bm25_k1,
@@ -665,7 +791,9 @@ def _run_stages(
                 observed_backend = response.backend
             elif observed_backend != response.backend:
                 raise RuntimeError("a retrieval stage reported inconsistent backends")
-            retrieved_ids = [hit.chunk.chunk_id for hit in response.hits]
+            retrieved_ids = _deduped_document_ids(
+                response.hits, max_documents=max(config.retrieval.top_k)
+            )
             if any(value.startswith(_PROBE_PREFIX) for value in retrieved_ids):
                 raise RuntimeError("an inaccessible filter probe entered a ranking")
             predictions.append(
@@ -732,6 +860,12 @@ def _run_stages(
         "case_ids": case_ids,
         "top_k": config.retrieval.top_k,
         "same_case_ids_and_top_k": True,
+        "chunking": {
+            "enabled": config.retrieval.chunking,
+            "max_chars": config.retrieval.chunk_max_chars,
+            "overlap_chars": config.retrieval.chunk_overlap_chars,
+        },
+        "chunk_count": chunk_count,
         "stages": stage_metrics,
     }
     return all_rows, metrics
@@ -879,6 +1013,8 @@ def run_rag_experiment(
                 "same_case_ids_and_top_k": True,
                 "qdrant_location": ":memory:",
                 "inaccessible_filter_probes": 2,
+                "chunking": metrics["chunking"],
+                "chunk_count": metrics["chunk_count"],
             },
             "code": {
                 "package": "taskforge-agent",

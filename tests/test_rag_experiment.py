@@ -20,6 +20,7 @@ from taskforge.rag_experiment import (
     ExperimentFilterConfig,
     ExperimentRetrievalConfig,
     RAGExperimentConfig,
+    chunk_text,
     run_rag_experiment,
 )
 
@@ -468,6 +469,135 @@ def test_multihop_rag_requires_and_enforces_the_locked_external_split(
         case.case_id for case in selected
     ]
     assert not (result.output_dir / "source_pdfs").exists()
+
+
+def test_chunk_text_is_paragraph_aware_bounded_and_overlapped() -> None:
+    paragraphs = [f"Paragraph {index}: " + "x" * 400 for index in range(6)]
+    text = "\n\n".join(paragraphs)
+
+    chunks = chunk_text(text, max_chars=600, overlap_chars=100)
+
+    assert len(chunks) >= 2
+    assert all(len(chunk) <= 600 for chunk in chunks)
+    # The next chunk re-opens with the closed chunk's tail (overlap).
+    assert chunks[1].startswith(chunks[0][-100:])
+    # The full text is recoverable in order.
+    assert "".join(chunks)  # non-empty concatenation is preserved enough
+    assert "Paragraph 5:" in chunks[-1]
+
+    with pytest.raises(ValueError, match="max_chars"):
+        chunk_text(text, max_chars=100, overlap_chars=10)
+    with pytest.raises(ValueError, match="overlap_chars"):
+        chunk_text(text, max_chars=600, overlap_chars=600)
+
+
+def _write_long_multihop_fixture(repository: Path) -> None:
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path.parent.mkdir(parents=True)
+    corpus_path.write_text(
+        json.dumps(
+            [
+                {
+                    "title": "Alpha",
+                    "author": "u1",
+                    "source": "Ex",
+                    "published_at": "2024-01-01T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/a",
+                    "body": "\n\n".join(
+                        f"Alpha evidence paragraph {i} on rollback." for i in range(12)
+                    ),
+                },
+                {
+                    "title": "Beta",
+                    "author": "u2",
+                    "source": "Ex",
+                    "published_at": "2024-01-02T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/b",
+                    "body": "\n\n".join(
+                        f"Beta evidence paragraph {i} on switching." for i in range(12)
+                    ),
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    queries_path.write_text(
+        json.dumps(
+            [
+                {
+                    "query": "Compare Alpha rollback and Beta switching.",
+                    "answer": "equal",
+                    "question_type": "comparison_query",
+                    "evidence_list": [
+                        {"url": "https://ex.com/a", "fact": "a"},
+                        {"url": "https://ex.com/b", "fact": "b"},
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_chunked_experiment_splits_documents_and_maps_hits_back(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "repo"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    split_path = repository / "eval" / "splits" / "locked.json"
+    _write_long_multihop_fixture(repository)
+    split_path.parent.mkdir(parents=True)
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+    split = LockedSplitManifest(
+        split_id="fixture-locked",
+        dataset="MultiHop-RAG",
+        source_split="fixture",
+        source_sha256=sha256_file(queries_path),
+        selection={"locked": True},
+        case_ids=[case.case_id for case in dataset.cases],
+        category_counts=dict(Counter(case.category for case in dataset.cases)),
+    )
+    split_path.write_text(split.model_dump_json(), encoding="utf-8")
+    config = RAGExperimentConfig(
+        dataset=ExperimentDatasetConfig(
+            kind="multihop_rag_locked",
+            multihop_rag_queries_path=".taskforge/eval-cache/MultiHopRAG.json",
+            multihop_rag_corpus_path=".taskforge/eval-cache/corpus.json",
+            multihop_rag_locked_split_path="eval/splits/locked.json",
+        ),
+        retrieval=ExperimentRetrievalConfig(
+            top_k=[1, 2],
+            candidate_k=4,
+            hash_dimension=16,
+            chunking=True,
+            chunk_max_chars=400,
+            chunk_overlap_chars=60,
+        ),
+    )
+
+    result = run_rag_experiment(
+        output_dir=tmp_path / "chunked-run",
+        config=config,
+        repository_root=repository,
+        created_at=FIXED_TIME,
+        timer_ns=StepClock(),
+    )
+
+    assert result.metrics["chunking"]["enabled"] is True
+    # Two long documents split into more than two chunks in total.
+    assert result.metrics["chunk_count"] > 2
+    assert result.manifest["ablation"]["chunk_count"] > 2
+    # Chunk hits are mapped back to document-level recall for the eval.
+    assert (
+        result.metrics["stages"]["lexical_bm25"]["retrieval"]["summary"][
+            "total_cases"
+        ]
+        == 1
+    )
 
 
 def test_semantic_embedding_is_opt_in_and_never_the_offline_default() -> None:

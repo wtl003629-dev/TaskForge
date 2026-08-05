@@ -82,6 +82,14 @@ def parser() -> argparse.ArgumentParser:
         help="fastembed model name for --semantic (default BAAI/bge-small-en-v1.5).",
     )
     value.add_argument(
+        "--chunking",
+        action="store_true",
+        help=(
+            "Split long documents into paragraph-aware, overlapping chunks so "
+            "dense embeddings stop truncating long evidence. Off by default."
+        ),
+    )
+    value.add_argument(
         "--output",
         type=Path,
         help="Exact output run directory; an existing directory is never overwritten.",
@@ -138,6 +146,8 @@ def _with_overrides(
         retrieval["semantic_embedding"] = True
     if args.semantic_model is not None:
         retrieval["semantic_model"] = args.semantic_model
+    if args.chunking:
+        retrieval["chunking"] = True
     payload["retrieval"] = retrieval
     return RAGExperimentConfig.model_validate(payload)
 
