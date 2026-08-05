@@ -7,6 +7,7 @@ can compare lexical, dense, hybrid, reranked, and graph-assisted retrievers.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -322,6 +323,101 @@ def load_tatqa_dataset(path: str | Path, *, limit: int | None = None) -> RAGEval
     )
 
 
+def _multihop_document_id(url: str) -> str:
+    return f"multihop:{hashlib.sha256(url.encode('utf-8')).hexdigest()[:24]}"
+
+
+def load_multihop_rag_dataset(
+    queries_path: str | Path,
+    corpus_path: str | Path,
+    *,
+    limit: int | None = None,
+) -> RAGEvalDataset:
+    """Normalize MultiHop-RAG real news into cross-document retrieval cases.
+
+    Evidence entries reference corpus documents by ``url``; each query is
+    grounded in 2-4 full articles.  ``null_query`` rows are unanswerable and
+    carry no evidence, so they are intentionally excluded from cases.
+    """
+
+    raw_queries = json.loads(Path(queries_path).read_text(encoding="utf-8"))
+    raw_corpus = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
+    if not isinstance(raw_queries, list) or not isinstance(raw_corpus, list):
+        raise ValueError("MultiHop-RAG payloads must be JSON arrays")
+
+    documents: list[EvalCorpusDocument] = []
+    by_url: dict[str, str] = {}
+    for doc in raw_corpus:
+        if not isinstance(doc, Mapping):
+            raise ValueError("MultiHop-RAG corpus entry must be an object")
+        url = str(doc.get("url", "")).strip()
+        body = str(doc.get("body", "")).strip()
+        if not url or not body:
+            raise ValueError("MultiHop-RAG corpus entry requires url and body")
+        document_id = _multihop_document_id(url)
+        by_url[url] = document_id
+        documents.append(
+            EvalCorpusDocument(
+                document_id=document_id,
+                text=body,
+                source_uri=url,
+                metadata={
+                    "title": str(doc.get("title", "")).strip(),
+                    "source": str(doc.get("source", "")).strip(),
+                    "category": str(doc.get("category", "")).strip(),
+                    "author": doc.get("author"),
+                    "published_at": str(doc.get("published_at", "")).strip(),
+                },
+            )
+        )
+
+    cases: list[RAGEvalCase] = []
+    for index, raw_query in enumerate(raw_queries):
+        if limit is not None and len(cases) >= limit:
+            break
+        if not isinstance(raw_query, Mapping):
+            raise ValueError("MultiHop-RAG query must be an object")
+        question_type = str(raw_query.get("question_type", "")).strip()
+        if question_type == "null_query":
+            continue
+        query = str(raw_query.get("query", "")).strip()
+        if not query:
+            raise ValueError("MultiHop-RAG query requires non-empty query text")
+        evidence = raw_query.get("evidence_list", [])
+        if not isinstance(evidence, list):
+            raise ValueError("MultiHop-RAG query evidence_list must be an array")
+        relevant: list[str] = []
+        for entry in evidence:
+            if not isinstance(entry, Mapping):
+                raise ValueError("MultiHop-RAG evidence entry must be an object")
+            url = str(entry.get("url", "")).strip()
+            document_id = by_url.get(url)
+            if document_id is None:
+                raise ValueError("MultiHop-RAG evidence references an unknown corpus URL")
+            if document_id not in relevant:
+                relevant.append(document_id)
+        if not relevant:
+            continue
+        cases.append(
+            RAGEvalCase(
+                case_id=f"multihop:q{index}",
+                dataset="MultiHop-RAG",
+                query=query,
+                relevant_ids=relevant,
+                category=question_type,
+                answer=raw_query.get("answer"),
+                metadata={"source_count": len(relevant)},
+            )
+        )
+    return RAGEvalDataset(
+        dataset="MultiHop-RAG",
+        license="ODC-BY",
+        attribution_url="https://huggingface.co/datasets/yixuantt/MultiHopRAG",
+        documents=documents,
+        cases=cases,
+    )
+
+
 def _parse_page_list(value: object) -> list[int]:
     if isinstance(value, list):
         raw = value
@@ -441,6 +537,7 @@ __all__ = [
     "answer_token_f1",
     "evaluate_retrieval",
     "load_mmlongbench_cases",
+    "load_multihop_rag_dataset",
     "load_tatqa_dataset",
     "normalize_answer",
 ]

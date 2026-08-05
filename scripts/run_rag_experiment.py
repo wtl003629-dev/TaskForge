@@ -34,7 +34,7 @@ def parser() -> argparse.ArgumentParser:
     )
     value.add_argument(
         "--dataset",
-        choices=("synthetic", "tatqa"),
+        choices=("synthetic", "tatqa", "multihop-rag"),
         help="Override the configured dataset; default config uses synthetic PDFs.",
     )
     value.add_argument(
@@ -51,6 +51,21 @@ def parser() -> argparse.ArgumentParser:
         "--locked-split",
         type=Path,
         help="TAT-QA locked split manifest inside the repository.",
+    )
+    value.add_argument(
+        "--multihop-queries",
+        type=Path,
+        help="Pinned MultiHop-RAG query cache path inside the repository.",
+    )
+    value.add_argument(
+        "--multihop-corpus",
+        type=Path,
+        help="Pinned MultiHop-RAG corpus cache path inside the repository.",
+    )
+    value.add_argument(
+        "--multihop-locked-split",
+        type=Path,
+        help="MultiHop-RAG locked split manifest inside the repository.",
     )
     value.add_argument(
         "--output",
@@ -76,9 +91,11 @@ def _with_overrides(
     payload = config.model_dump(mode="json")
     dataset = dict(payload["dataset"])
     if args.dataset is not None:
-        dataset["kind"] = (
-            "synthetic_pdf" if args.dataset == "synthetic" else "tatqa_locked"
-        )
+        dataset["kind"] = {
+            "synthetic": "synthetic_pdf",
+            "tatqa": "tatqa_locked",
+            "multihop-rag": "multihop_rag_locked",
+        }[args.dataset]
     if args.suite is not None:
         dataset["synthetic_suite_path"] = _repository_relative(args.suite, "--suite")
     if args.tatqa_input is not None:
@@ -89,13 +106,29 @@ def _with_overrides(
         dataset["tatqa_locked_split_path"] = _repository_relative(
             args.locked_split, "--locked-split"
         )
+    if args.multihop_queries is not None:
+        dataset["multihop_rag_queries_path"] = _repository_relative(
+            args.multihop_queries, "--multihop-queries"
+        )
+    if args.multihop_corpus is not None:
+        dataset["multihop_rag_corpus_path"] = _repository_relative(
+            args.multihop_corpus, "--multihop-corpus"
+        )
+    if args.multihop_locked_split is not None:
+        dataset["multihop_rag_locked_split_path"] = _repository_relative(
+            args.multihop_locked_split, "--multihop-locked-split"
+        )
     payload["dataset"] = dataset
     return RAGExperimentConfig.model_validate(payload)
 
 
 def _default_output(now: datetime, dataset_kind: str) -> Path:
     stamp = now.astimezone(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
-    label = "synthetic-pdf" if dataset_kind == "synthetic_pdf" else "tatqa-locked"
+    label = {
+        "synthetic_pdf": "synthetic-pdf",
+        "tatqa_locked": "tatqa-locked",
+        "multihop_rag_locked": "multihop-rag-locked",
+    }[dataset_kind]
     return REPOSITORY_ROOT / ".taskforge" / "eval-runs" / f"rag-{label}-{stamp}"
 
 

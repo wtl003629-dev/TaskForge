@@ -47,6 +47,7 @@ from .rag_evaluation import (
     RAGEvalDataset,
     RetrievalPrediction,
     evaluate_retrieval,
+    load_multihop_rag_dataset,
     load_tatqa_dataset,
 )
 from .synthetic_pdf_eval import (
@@ -56,7 +57,7 @@ from .synthetic_pdf_eval import (
 )
 
 StageName = Literal["lexical_bm25", "qdrant_rrf", "qdrant_rrf_rerank"]
-DatasetKind = Literal["synthetic_pdf", "tatqa_locked"]
+DatasetKind = Literal["synthetic_pdf", "tatqa_locked", "multihop_rag_locked"]
 REQUIRED_STAGES: tuple[StageName, ...] = (
     "lexical_bm25",
     "qdrant_rrf",
@@ -84,11 +85,19 @@ class ExperimentDatasetConfig(StrictModel):
     synthetic_suite_path: str = "eval/synthetic_pdf_suite.json"
     tatqa_input_path: str = ".taskforge/eval-cache/tatqa_dataset_dev.json"
     tatqa_locked_split_path: str = "eval/splits/tatqa-dev-m0-100-v1.json"
+    multihop_rag_queries_path: str = ".taskforge/eval-cache/MultiHopRAG.json"
+    multihop_rag_corpus_path: str = ".taskforge/eval-cache/corpus.json"
+    multihop_rag_locked_split_path: str = (
+        "eval/splits/multihop-rag-dev-m0-100-v1.json"
+    )
 
     @field_validator(
         "synthetic_suite_path",
         "tatqa_input_path",
         "tatqa_locked_split_path",
+        "multihop_rag_queries_path",
+        "multihop_rag_corpus_path",
+        "multihop_rag_locked_split_path",
         mode="before",
     )
     @classmethod
@@ -380,6 +389,70 @@ def _prepare_tatqa_dataset(
     )
 
 
+def _prepare_multihop_rag_dataset(
+    config: RAGExperimentConfig,
+    repository: Path,
+) -> _PreparedDataset:
+    queries_path = _repository_file(
+        repository,
+        config.dataset.multihop_rag_queries_path,
+        missing_message=(
+            "MultiHop-RAG query cache is missing; fetch the pinned dataset before "
+            "running the locked experiment"
+        ),
+    )
+    corpus_path = _repository_file(
+        repository,
+        config.dataset.multihop_rag_corpus_path,
+        missing_message="MultiHop-RAG corpus cache is missing",
+    )
+    split_path = _repository_file(
+        repository,
+        config.dataset.multihop_rag_locked_split_path,
+        missing_message="MultiHop-RAG locked split manifest is missing",
+    )
+    source_hash = sha256_file(queries_path)
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+    if not dataset.documents:
+        raise ValueError("MultiHop-RAG adapter produced an empty corpus")
+    split = load_locked_split(split_path)
+    if split.dataset != dataset.dataset:
+        raise ValueError("MultiHop-RAG locked split belongs to another dataset")
+    selected = select_locked_cases(
+        dataset.cases,
+        split,
+        dataset_sha256=source_hash,
+    )
+    if not selected:
+        raise ValueError("MultiHop-RAG locked split selected no cases")
+    provenance = {
+        "name": dataset.dataset,
+        "adapter": "multihop_rag_locked",
+        "queries_path": config.dataset.multihop_rag_queries_path,
+        "queries_sha256": source_hash,
+        "queries_size_bytes": queries_path.stat().st_size,
+        "corpus_path": config.dataset.multihop_rag_corpus_path,
+        "corpus_sha256": sha256_file(corpus_path),
+        "corpus_size_bytes": corpus_path.stat().st_size,
+        "locked_split_path": config.dataset.multihop_rag_locked_split_path,
+        "locked_split_id": split.split_id,
+        "locked_split_sha256": sha256_file(split_path),
+        "normalized_sha256": _normalized_dataset_hash(dataset, selected),
+        "license": dataset.license,
+        "attribution_url": dataset.attribution_url,
+        "corpus_documents": len(dataset.documents),
+        "available_cases": len(dataset.cases),
+        "selected_cases": len(selected),
+        "pdf_sha256": None,
+    }
+    return _PreparedDataset(
+        dataset=dataset,
+        cases=tuple(selected),
+        provenance=provenance,
+        pdf_artifacts=(),
+    )
+
+
 def _prepare_dataset(
     config: RAGExperimentConfig,
     repository: Path,
@@ -389,6 +462,8 @@ def _prepare_dataset(
         return _prepare_synthetic_dataset(config, repository, staging)
     if config.dataset.kind == "tatqa_locked":
         return _prepare_tatqa_dataset(config, repository)
+    if config.dataset.kind == "multihop_rag_locked":
+        return _prepare_multihop_rag_dataset(config, repository)
     raise ValueError(f"unsupported dataset kind: {config.dataset.kind}")
 
 

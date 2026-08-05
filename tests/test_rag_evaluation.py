@@ -11,6 +11,7 @@ from taskforge.rag_evaluation import (
     answer_token_f1,
     evaluate_retrieval,
     load_mmlongbench_cases,
+    load_multihop_rag_dataset,
     load_tatqa_dataset,
 )
 
@@ -100,6 +101,63 @@ def test_tatqa_adapter_preserves_table_and_paragraph_evidence(tmp_path) -> None:
         "tatqa:table-1:paragraph:1",
     ]
     assert dataset.cases[0].category == "table"
+
+
+def test_multihop_rag_adapter_normalizes_cross_document_cases(tmp_path) -> None:
+    corpus = [
+        {
+            "title": "Alpha",
+            "author": "u1",
+            "source": "Ex",
+            "published_at": "2024-01-01T00:00:00+00:00",
+            "category": "technology",
+            "url": "https://ex.com/a",
+            "body": "Alpha article body.",
+        },
+        {
+            "title": "Beta",
+            "author": "u2",
+            "source": "Ex",
+            "published_at": "2024-01-02T00:00:00+00:00",
+            "category": "technology",
+            "url": "https://ex.com/b",
+            "body": "Beta article body.",
+        },
+    ]
+    queries = [
+        {
+            "query": "Compare Alpha and Beta.",
+            "answer": "equal",
+            "question_type": "comparison_query",
+            "evidence_list": [
+                {"url": "https://ex.com/a", "fact": "Alpha fact"},
+                {"url": "https://ex.com/b", "fact": "Beta fact"},
+            ],
+        },
+        {
+            "query": "Unanswerable.",
+            "answer": "Insufficient information.",
+            "question_type": "null_query",
+            "evidence_list": [],
+        },
+    ]
+    corpus_path = tmp_path / "corpus.json"
+    queries_path = tmp_path / "queries.json"
+    corpus_path.write_text(json.dumps(corpus), encoding="utf-8")
+    queries_path.write_text(json.dumps(queries), encoding="utf-8")
+
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+
+    assert dataset.dataset == "MultiHop-RAG"
+    assert dataset.license == "ODC-BY"
+    assert len(dataset.documents) == 2
+    # null_query rows are unanswerable and carry no evidence.
+    assert len(dataset.cases) == 1
+    case = dataset.cases[0]
+    assert case.category == "comparison_query"
+    assert case.answer == "equal"
+    assert set(case.relevant_ids) == {doc.document_id for doc in dataset.documents}
+    assert all(case_id.startswith("multihop:") for case_id in [case.case_id])
 
 
 def test_mmlongbench_adapter_maps_evidence_pages_without_pdf_download(tmp_path) -> None:

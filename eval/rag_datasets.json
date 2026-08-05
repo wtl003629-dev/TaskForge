@@ -66,13 +66,26 @@
     {
       "dataset_id": "multihop-rag",
       "name": "MultiHop-RAG",
-      "homepage": "https://github.com/yixuantt/MultiHop-RAG",
+      "homepage": "https://huggingface.co/datasets/yixuantt/MultiHopRAG",
       "license": "ODC-BY",
       "commercial_use": true,
-      "redistribution": "catalog-only",
-      "automated": false,
-      "notes": "Cross-document retrieval set with 2-4 evidence documents and metadata questions.",
-      "artifacts": []
+      "redistribution": "allowed-with-attribution",
+      "automated": true,
+      "notes": "Real news corpus (609 articles) with 2556 cross-document queries grounded in 2-4 evidence articles with metadata.",
+      "artifacts": [
+        {
+          "filename": "MultiHopRAG.json",
+          "url": "https://huggingface.co/datasets/yixuantt/MultiHopRAG/resolve/main/MultiHopRAG.json",
+          "sha256": "03cfb4926461f868684903aadc8024447bdda5bb3f6804741424cce338515bff",
+          "max_bytes": 6000000
+        },
+        {
+          "filename": "corpus.json",
+          "url": "https://huggingface.co/datasets/yixuantt/MultiHopRAG/resolve/main/corpus.json",
+          "sha256": "20b61b5ab84de84a927420c5d265b7ec8d859ae49980699958a787ade9e4d28f",
+          "max_bytes": 8000000
+        }
+      ]
     },
     {
       "dataset_id": "mmlongbench-labels",

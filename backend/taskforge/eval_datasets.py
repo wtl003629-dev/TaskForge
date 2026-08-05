@@ -88,6 +88,7 @@ class DownloadReceipt(StrictModel):
 
 DEFAULT_DOWNLOAD_HOSTS = frozenset(
     {
+        "huggingface.co",
         "raw.githubusercontent.com",
     }
 )

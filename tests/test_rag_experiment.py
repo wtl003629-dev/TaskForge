@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 from taskforge.rag_baseline import LockedSplitManifest, sha256_file
-from taskforge.rag_evaluation import load_tatqa_dataset
+from taskforge.rag_evaluation import load_multihop_rag_dataset, load_tatqa_dataset
 from taskforge.rag_experiment import (
     EXPERIMENT_MODE,
     ExperimentDatasetConfig,
@@ -366,6 +366,108 @@ def test_tatqa_requires_and_enforces_the_locked_external_split(tmp_path: Path) -
             created_at=FIXED_TIME,
         )
     assert not missing_output.exists()
+
+
+def _write_multihop_fixture(repository: Path) -> None:
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path.parent.mkdir(parents=True)
+    corpus_path.write_text(
+        json.dumps(
+            [
+                {
+                    "title": "Alpha",
+                    "author": "u1",
+                    "source": "Ex",
+                    "published_at": "2024-01-01T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/a",
+                    "body": "Alpha article body.",
+                },
+                {
+                    "title": "Beta",
+                    "author": "u2",
+                    "source": "Ex",
+                    "published_at": "2024-01-02T00:00:00+00:00",
+                    "category": "technology",
+                    "url": "https://ex.com/b",
+                    "body": "Beta article body.",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    queries_path.write_text(
+        json.dumps(
+            [
+                {
+                    "query": "Compare Alpha and Beta.",
+                    "answer": "equal",
+                    "question_type": "comparison_query",
+                    "evidence_list": [
+                        {"url": "https://ex.com/a", "fact": "Alpha fact"},
+                        {"url": "https://ex.com/b", "fact": "Beta fact"},
+                    ],
+                },
+                {
+                    "query": "Unanswerable.",
+                    "answer": "Insufficient information.",
+                    "question_type": "null_query",
+                    "evidence_list": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_multihop_rag_requires_and_enforces_the_locked_external_split(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "repo"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    split_path = repository / "eval" / "splits" / "locked.json"
+    _write_multihop_fixture(repository)
+    split_path.parent.mkdir(parents=True)
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+    selected = list(reversed(dataset.cases))
+    split = LockedSplitManifest(
+        split_id="fixture-locked",
+        dataset="MultiHop-RAG",
+        source_split="fixture",
+        source_sha256=sha256_file(queries_path),
+        selection={"locked": True},
+        case_ids=[case.case_id for case in selected],
+        category_counts=dict(Counter(case.category for case in selected)),
+    )
+    split_path.write_text(split.model_dump_json(), encoding="utf-8")
+    config = RAGExperimentConfig(
+        dataset=ExperimentDatasetConfig(
+            kind="multihop_rag_locked",
+            multihop_rag_queries_path=".taskforge/eval-cache/MultiHopRAG.json",
+            multihop_rag_corpus_path=".taskforge/eval-cache/corpus.json",
+            multihop_rag_locked_split_path="eval/splits/locked.json",
+        ),
+        retrieval=ExperimentRetrievalConfig(
+            top_k=[1, 2], candidate_k=4, hash_dimension=16
+        ),
+    )
+
+    result = run_rag_experiment(
+        output_dir=tmp_path / "multihop-run",
+        config=config,
+        repository_root=repository,
+        created_at=FIXED_TIME,
+        timer_ns=StepClock(),
+    )
+
+    assert result.manifest["dataset"]["adapter"] == "multihop_rag_locked"
+    assert result.manifest["dataset"]["locked_split_id"] == "fixture-locked"
+    assert result.manifest["sample"]["case_ids"] == [
+        case.case_id for case in selected
+    ]
+    assert not (result.output_dir / "source_pdfs").exists()
 
 
 def test_config_and_publication_fail_closed(tmp_path: Path) -> None:
