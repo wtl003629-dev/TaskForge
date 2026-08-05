@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     operations_sqlite_path: Path = _PROJECT_ROOT / ".taskforge" / "operations.sqlite3"
     orchestration_sqlite_path: Path = _PROJECT_ROOT / ".taskforge" / "orchestration.sqlite3"
     review_case_sqlite_path: Path = _PROJECT_ROOT / ".taskforge" / "review-cases.sqlite3"
+    verification_sqlite_path: Path = _PROJECT_ROOT / ".taskforge" / "verification.sqlite3"
     workspace_root: Path = _PROJECT_ROOT
     artifact_root: Path = _PROJECT_ROOT / ".taskforge" / "artifacts"
     context_backend: Literal["memory", "sqlite"] = "sqlite"

@@ -39,6 +39,7 @@ def make_settings(tmp_path: Path, **changes) -> Settings:
         "operations_sqlite_path": tmp_path / "state" / "operations.sqlite3",
         "orchestration_sqlite_path": tmp_path / "state" / "orchestration.sqlite3",
         "review_case_sqlite_path": tmp_path / "state" / "review-cases.sqlite3",
+        "verification_sqlite_path": tmp_path / "state" / "verification.sqlite3",
         "workspace_root": workspace,
         "artifact_root": tmp_path / "artifacts",
         "provider": "demo",

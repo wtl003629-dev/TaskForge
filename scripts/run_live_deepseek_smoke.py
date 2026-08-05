@@ -30,6 +30,7 @@ from taskforge.memory import InMemoryMemoryStore
 from taskforge.openai_provider import OpenAIChatCompletionsProvider
 from taskforge.runtime import AgentRuntime
 from taskforge.tooling import CapabilityPolicy
+from taskforge.verification import SQLiteVerificationStore, VerificationRecord
 
 
 def _required_setting(name: str, fallback: str) -> str:
@@ -55,10 +56,18 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Required acknowledgement that this performs billable network calls.",
     )
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        help=(
+            "After a successful smoke, persist a signed live_smoke verification "
+            "record so the review API can disclose live_smoke_verified=True."
+        ),
+    )
     return parser.parse_args()
 
 
-async def run_live_smoke(*, confirmed: bool) -> dict[str, object]:
+async def run_live_smoke(*, confirmed: bool, record: bool = False) -> dict[str, object]:
     if not confirmed:
         raise RuntimeError("refusing live API use without --confirm-live-call")
     settings = Settings(_env_file=REPOSITORY_ROOT / ".env")
@@ -138,7 +147,7 @@ async def run_live_smoke(*, confirmed: bool) -> dict[str, object]:
         and len(calculator_receipts) == 1
         and calculator_receipts[0].output == {"value": 43}
     )
-    return {
+    report: dict[str, object] = {
         "test_mode": "live_deepseek_chat_completions",
         "real_network_call": True,
         "model": model,
@@ -151,12 +160,27 @@ async def run_live_smoke(*, confirmed: bool) -> dict[str, object]:
         "final_answer": state.final_answer,
         "passed": passed,
     }
+    if record and passed:
+        store = SQLiteVerificationStore(settings.verification_sqlite_path)
+        store.save(
+            VerificationRecord.signed(
+                kind="live_smoke",
+                provider="deepseek",
+                model=model,
+                run_id=state.run_id,
+                evidence=report,
+            )
+        )
+        report["recorded"] = True
+    return report
 
 
 async def _main() -> int:
     args = parse_args()
     try:
-        report = await run_live_smoke(confirmed=args.confirm_live_call)
+        report = await run_live_smoke(
+            confirmed=args.confirm_live_call, record=args.record
+        )
     except RuntimeError as exc:
         print(f"live smoke refused: {exc}", file=sys.stderr)
         return 2

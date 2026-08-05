@@ -92,6 +92,7 @@ from .review_cases import (
 from .review_service import ReviewCaseCoordinator, ReviewCoordinationError
 from .runtime import AgentRuntime
 from .tooling import CapabilityPolicy
+from .verification import SQLiteVerificationStore, VerificationSignatureError
 
 _RESERVED_METADATA_KEYS = {
     "workspaceroot",
@@ -283,8 +284,8 @@ class ReviewExecutionDisclosure(StrictModel):
     ]
     provider_configured: bool
     contract_tested_mock: bool
-    live_smoke_verified: Literal[False] = False
-    business_e2e_verified: Literal[False] = False
+    live_smoke_verified: bool = False
+    business_e2e_verified: bool = False
     recommendation_authority: Literal["model_untrusted"] = "model_untrusted"
     final_decision_authority: Literal["human"] = "human"
 
@@ -424,6 +425,7 @@ class AppContainer:
     orchestration_store: SQLiteOrchestrationStore
     review_profiles: dict[str, AgentProfile]
     review_execution: ReviewExecutionDisclosure
+    verification_store: SQLiteVerificationStore
     mcp_status: list[MCPServerSummary] = field(default_factory=list)
     approval_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
 
@@ -482,6 +484,7 @@ def _review_execution_disclosure(
     provider: ModelProvider,
     *,
     owns_provider: bool,
+    verification_store: SQLiteVerificationStore | None = None,
 ) -> ReviewExecutionDisclosure:
     if isinstance(provider, DemoProvider):
         return ReviewExecutionDisclosure(
@@ -491,24 +494,59 @@ def _review_execution_disclosure(
             contract_tested_mock=True,
         )
     if owns_provider and settings.provider == "openai":
-        return ReviewExecutionDisclosure(
+        disclosure = ReviewExecutionDisclosure(
             provider="openai",
             mode="configured-provider",
             provider_configured=True,
             contract_tested_mock=True,
         )
+        return _apply_verification(
+            disclosure, verification_store, "openai", settings.openai_model
+        )
     if owns_provider and settings.provider == "deepseek":
-        return ReviewExecutionDisclosure(
+        disclosure = ReviewExecutionDisclosure(
             provider="deepseek",
             mode="configured-provider",
             provider_configured=True,
             contract_tested_mock=True,
+        )
+        return _apply_verification(
+            disclosure, verification_store, "deepseek", settings.deepseek_model
         )
     return ReviewExecutionDisclosure(
         provider=type(provider).__name__,
         mode="injected-test-provider",
         provider_configured=False,
         contract_tested_mock=False,
+    )
+
+
+def _apply_verification(
+    disclosure: ReviewExecutionDisclosure,
+    verification_store: SQLiteVerificationStore | None,
+    provider: str,
+    model: str | None,
+) -> ReviewExecutionDisclosure:
+    """Flip the verified flags only from a durable, matching, signed record."""
+
+    if verification_store is None:
+        return disclosure
+    try:
+        live = verification_store.latest(
+            "live_smoke", provider=provider, model=model
+        )
+        e2e = verification_store.latest(
+            "business_e2e", provider=provider, model=model
+        )
+    except VerificationSignatureError:
+        # A tampered record cannot support a claim; disclose as unverified
+        # rather than 500 on every review request.
+        return disclosure
+    return disclosure.model_copy(
+        update={
+            "live_smoke_verified": live is not None,
+            "business_e2e_verified": e2e is not None,
+        }
     )
 
 
@@ -952,6 +990,7 @@ def create_app(
     operations = OperationsStore(config.operations_sqlite_path)
     review_case_store = SQLiteReviewCaseStore(config.review_case_sqlite_path)
     orchestration_store = SQLiteOrchestrationStore(config.orchestration_sqlite_path)
+    verification_store = SQLiteVerificationStore(config.verification_sqlite_path)
     for item in profiles.values():
         store.save_profile(item)
 
@@ -993,7 +1032,9 @@ def create_app(
             config,
             selected_provider,
             owns_provider=owns_provider,
+            verification_store=verification_store,
         ),
+        verification_store=verification_store,
         mcp_status=[
             MCPServerSummary(
                 namespace=binding.server.namespace,

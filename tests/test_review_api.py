@@ -6,9 +6,8 @@ from pathlib import Path
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
 
-from taskforge.app import ReviewExecutionDisclosure, create_app
+from taskforge.app import create_app
 from taskforge.config import Settings
 from taskforge.domain import ModelTurn
 from taskforge.providers import ScriptedProvider
@@ -32,6 +31,7 @@ def make_settings(tmp_path: Path, **overrides: object) -> Settings:
         "operations_sqlite_path": state / "operations.sqlite3",
         "orchestration_sqlite_path": state / "orchestration.sqlite3",
         "review_case_sqlite_path": state / "review-cases.sqlite3",
+        "verification_sqlite_path": state / "verification.sqlite3",
         "workspace_root": workspace,
         "artifact_root": tmp_path / "artifacts",
         "provider": "demo",
@@ -242,22 +242,60 @@ def test_deepseek_credentials_only_disclose_configured_not_verified(
     }
 
 
-@pytest.mark.parametrize(
-    "field_name",
-    ["live_smoke_verified", "business_e2e_verified"],
-)
-def test_execution_disclosure_cannot_claim_unpersisted_live_verification(
-    field_name: str,
+def test_persisted_signed_smoke_record_flips_disclosure_flag(tmp_path: Path) -> None:
+    from taskforge.verification import SQLiteVerificationStore, VerificationRecord
+
+    settings = make_settings(
+        tmp_path,
+        provider="deepseek",
+        deepseek_api_key="sk-after-real-run",
+        deepseek_model="deepseek-chat",
+    )
+    SQLiteVerificationStore(settings.verification_sqlite_path).save(
+        VerificationRecord.signed(
+            kind="live_smoke",
+            provider="deepseek",
+            model="deepseek-chat",
+            run_id="run-123",
+            evidence={"passed": True},
+        )
+    )
+
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/api/review-cases", headers=OWNER)
+
+    assert response.status_code == 200, response.text
+    execution = response.json()["execution"]
+    assert execution["live_smoke_verified"] is True
+    assert execution["business_e2e_verified"] is False
+
+
+def test_disclosure_ignores_verification_from_a_different_model(
+    tmp_path: Path,
 ) -> None:
-    payload = {
-        "provider": "openai",
-        "mode": "configured-provider",
-        "provider_configured": True,
-        "contract_tested_mock": True,
-        field_name: True,
-    }
-    with pytest.raises(ValidationError):
-        ReviewExecutionDisclosure.model_validate(payload)
+    from taskforge.verification import SQLiteVerificationStore, VerificationRecord
+
+    settings = make_settings(
+        tmp_path,
+        provider="deepseek",
+        deepseek_api_key="sk-after-real-run",
+        deepseek_model="deepseek-chat",
+    )
+    SQLiteVerificationStore(settings.verification_sqlite_path).save(
+        VerificationRecord.signed(
+            kind="live_smoke",
+            provider="deepseek",
+            model="some-other-model",
+            run_id="run-999",
+            evidence={"passed": True},
+        )
+    )
+
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/api/review-cases", headers=OWNER)
+
+    assert response.status_code == 200, response.text
+    assert response.json()["execution"]["live_smoke_verified"] is False
 
 
 def test_review_case_routes_are_exactly_owner_scoped(tmp_path: Path) -> None:
