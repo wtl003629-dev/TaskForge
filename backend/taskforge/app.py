@@ -33,7 +33,7 @@ from fastapi.responses import JSONResponse
 from pydantic import Field, model_validator
 
 from .builtins import agent_profiles, create_tool_registry, local_knowledge_chunks
-from .case_profiles import enterprise_review_profiles
+from .case_profiles import enterprise_review_profiles, research_survey_profiles
 from .case_runtime import CaseAgentExecutor, CaseRuntimeError
 from .checkpoints import CheckpointNotFoundError, SQLiteCheckpointStore
 from .config import Settings
@@ -980,7 +980,10 @@ def create_app(
     profiles = {item.id: item for item in agent_profiles(model=profile_model or "demo")}
     review_profiles = {
         item.id: item
-        for item in enterprise_review_profiles(model=profile_model or "demo")
+        for item in (
+            enterprise_review_profiles(model=profile_model or "demo")
+            + research_survey_profiles(model=profile_model or "demo")
+        )
     }
     profile_catalog = {**profiles, **review_profiles}
     if len(profile_catalog) != len(profiles) + len(review_profiles):

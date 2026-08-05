@@ -62,6 +62,7 @@ class CaseDecisionRuleError(ReviewCaseError):
 class CaseKind(str, Enum):
     ENTERPRISE_CHANGE = "enterprise_change"
     ENTERPRISE_ADMISSION = "enterprise_admission"
+    RESEARCH_SURVEY = "research_survey"
 
 
 class CaseStatus(str, Enum):
@@ -1014,7 +1015,12 @@ class SQLiteReviewCaseStore:
 
         def transform(current: ReviewCase, timestamp: datetime) -> ReviewCase:
             _require_transition(current.status, CaseStatus.WAITING_HUMAN_REVIEW)
-            _require_bound_evidence(current.submission.evidence_refs, validated.evidence_refs)
+            if current.kind != CaseKind.RESEARCH_SURVEY:
+                # A survey's recommendation cites the retrieved corpus, not the
+                # submitted evidence list, so the exact-match binding is skipped.
+                _require_bound_evidence(
+                    current.submission.evidence_refs, validated.evidence_refs
+                )
             return _replace_case(
                 current,
                 status=CaseStatus.WAITING_HUMAN_REVIEW,

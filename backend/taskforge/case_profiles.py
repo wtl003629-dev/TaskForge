@@ -111,8 +111,132 @@ def enterprise_review_slots() -> list[SpeakerSlot]:
     ]
 
 
+RESEARCH_SURVEY_ROLES = (
+    "retrieval_planner",
+    "source_evaluator",
+    "synthesis_writer",
+    "critical_reviewer",
+)
+
+
+def research_survey_profiles(*, model: str) -> list[AgentProfile]:
+    """Return role-bound research profiles; callers may not substitute metadata."""
+
+    common_tools = ["knowledge_search", "calculator", "memory_recall"]
+    common_scopes = ["tenant", "user", "task"]
+    definitions = [
+        (
+            "case-research-planner-agent",
+            "检索规划员",
+            "retrieval_planner",
+            "把研究问题拆成可检索的子问题，规划检索策略并执行检索，登记检索到的来源清单；"
+            "每个结论必须给出证据引用，不得编造来源。",
+            "产出检索计划与来源清单，不直接给出综述结论。",
+        ),
+        (
+            "case-research-evaluator-agent",
+            "来源甄别员",
+            "source_evaluator",
+            "对检索到的来源评估可信度、相关性与时效性，标注权威来源与存疑来源，识别证据缺口；"
+            "所有判断必须基于本次真实检索到的来源。",
+            "形成可信度评估与证据缺口清单。",
+        ),
+        (
+            "case-research-writer-agent",
+            "综合综述员",
+            "synthesis_writer",
+            "综合检索到的来源撰写分章节综述；每条结论必须引用真实检索到的来源（evidence_id 或 source），"
+            "不得编造引用、作者或文献。区分已验证事实与模型推断。",
+            "产出带引用的综述初稿。",
+        ),
+        (
+            "case-research-critic-agent",
+            "批判审查员",
+            "critical_reviewer",
+            "反向审查综述稿：检查每条结论是否超出现有引用能支撑的范围、是否忽略相反证据、章节是否有缺口；"
+            "给出 survey.verdict（accept / needs_revision / more_evidence）建议，最终由人复核。",
+            "反向质疑综述并给出人工复核建议。",
+        ),
+    ]
+    return [
+        AgentProfile(
+            id=profile_id,
+            name=name,
+            instructions=instructions,
+            model=model,
+            allowed_tools=list(common_tools),
+            knowledge_base_ids=["enterprise-review"],
+            memory_scopes=list(common_scopes),
+            max_steps=7,
+            metadata={
+                "role_id": role_id,
+                "description": description,
+                "domain": "research_survey",
+                "human_decision_required": True,
+            },
+        )
+        for profile_id, name, role_id, instructions, description in definitions
+    ]
+
+
+def research_survey_slots() -> list[SpeakerSlot]:
+    """Return the fixed research DAG: plan -> evaluate -> write -> critique."""
+
+    return [
+        SpeakerSlot(
+            slot_id="planner",
+            role_id="retrieval_planner",
+            agent_profile_id="case-research-planner-agent",
+            instruction=(
+                "Decompose the research question into searchable sub-questions, "
+                "plan the retrieval strategy, and record the retrieved source "
+                "inventory with exact evidence references."
+            ),
+            order=10,
+        ),
+        SpeakerSlot(
+            slot_id="evaluator",
+            role_id="source_evaluator",
+            agent_profile_id="case-research-evaluator-agent",
+            instruction=(
+                "Assess credibility, relevance, and recency of the retrieved "
+                "sources; flag authoritative vs questionable sources and evidence gaps."
+            ),
+            depends_on=["planner"],
+            order=20,
+        ),
+        SpeakerSlot(
+            slot_id="writer",
+            role_id="synthesis_writer",
+            agent_profile_id="case-research-writer-agent",
+            instruction=(
+                "Write the survey in sections; every claim must cite a real "
+                "retrieved source (evidence_id or source). Never invent citations."
+            ),
+            depends_on=["evaluator"],
+            order=30,
+        ),
+        SpeakerSlot(
+            slot_id="critic",
+            role_id="critical_reviewer",
+            agent_profile_id="case-research-critic-agent",
+            instruction=(
+                "Critically review the survey: do claims exceed what the cited "
+                "sources support? Are counter-evidence and section gaps missed? "
+                "Submit one survey.verdict claim (accept / needs_revision / "
+                "more_evidence); final authority is human."
+            ),
+            depends_on=["writer"],
+            order=40,
+        ),
+    ]
+
+
 __all__ = [
     "ENTERPRISE_REVIEW_ROLES",
+    "RESEARCH_SURVEY_ROLES",
     "enterprise_review_profiles",
     "enterprise_review_slots",
+    "research_survey_profiles",
+    "research_survey_slots",
 ]

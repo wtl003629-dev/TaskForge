@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from taskforge.case_profiles import enterprise_review_profiles
+from taskforge.case_profiles import enterprise_review_profiles, research_survey_profiles
 from taskforge.case_runtime import (
     SUBMIT_ROLE_RESULT,
     CaseAgentExecutor,
@@ -64,6 +64,34 @@ def _submission() -> CaseSubmission:
             )
         ],
     )
+
+
+def _research_script(*, verdict: str = "accept") -> list[ModelTurn]:
+    claims = [
+        ("planner.sub_questions", ["sub-q1", "sub-q2"]),
+        ("evaluator.source_gaps", ["no authoritative baseline"]),
+        ("writer.section", "Survey section synthesizing retrieved sources."),
+        ("survey.verdict", verdict),
+    ]
+    turns: list[ModelTurn] = []
+    for index, (key, value) in enumerate(claims, start=1):
+        turns.append(
+            ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(
+                        call_id=f"knowledge-{index}",
+                        name="knowledge_search",
+                        arguments={"query": "research methods", "limit": 5},
+                    )
+                ],
+            )
+        )
+        turns.append(_role_turn(index, key, value))
+        turns.append(
+            ModelTurn(kind="final", final_answer=f"Research role {index} submitted.")
+        )
+    return turns
 
 
 def _role_turn(
@@ -189,7 +217,13 @@ def _coordinator(
         ),
         context=StaticContext(),
     )
-    profiles = {profile.id: profile for profile in enterprise_review_profiles(model="scripted")}
+    profiles = {
+        profile.id: profile
+        for profile in (
+            enterprise_review_profiles(model="scripted")
+            + research_survey_profiles(model="scripted")
+        )
+    }
     executor = CaseAgentExecutor(
         store=orchestration_store,
         runtime=runtime,
@@ -577,3 +611,37 @@ def test_decision_citation_of_unretrieved_submitted_evidence_still_fails() -> No
         ReviewCaseCoordinator._require_retrieved_recommendation_evidence(
             output, role_result, frozenset()
         )
+
+
+@pytest.mark.asyncio
+async def test_research_survey_reaches_human_review_with_verified_verdict(
+    tmp_path: Path,
+) -> None:
+    provider = ScriptedProvider(_research_script(verdict="accept"))
+    coordinator, _, _ = _coordinator(tmp_path, provider)
+    draft = coordinator.create_draft(
+        kind=CaseKind.RESEARCH_SURVEY,
+        title="RAG evaluation methods survey",
+        submission=_submission(),
+        idempotency_key="research-survey-1",
+    )
+    coordinator.submit_and_start(draft.case_id, idempotency_key="start-survey-1")
+
+    finished = await coordinator.run_until_pause_or_review(
+        draft.case_id, max_iterations=4
+    )
+
+    assert finished.review_case.status == CaseStatus.WAITING_HUMAN_REVIEW
+    assert finished.plan is not None
+    assert [slot.role_id for slot in finished.plan.slots] == [
+        "retrieval_planner",
+        "source_evaluator",
+        "synthesis_writer",
+        "critical_reviewer",
+    ]
+    recommendation = finished.review_case.recommendation
+    assert recommendation is not None
+    assert recommendation.outcome == RecommendationOutcome.APPROVE
+    assert recommendation.evidence_refs
+    assert all(item.evidence_id == "change-ticket-17" or item.evidence_id == "kb://change/ticket-17"
+               for item in recommendation.evidence_refs)
