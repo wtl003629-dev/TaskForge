@@ -96,9 +96,9 @@ async def _generate_answer(
         name="Answer eval agent",
         instructions=(
             "Answer the research question using ONLY the evidence provided under "
-            "UNTRUSTED EVIDENCE CONTEXT. Do not use outside knowledge. If the "
-            "evidence does not contain the answer, answer exactly UNKNOWN. "
-            "Answer with the fact only; do not add reasoning."
+            "UNTRUSTED EVIDENCE CONTEXT. Do not use outside knowledge. Give your "
+            "best determination from the evidence even if uncertain; do not refuse "
+            "on uncertainty. Keep the answer short: the fact or a brief Yes/No."
         ),
         model=model,
         allowed_tools=[],
