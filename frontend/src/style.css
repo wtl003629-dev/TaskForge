@@ -1582,6 +1582,72 @@ pre,
   overflow-wrap: anywhere;
 }
 
+.handoff-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.handoff-list article {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d3aa67;
+  background: #fff8e7;
+}
+
+.handoff-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.handoff-route code {
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.handoff-route span {
+  color: var(--amber);
+  font-size: 12px;
+}
+
+.handoff-route small {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.handoff-summary {
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.handoff-facts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.handoff-facts span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.handoff-facts code {
+  padding: 1px 6px;
+  border: 1px solid #e2c187;
+  background: #fff;
+  color: var(--ink);
+  font-size: 9px;
+}
+
 .recommendation-card {
   margin-top: 24px;
   padding: 18px;

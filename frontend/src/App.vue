@@ -30,6 +30,7 @@ import type {
   ReviewCaseDetail,
   ReviewCaseKind,
   ReviewExecutionDisclosure,
+  ReviewHandoff,
   ReviewPlanSlot,
   ReviewRoleRun,
   RunRecord,
@@ -201,6 +202,24 @@ function roleRunForSlot(slot: ReviewPlanSlot): ReviewRoleRun | undefined {
   return reviewDetail.value?.roleRuns
     .filter((item) => item.slotId === slot.slotId)
     .sort((left, right) => right.attempt - left.attempt)[0]
+}
+
+function handoffSourceLabel(handoff: ReviewHandoff): string {
+  const run = reviewDetail.value?.roleRuns.find(
+    (item) => item.roleRunId === handoff.fromRoleRunId,
+  )
+  return run ? `${readableRole(run.roleId)} · attempt ${run.attempt}` : handoff.fromRoleRunId
+}
+
+function handoffTargetLabel(handoff: ReviewHandoff): string {
+  const slot = reviewDetail.value?.plan?.slots.find(
+    (item) => item.slotId === handoff.toSlotId,
+  )
+  return slot ? readableRole(slot.roleId) : handoff.toSlotId
+}
+
+function shortFactId(factId: string): string {
+  return factId.length > 8 ? `${factId.slice(0, 8)}…` : factId
 }
 
 function displayValue(value: unknown): string {
@@ -1202,6 +1221,37 @@ onBeforeUnmount(stopPolling)
                     authority: {{ fact.authority }} · v{{ fact.version }}
                     <template v-if="fact.verifierRef"> · verifier: {{ fact.verifierRef }}</template>
                   </small>
+                </article>
+              </div>
+            </section>
+
+            <section v-if="reviewDetail.handoffs.length" class="review-section">
+              <div class="review-section-heading">
+                <div>
+                  <p>VERIFIED HANDOFFS</p>
+                  <h3>跨角色事实交接</h3>
+                </div>
+                <span>{{ reviewDetail.handoffs.length }} HANDOFFS</span>
+              </div>
+              <div class="handoff-list">
+                <article v-for="handoff in reviewDetail.handoffs" :key="handoff.handoffId">
+                  <div class="handoff-route">
+                    <code>{{ handoffSourceLabel(handoff) }}</code>
+                    <span aria-hidden="true">→</span>
+                    <code>{{ handoffTargetLabel(handoff) }}</code>
+                    <small>{{ formatTime(handoff.createdAt) }}</small>
+                  </div>
+                  <p class="handoff-summary">{{ handoff.summary }}</p>
+                  <div v-if="handoff.sharedFactIds.length" class="handoff-facts">
+                    <span>携带已验证事实</span>
+                    <code
+                      v-for="factId in handoff.sharedFactIds"
+                      :key="factId"
+                      :title="factId"
+                    >
+                      {{ shortFactId(factId) }}
+                    </code>
+                  </div>
                 </article>
               </div>
             </section>

@@ -18,6 +18,7 @@ import type {
   ReviewEvidenceRef,
   ReviewExecutionDisclosure,
   ReviewFact,
+  ReviewHandoff,
   ReviewHumanDecision,
   ReviewPlan,
   ReviewPlanSlot,
@@ -511,6 +512,18 @@ function normalizeReviewFact(value: unknown): ReviewFact {
   }
 }
 
+function normalizeReviewHandoff(value: unknown): ReviewHandoff {
+  const item = asRecord(value)
+  return {
+    handoffId: text(item.handoff_id, 'unknown-handoff'),
+    fromRoleRunId: text(item.from_role_run_id),
+    toSlotId: text(item.to_slot_id),
+    summary: text(item.summary),
+    sharedFactIds: stringArray(item.shared_fact_ids),
+    createdAt: text(item.created_at),
+  }
+}
+
 function normalizeReviewAudit(value: unknown): ReviewCaseAuditEvent {
   const item = asRecord(value)
   return {
@@ -532,6 +545,7 @@ function normalizeReviewDetail(value: unknown): ReviewCaseDetail {
     plan: normalizeReviewPlan(item.plan),
     roleRuns: asArray(item.role_runs).map(normalizeReviewRoleRun),
     sharedFacts: asArray(item.shared_facts).map(normalizeReviewFact),
+    handoffs: asArray(item.handoffs).map(normalizeReviewHandoff),
     auditEvents: asArray(item.audit_events).map(normalizeReviewAudit),
     execution: normalizeReviewDisclosure(item.execution),
   }

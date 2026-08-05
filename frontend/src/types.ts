@@ -302,11 +302,21 @@ export interface ReviewCaseAuditEvent {
   createdAt: string
 }
 
+export interface ReviewHandoff {
+  handoffId: string
+  fromRoleRunId: string
+  toSlotId: string
+  summary: string
+  sharedFactIds: string[]
+  createdAt: string
+}
+
 export interface ReviewCaseDetail {
   case: ReviewCase
   plan?: ReviewPlan
   roleRuns: ReviewRoleRun[]
   sharedFacts: ReviewFact[]
+  handoffs: ReviewHandoff[]
   auditEvents: ReviewCaseAuditEvent[]
   execution: ReviewExecutionDisclosure
 }
