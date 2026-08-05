@@ -6,7 +6,11 @@ from typing import Any
 import pytest
 
 from taskforge.case_profiles import enterprise_review_profiles
-from taskforge.case_runtime import SUBMIT_ROLE_RESULT, CaseAgentExecutor
+from taskforge.case_runtime import (
+    SUBMIT_ROLE_RESULT,
+    CaseAgentExecutor,
+    RoleResultSubmission,
+)
 from taskforge.checkpoints import SQLiteCheckpointStore
 from taskforge.domain import ModelTurn, ToolRequest
 from taskforge.orchestration import (
@@ -524,3 +528,52 @@ async def test_required_role_attempt_exhaustion_fails_plan_and_case(
     assert replay.review_case.status == CaseStatus.FAILED
     assert replay.plan is not None and replay.plan.status == PlanStatus.FAILED
     assert len(provider.calls) == 2
+
+
+def test_decision_citation_may_reference_host_created_shared_fact() -> None:
+    output = {
+        "retrieved_evidence_refs": ["change-ticket-17", "case://change-ticket-17"],
+        "role_result": {
+            "claims": [
+                {
+                    "fact_key": "decision.outcome",
+                    "value": "approve",
+                    "evidence_refs": ["change-ticket-17", "fact:abc-123"],
+                    "confidence": 0.9,
+                }
+            ],
+            "summary": "Approval recommended.",
+            "handoff_summary": "Approval rationale.",
+        },
+    }
+    role_result = RoleResultSubmission.model_validate(output["role_result"])
+    ReviewCaseCoordinator._require_retrieved_recommendation_evidence(
+        output, role_result, frozenset({"abc-123"})
+    )
+    bound = ReviewCaseCoordinator._bind_recommendation_evidence(
+        [_submission().evidence_refs[0]], role_result
+    )
+    assert [item.evidence_id for item in bound] == ["change-ticket-17"]
+
+
+def test_decision_citation_of_unretrieved_submitted_evidence_still_fails() -> None:
+    output = {
+        "retrieved_evidence_refs": ["case://change-ticket-17"],
+        "role_result": {
+            "claims": [
+                {
+                    "fact_key": "decision.outcome",
+                    "value": "approve",
+                    "evidence_refs": ["change-ticket-17", "case://change-ticket-17"],
+                    "confidence": 0.9,
+                }
+            ],
+            "summary": "Approval recommended.",
+            "handoff_summary": "Approval rationale.",
+        },
+    }
+    role_result = RoleResultSubmission.model_validate(output["role_result"])
+    with pytest.raises(RecommendationEvidenceError, match="knowledge_search"):
+        ReviewCaseCoordinator._require_retrieved_recommendation_evidence(
+            output, role_result, frozenset()
+        )
