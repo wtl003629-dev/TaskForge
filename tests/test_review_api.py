@@ -216,6 +216,32 @@ def test_openai_credentials_only_disclose_configured_not_verified(
     }
 
 
+def test_deepseek_credentials_only_disclose_configured_not_verified(
+    tmp_path: Path,
+) -> None:
+    settings = make_settings(
+        tmp_path,
+        provider="deepseek",
+        deepseek_api_key="sk-contract-only-not-live",
+        deepseek_model="deepseek-chat",
+    )
+    # Creating the provider and reading disclosure must not make a model call.
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/api/review-cases", headers=OWNER)
+
+    assert response.status_code == 200, response.text
+    assert response.json()["execution"] == {
+        "provider": "deepseek",
+        "mode": "configured-provider",
+        "provider_configured": True,
+        "contract_tested_mock": True,
+        "live_smoke_verified": False,
+        "business_e2e_verified": False,
+        "recommendation_authority": "model_untrusted",
+        "final_decision_authority": "human",
+    }
+
+
 @pytest.mark.parametrize(
     "field_name",
     ["live_smoke_verified", "business_e2e_verified"],

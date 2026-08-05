@@ -39,11 +39,15 @@ class Settings(BaseSettings):
     worker_max_attempts: int = Field(default=3, ge=1, le=20)
     mcp_config_path: Path | None = None
 
-    provider: Literal["demo", "openai"] = "demo"
+    provider: Literal["demo", "openai", "deepseek"] = "demo"
     openai_api_key: SecretStr | None = None
     openai_model: str | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
+    deepseek_api_key: SecretStr | None = None
+    deepseek_model: str | None = None
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
 
     @field_validator("mcp_config_path", mode="before")
     @classmethod

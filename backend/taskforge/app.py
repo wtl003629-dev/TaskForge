@@ -497,6 +497,13 @@ def _review_execution_disclosure(
             provider_configured=True,
             contract_tested_mock=True,
         )
+    if owns_provider and settings.provider == "deepseek":
+        return ReviewExecutionDisclosure(
+            provider="deepseek",
+            mode="configured-provider",
+            provider_configured=True,
+            contract_tested_mock=True,
+        )
     return ReviewExecutionDisclosure(
         provider=type(provider).__name__,
         mode="injected-test-provider",
@@ -670,6 +677,20 @@ def _index_review_case_evidence(knowledge_store: Any, review_case: ReviewCase) -
 def _make_provider(settings: Settings) -> ModelProvider:
     if settings.provider == "demo":
         return DemoProvider()
+    if settings.provider == "deepseek":
+        if settings.deepseek_api_key is None or not settings.deepseek_api_key.get_secret_value().strip():
+            raise ValueError("TASKFORGE_DEEPSEEK_API_KEY is required when provider=deepseek")
+        if settings.deepseek_model is None or not settings.deepseek_model.strip():
+            raise ValueError("TASKFORGE_DEEPSEEK_MODEL is required when provider=deepseek")
+        from .openai_provider import OpenAIChatCompletionsProvider
+
+        return OpenAIChatCompletionsProvider(
+            api_key=settings.deepseek_api_key.get_secret_value(),
+            enabled=True,
+            model=settings.deepseek_model,
+            base_url=settings.deepseek_base_url,
+            timeout_seconds=settings.deepseek_timeout_seconds,
+        )
     if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value().strip():
         raise ValueError("TASKFORGE_OPENAI_API_KEY is required when provider=openai")
     if settings.openai_model is None or not settings.openai_model.strip():
@@ -911,7 +932,13 @@ def create_app(
     selected_provider = provider if provider is not None else _make_provider(config)
     owns_provider = provider is None
 
-    profile_model = config.openai_model if config.provider == "openai" else "demo"
+    profile_model = (
+        config.deepseek_model
+        if config.provider == "deepseek"
+        else config.openai_model
+        if config.provider == "openai"
+        else "demo"
+    )
     profiles = {item.id: item for item in agent_profiles(model=profile_model or "demo")}
     review_profiles = {
         item.id: item
@@ -1126,7 +1153,7 @@ def create_app(
         return Health(
             status="ok",
             provider=config.provider,
-            execution="offline-deterministic-demo" if config.provider == "demo" else "openai",
+            execution="offline-deterministic-demo" if config.provider == "demo" else config.provider,
         )
 
     @api.get("/api/agents", response_model=list[AgentSummary])

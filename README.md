@@ -148,6 +148,26 @@ TASKFORGE_OPENAI_MODEL=你的可用模型名
 
 `/api/review-cases` 的 `execution` 响应把状态拆为四项：`provider_configured`、`contract_tested_mock`、`live_smoke_verified` 与 `business_e2e_verified`。配置 key/model 只会令第一项为 `true`；模拟 HTTP 契约测试也不等于真实调用。当前尚未实现可校验、可持久化的 live smoke 与业务 E2E 验证记录，因此即使本地脚本曾成功，API 中后两项仍保持 `false`，不会从环境变量或 API key 推断成功。
 
+## 切换 DeepSeek Provider
+
+DeepSeek 走 OpenAI 兼容的 Chat Completions 协议（`/chat/completions`），不是 Responses API。复制 `.env.example` 为 `.env`，填写：
+
+```dotenv
+TASKFORGE_PROVIDER=deepseek
+TASKFORGE_DEEPSEEK_API_KEY=...
+TASKFORGE_DEEPSEEK_MODEL=deepseek-chat
+```
+
+同样 fail fast：未同时提供 key 和 model 时服务会拒绝启动。续接不依赖服务端会话状态；每次请求由宿主根据 checkpoint 重建完整消息历史（assistant `tool_calls` + `tool` role 回执），因此可安全跨重启重放，不会重复执行工具。
+
+真实冒烟测试（同样需要 `--confirm-live-call`）：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_live_deepseek_smoke.py --confirm-live-call
+```
+
+该脚本要求模型调用一次受控 `calculator`，再通过完整消息历史续接完成回答；只有真实通过后才能声明当前 DeepSeek 凭据、模型和网络环境的 live API 链路已验证。
+
 ## 评测
 
 ```powershell

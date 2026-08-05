@@ -595,3 +595,19 @@ def test_openai_selection_fails_fast_when_required_configuration_is_missing(
     settings = make_settings(tmp_path, provider="openai", **overrides)
     with pytest.raises(ValueError, match="TASKFORGE_OPENAI"):
         create_app(settings)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"deepseek_api_key": None, "deepseek_model": "deepseek-chat"},
+        {"deepseek_api_key": "sk-test", "deepseek_model": None},
+    ],
+)
+def test_deepseek_selection_fails_fast_when_required_configuration_is_missing(
+    tmp_path: Path,
+    overrides: dict,
+) -> None:
+    settings = make_settings(tmp_path, provider="deepseek", **overrides)
+    with pytest.raises(ValueError, match="TASKFORGE_DEEPSEEK"):
+        create_app(settings)
