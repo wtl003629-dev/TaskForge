@@ -65,6 +65,10 @@ _MAX_CLAIM_JSON_NODES = 10_000
 _CASE_CONTEXT_CHAR_BUDGET = 16_000
 _CASE_CONTEXT_ITEM_VALUE_BUDGET = 2_000
 _CASE_CONTEXT_TEXT_BUDGET = 1_200
+# Reserve headroom so the final truncated_sections list cannot push the
+# envelope back over the hard budget after the pop-to-budget loop.
+_CASE_CONTEXT_HEADROOM = 1_024
+_CONTEXT_EFFECTIVE_BUDGET = _CASE_CONTEXT_CHAR_BUDGET - _CASE_CONTEXT_HEADROOM
 
 
 def _validate_claim_json(
@@ -1556,7 +1560,7 @@ class CaseAgentExecutor:
             values = envelope[section]
             assert isinstance(values, list)
             values.append(item)
-            if rendered_size() > _CASE_CONTEXT_CHAR_BUDGET:
+            while values and rendered_size() >= _CONTEXT_EFFECTIVE_BUDGET:
                 values.pop()
                 truncated.add(section)
 

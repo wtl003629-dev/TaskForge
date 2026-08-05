@@ -570,8 +570,23 @@ class ReviewCaseCoordinator:
             self._orchestration_access(review_case.case_id)
         )
         valid_fact_ids = frozenset(fact.fact_id for fact in facts)
+        valid_source_ids: frozenset[str] = frozenset()
+        if review_case.kind == CaseKind.RESEARCH_SURVEY:
+            runs = self.orchestration_store.list_role_runs(
+                self._orchestration_access(review_case.case_id),
+                self.plan_id_for_case(review_case.case_id),
+            )
+            sources: set[str] = set()
+            for run in runs:
+                raw = (run.output or {}).get("retrieved_evidence_refs")
+                if isinstance(raw, list):
+                    sources.update(ref for ref in raw if isinstance(ref, str))
+            valid_source_ids = frozenset(sources)
         self._require_retrieved_recommendation_evidence(
-            output, role_result, valid_fact_ids
+            output,
+            role_result,
+            valid_fact_ids,
+            valid_source_ids=valid_source_ids,
         )
         if review_case.kind == CaseKind.RESEARCH_SURVEY:
             evidence = self._bind_retrieved_evidence(output)
@@ -644,13 +659,16 @@ class ReviewCaseCoordinator:
         output: Mapping[str, Any],
         role_result: RoleResultSubmission,
         valid_fact_ids: frozenset[str],
+        *,
+        valid_source_ids: frozenset[str] = frozenset(),
     ) -> None:
         """Require the decision role to be grounded in a real retrieval.
 
-        Citations may reference either the role's successful knowledge_search
-        receipt or a host-created shared fact handed off from an upstream role
-        (models reference those as ``fact:<id>``).  A submitted evidence ID that
-        was never retrieved is still not proof of retrieval.
+        Citations may reference the role's successful knowledge_search receipt,
+        a host-created shared fact handed off from an upstream role (models
+        reference those as ``fact:<id>``), or, for survey cases, any source that
+        another role in the same case genuinely retrieved.  A submitted evidence
+        ID that was never retrieved is still not proof of retrieval.
         """
 
         raw = output.get("retrieved_evidence_refs")
@@ -663,7 +681,11 @@ class ReviewCaseCoordinator:
         }
 
         def valid_basis(ref: str) -> bool:
-            return ref in retrieved or _shared_fact_id(ref) in valid_fact_ids
+            return (
+                ref in retrieved
+                or _shared_fact_id(ref) in valid_fact_ids
+                or ref in valid_source_ids
+            )
 
         cited = {
             ref for claim in role_result.claims for ref in claim.evidence_refs
@@ -672,7 +694,8 @@ class ReviewCaseCoordinator:
         if not retrieved or missing:
             raise RecommendationEvidenceError(
                 "decision citations must come from its successful knowledge_search "
-                "receipt or a host-created shared fact"
+                "receipt, a host-created shared fact, or a source retrieved by "
+                "another role in this case"
             )
 
     @staticmethod
