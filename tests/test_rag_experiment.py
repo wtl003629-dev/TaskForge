@@ -470,6 +470,16 @@ def test_multihop_rag_requires_and_enforces_the_locked_external_split(
     assert not (result.output_dir / "source_pdfs").exists()
 
 
+def test_semantic_embedding_is_opt_in_and_never_the_offline_default() -> None:
+    default = ExperimentRetrievalConfig()
+    assert default.semantic_embedding is False
+    semantic = ExperimentRetrievalConfig(
+        semantic_embedding=True, semantic_model="BAAI/bge-small-en-v1.5"
+    )
+    assert semantic.semantic_embedding is True
+    assert semantic.semantic_model == "BAAI/bge-small-en-v1.5"
+
+
 def test_config_and_publication_fail_closed(tmp_path: Path) -> None:
     with pytest.raises(ValidationError, match="complete M1 ablation"):
         ExperimentRetrievalConfig(stages=["lexical_bm25"])

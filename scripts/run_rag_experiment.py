@@ -68,6 +68,20 @@ def parser() -> argparse.ArgumentParser:
         help="MultiHop-RAG locked split manifest inside the repository.",
     )
     value.add_argument(
+        "--semantic",
+        action="store_true",
+        help=(
+            "Use a real semantic dense embedder (downloads an ONNX model). "
+            "Off by default so the offline M1 gate never downloads a model."
+        ),
+    )
+    value.add_argument(
+        "--semantic-model",
+        type=str,
+        default=None,
+        help="fastembed model name for --semantic (default BAAI/bge-small-en-v1.5).",
+    )
+    value.add_argument(
         "--output",
         type=Path,
         help="Exact output run directory; an existing directory is never overwritten.",
@@ -119,6 +133,12 @@ def _with_overrides(
             args.multihop_locked_split, "--multihop-locked-split"
         )
     payload["dataset"] = dataset
+    retrieval = dict(payload["retrieval"])
+    if args.semantic:
+        retrieval["semantic_embedding"] = True
+    if args.semantic_model is not None:
+        retrieval["semantic_model"] = args.semantic_model
+    payload["retrieval"] = retrieval
     return RAGExperimentConfig.model_validate(payload)
 
 

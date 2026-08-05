@@ -31,7 +31,9 @@ from .domain import StrictModel
 from .hybrid_retrieval import (
     AppliedRetrievalFilters,
     BM25Index,
+    DenseEmbedder,
     DeterministicHashEmbedder,
+    FastEmbedEmbedder,
     HybridChunk,
     HybridSearchRequest,
     LexicalOverlapFallbackReranker,
@@ -112,6 +114,8 @@ class ExperimentRetrievalConfig(StrictModel):
     bm25_k1: float = Field(default=1.5, gt=0.0, le=10.0)
     bm25_b: float = Field(default=0.75, ge=0.0, le=1.0)
     hash_dimension: int = Field(default=64, ge=8, le=65_536)
+    semantic_embedding: bool = False
+    semantic_model: str = Field(default="BAAI/bge-small-en-v1.5", min_length=1)
 
     @model_validator(mode="after")
     def stages_and_budgets_are_comparable(self) -> ExperimentRetrievalConfig:
@@ -602,9 +606,32 @@ def _run_stages(
         k1=config.retrieval.bm25_k1,
         b=config.retrieval.bm25_b,
     )
+    if config.retrieval.semantic_embedding:
+        mode_label = "semantic_dense"
+        production_dense = True
+        dense_embedder: DenseEmbedder = FastEmbedEmbedder(
+            config.retrieval.semantic_model
+        )
+        dense_embedding_desc: dict[str, Any] = {
+            "kind": "fastembed_bge",
+            "model": config.retrieval.semantic_model,
+            "dimension": dense_embedder.dimension,
+            "semantic": True,
+            "production": True,
+        }
+    else:
+        mode_label = EXPERIMENT_MODE
+        production_dense = False
+        dense_embedder = DeterministicHashEmbedder(config.retrieval.hash_dimension)
+        dense_embedding_desc = {
+            "kind": "deterministic_hash",
+            "dimension": config.retrieval.hash_dimension,
+            "semantic": False,
+            "production": False,
+        }
     qdrant = QdrantHybridIndex.in_memory(
         collection_name="taskforge-rag-ablation",
-        embedder=DeterministicHashEmbedder(config.retrieval.hash_dimension),
+        embedder=dense_embedder,
         reranker=LexicalOverlapFallbackReranker(),
     )
     qdrant.upsert(chunks)
@@ -661,8 +688,8 @@ def _run_stages(
                     "backend": response.backend,
                     "filter_request": actual_filter,
                     "filters_applied_before_ranking": True,
-                    "experiment_mode": EXPERIMENT_MODE,
-                    "production_semantic_dense": False,
+                    "experiment_mode": mode_label,
+                    "production_semantic_dense": production_dense,
                 }
             )
         report = evaluate_retrieval(
@@ -677,7 +704,7 @@ def _run_stages(
             "backend": observed_backend,
             "filter_request": expected_filter,
             "filters_applied_before_ranking": True,
-            "experiment_mode": EXPERIMENT_MODE,
+            "experiment_mode": mode_label,
             "embedding": (
                 {
                     "kind": "none",
@@ -685,12 +712,7 @@ def _run_stages(
                     "production": False,
                 }
                 if stage == "lexical_bm25"
-                else {
-                    "kind": "deterministic_hash",
-                    "dimension": config.retrieval.hash_dimension,
-                    "semantic": False,
-                    "production": False,
-                }
+                else dense_embedding_desc
             ),
             "reranker": (
                 "lexical_overlap_fallback"
@@ -705,8 +727,8 @@ def _run_stages(
         raise RuntimeError("experiment produced an incomplete ablation matrix")
     metrics = {
         "schema_version": "1.0",
-        "experiment_mode": EXPERIMENT_MODE,
-        "production_semantic_dense": False,
+        "experiment_mode": mode_label,
+        "production_semantic_dense": production_dense,
         "case_ids": case_ids,
         "top_k": config.retrieval.top_k,
         "same_case_ids_and_top_k": True,
@@ -817,8 +839,8 @@ def run_rag_experiment(
                 "backend": metrics["stages"][stage]["backend"],
                 "filters_applied_before_ranking": True,
                 "filter_request": metrics["stages"][stage]["filter_request"],
-                "experiment_mode": EXPERIMENT_MODE,
-                "production_semantic_dense": False,
+                "experiment_mode": metrics["experiment_mode"],
+                "production_semantic_dense": metrics["production_semantic_dense"],
                 "embedding": metrics["stages"][stage]["embedding"],
                 "reranker": metrics["stages"][stage]["reranker"],
             }
@@ -828,10 +850,16 @@ def run_rag_experiment(
             "schema_version": "1.0",
             "run_id": run_id,
             "created_at": timestamp.isoformat().replace("+00:00", "Z"),
-            "experiment_mode": EXPERIMENT_MODE,
-            "production_semantic_dense": False,
+            "experiment_mode": metrics["experiment_mode"],
+            "production_semantic_dense": metrics["production_semantic_dense"],
             "limitations": [
-                "deterministic hash vectors are nonsemantic and not production dense embeddings",
+                *(
+                    []
+                    if metrics["production_semantic_dense"]
+                    else [
+                        "deterministic hash vectors are nonsemantic and not production dense embeddings"
+                    ]
+                ),
                 "the offline reranker is lexical overlap, not a learned cross-encoder",
             ],
             "dataset": dict(prepared.provenance),

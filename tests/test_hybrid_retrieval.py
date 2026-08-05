@@ -293,3 +293,13 @@ def test_embedding_reranker_collection_and_dependency_failures_are_explicit(monk
             collection_name="missing-client",
             embedder=DeterministicHashEmbedder(16),
         )
+
+
+def test_fastembed_missing_fails_closed_and_import_never_downloads(monkeypatch) -> None:
+    """Without fastembed the semantic embedder fails closed; nothing downloads."""
+
+    from taskforge.hybrid_retrieval import FastEmbedEmbedder
+
+    monkeypatch.setattr(hybrid_module, "TextEmbedding", None)
+    with pytest.raises(EmbeddingContractError, match="fastembed"):
+        FastEmbedEmbedder()

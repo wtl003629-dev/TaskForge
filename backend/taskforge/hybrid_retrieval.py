@@ -31,6 +31,11 @@ except ImportError:  # pragma: no cover - exercised by explicit monkeypatch test
     QdrantClient = None  # type: ignore[assignment,misc]
     qdrant_models = None  # type: ignore[assignment]
 
+try:  # Keep everything importable without the optional semantic dependency.
+    from fastembed import TextEmbedding
+except ImportError:  # pragma: no cover - exercised by explicit monkeypatch test.
+    TextEmbedding = None  # type: ignore[assignment,misc]
+
 
 _POINT_NAMESPACE = UUID("31a673ae-807c-4e12-ad73-68e77f67f99e")
 
@@ -341,6 +346,44 @@ class DeterministicHashEmbedder:
         if norm:
             vector = [value / norm for value in vector]
         return vector
+
+
+class FastEmbedEmbedder:
+    """Semantic dense embedder backed by a local ONNX fastembed model.
+
+    Unlike :class:`DeterministicHashEmbedder`, this is a real semantic model;
+    the ONNX artifact is downloaded once and cached under the fastembed cache.
+    It is deliberately excluded from the offline M1 gate, so a caller must opt
+    in explicitly and record the model in run provenance.
+    """
+
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5") -> None:
+        if TextEmbedding is None:
+            raise EmbeddingContractError(
+                "fastembed is required for the semantic embedder; install the semantic extra"
+            )
+        self._model_name = model_name
+        self._model = TextEmbedding(model_name=model_name)
+        # fastembed exposes no stable .dimension; probe one embedding instead.
+        self._dimension = len(next(iter(self._model.embed(["dimension probe"]))))
+
+    @property
+    def model_name(self) -> str:
+        return self._model_name
+
+    @property
+    def dimension(self) -> int:
+        return self._dimension
+
+    def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        return [self._float_list(vector) for vector in self._model.embed(texts)]
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._float_list(next(iter(self._model.query_embed(text))))
+
+    @staticmethod
+    def _float_list(vector: Any) -> list[float]:
+        return [float(value) for value in vector]
 
 
 class LexicalOverlapFallbackReranker:
