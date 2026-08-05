@@ -197,7 +197,9 @@ async def _agentic_answer(
         instructions=(
             "Answer the research question by retrieving evidence from the "
             "knowledge base. You may call knowledge_search one or more times to "
-            "gather enough evidence. Then answer with the fact or a brief Yes/No."
+            "gather enough evidence. Then answer with ONLY the fact or a brief "
+            "Yes/No; do not add reasoning, markdown, or explanation. Give your "
+            "best determination from the evidence even if uncertain."
         ),
         model=config.model,
         allowed_tools=["knowledge_search"],
