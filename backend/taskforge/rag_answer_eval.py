@@ -195,11 +195,13 @@ async def _agentic_answer(
         id="answer-eval-agent",
         name="Answer eval agent",
         instructions=(
-            "Answer the research question by retrieving evidence from the "
-            "knowledge base. You may call knowledge_search one or more times to "
-            "gather enough evidence. Then answer with ONLY the fact or a brief "
-            "Yes/No; do not add reasoning, markdown, or explanation. Give your "
-            "best determination from the evidence even if uncertain."
+            "Answer the research question using ONLY the knowledge base. Use "
+            "knowledge_search to gather evidence; you may search multiple times "
+            "and refine your query. For questions that compare sources or judge "
+            "consistency across articles, first check what each relevant source "
+            "says and whether they agree, then determine the answer. Reply with "
+            "ONLY the final fact or a brief Yes/No; do not include reasoning, "
+            "markdown, or explanations."
         ),
         model=config.model,
         allowed_tools=["knowledge_search"],
