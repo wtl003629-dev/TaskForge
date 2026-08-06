@@ -22,7 +22,11 @@ if str(BACKEND_ROOT) not in sys.path:
 
 from taskforge.config import Settings
 from taskforge.openai_provider import OpenAIChatCompletionsProvider
-from taskforge.rag_answer_eval import RAGAnswerEvalConfig, run_rag_answer_eval
+from taskforge.rag_answer_eval import (
+    ANSWER_EVAL_METADATA_FIELD_WEIGHTS,
+    RAGAnswerEvalConfig,
+    run_rag_answer_eval,
+)
 from taskforge.rag_experiment import (
     ExperimentDatasetConfig,
     ExperimentRetrievalConfig,
@@ -67,6 +71,12 @@ def parser() -> argparse.ArgumentParser:
         help="Model name; defaults to TASKFORGE_DEEPSEEK_MODEL.",
     )
     value.add_argument(
+        "--agent-max-steps",
+        type=int,
+        default=None,
+        help="Override the agentic answer loop's step budget.",
+    )
+    value.add_argument(
         "--output",
         type=Path,
         default=None,
@@ -109,10 +119,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     config = RAGAnswerEvalConfig(
         dataset=ExperimentDatasetConfig(kind=dataset_kind),
-        retrieval=ExperimentRetrievalConfig(semantic_embedding=args.semantic),
+        retrieval=ExperimentRetrievalConfig(
+            semantic_embedding=args.semantic,
+            bm25_field_weights=dict(ANSWER_EVAL_METADATA_FIELD_WEIGHTS),
+        ),
         retriever=retriever,
         mode="agentic" if args.agentic else "naive",
         model=model,
+        agent_max_steps=(
+            args.agent_max_steps if args.agent_max_steps is not None else 8
+        ),
         max_cases=args.max_cases,
     )
     output = args.output or _default_output(dataset_kind, datetime.now(UTC))

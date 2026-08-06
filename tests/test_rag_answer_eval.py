@@ -8,7 +8,11 @@ from pathlib import Path
 import pytest
 
 from taskforge.domain import ModelTurn, ToolRequest
-from taskforge.rag_answer_eval import RAGAnswerEvalConfig, run_rag_answer_eval
+from taskforge.rag_answer_eval import (
+    ANSWER_EVAL_METADATA_FIELD_WEIGHTS,
+    RAGAnswerEvalConfig,
+    run_rag_answer_eval,
+)
 from taskforge.rag_baseline import LockedSplitManifest, sha256_file
 from taskforge.rag_evaluation import load_multihop_rag_dataset
 from taskforge.rag_experiment import (
@@ -30,6 +34,32 @@ class FakeAnswerProvider:
             kind="final",
             final_answer=self._answers.get(task.goal, "UNKNOWN"),
         )
+
+    async def aclose(self) -> None:
+        pass
+
+
+class StepLimitProvider:
+    """Uses the whole step budget on searches, then answers when forced."""
+
+    def __init__(self, final_answer: str) -> None:
+        self._final = final_answer
+        self.calls = 0
+
+    async def complete(self, *, task, profile, context, tools):
+        self.calls += 1
+        if self.calls % 5 != 0:
+            return ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(
+                        call_id=f"ks-{self.calls}",
+                        name="knowledge_search",
+                        arguments={"query": task.goal, "limit": 5},
+                    )
+                ],
+            )
+        return ModelTurn(kind="final", final_answer=self._final)
 
     async def aclose(self) -> None:
         pass
@@ -262,3 +292,59 @@ async def test_agentic_mode_runs_multi_turn_retrieval_through_the_runtime(
     assert all(row["steps"] >= 1 for row in rows)
     # First query's gold is "The Verge" -> correct; second is "TechCrunch" -> wrong.
     assert metrics["exact_match_accuracy"] == 0.5
+
+
+def test_answer_eval_defaults_to_citation_metadata_field_weights() -> None:
+    config = RAGAnswerEvalConfig(model="fake")
+
+    assert config.retrieval.bm25_field_weights == ANSWER_EVAL_METADATA_FIELD_WEIGHTS
+
+
+@pytest.mark.asyncio
+async def test_agentic_mode_forces_answer_after_step_limit(tmp_path: Path) -> None:
+    repository = tmp_path / "repo"
+    queries_path = repository / ".taskforge" / "eval-cache" / "MultiHopRAG.json"
+    corpus_path = repository / ".taskforge" / "eval-cache" / "corpus.json"
+    split_path = repository / "eval" / "splits" / "locked.json"
+    _write_fixture(repository)
+    split_path.parent.mkdir(parents=True)
+    dataset = load_multihop_rag_dataset(queries_path, corpus_path)
+    split = LockedSplitManifest(
+        split_id="fixture-locked",
+        dataset="MultiHop-RAG",
+        source_split="fixture",
+        source_sha256=sha256_file(queries_path),
+        selection={"locked": True},
+        case_ids=[case.case_id for case in dataset.cases],
+        category_counts=dict(Counter(case.category for case in dataset.cases)),
+    )
+    split_path.write_text(split.model_dump_json(), encoding="utf-8")
+    config = RAGAnswerEvalConfig(
+        dataset=ExperimentDatasetConfig(
+            kind="multihop_rag_locked",
+            multihop_rag_queries_path=".taskforge/eval-cache/MultiHopRAG.json",
+            multihop_rag_corpus_path=".taskforge/eval-cache/corpus.json",
+            multihop_rag_locked_split_path="eval/splits/locked.json",
+        ),
+        retrieval=ExperimentRetrievalConfig(top_k=[1, 2], candidate_k=4),
+        retriever="bm25",
+        mode="agentic",
+        model="fake",
+        agent_max_steps=4,
+        max_cases=1,
+    )
+    provider = StepLimitProvider("The Verge")
+
+    rows, metrics, _ = await run_rag_answer_eval(
+        output_dir=tmp_path / "answer-step-limit",
+        config=config,
+        provider=provider,
+        repository_root=repository,
+        created_at=FIXED_TIME,
+    )
+
+    assert metrics["total_cases"] == 1
+    assert metrics["exact_match_accuracy"] == 1.0
+    assert rows[0]["generated_answer"] == "The Verge"
+    assert rows[0]["steps"] == 4
+    assert rows[0]["retrieved_ids"]

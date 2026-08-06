@@ -12,9 +12,11 @@ from __future__ import annotations
 
 import os
 import platform
+import re
 import shutil
 import tempfile
 from collections import Counter
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, Sequence
@@ -24,7 +26,8 @@ from pydantic import Field
 from . import __version__
 from .builtins import create_tool_registry
 from .context import ContextAssembler
-from .domain import AgentProfile, RunStatus, StrictModel, Task, utc_now
+from .domain import AgentProfile, RunState, RunStatus, StrictModel, Task, utc_now
+from .hybrid_knowledge import HybridKnowledgeStore, knowledge_to_hybrid_chunk
 from .hybrid_retrieval import (
     BM25Index,
     DeterministicHashEmbedder,
@@ -32,7 +35,7 @@ from .hybrid_retrieval import (
     LexicalOverlapFallbackReranker,
     QdrantHybridIndex,
 )
-from .knowledge import InMemoryKnowledgeStore, KnowledgeChunk
+from .knowledge import AccessContext, KnowledgeChunk
 from .memory import InMemoryMemoryStore
 from .providers import ModelProvider
 from .rag_evaluation import (
@@ -60,17 +63,26 @@ from .tooling import CapabilityPolicy
 RetrieverName = Literal["bm25", "qdrant_rrf", "qdrant_rrf_rerank"]
 
 
+ANSWER_EVAL_METADATA_FIELD_WEIGHTS = {
+    "title": 2.0,
+    "source": 2.0,
+    "published_at": 1.0,
+}
+
+
 class RAGAnswerEvalConfig(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     dataset: ExperimentDatasetConfig = Field(default_factory=ExperimentDatasetConfig)
     retrieval: ExperimentRetrievalConfig = Field(
-        default_factory=ExperimentRetrievalConfig
+        default_factory=lambda: ExperimentRetrievalConfig(
+            bm25_field_weights=dict(ANSWER_EVAL_METADATA_FIELD_WEIGHTS)
+        )
     )
     filters: ExperimentFilterConfig = Field(default_factory=ExperimentFilterConfig)
     retriever: RetrieverName = "bm25"
     model: str = Field(min_length=1)
     mode: Literal["naive", "agentic"] = "naive"
-    agent_max_steps: int = Field(default=6, ge=1, le=20)
+    agent_max_steps: int = Field(default=8, ge=1, le=20)
     evidence_top_k: int = Field(default=5, ge=1, le=20)
     max_evidence_chars: int = Field(default=16_000, ge=500, le=80_000)
     max_cases: int | None = Field(default=None, ge=1)
@@ -107,7 +119,11 @@ async def _generate_answer(
             "Answer the research question using ONLY the evidence provided under "
             "UNTRUSTED EVIDENCE CONTEXT. Do not use outside knowledge. Give your "
             "best determination from the evidence even if uncertain; do not refuse "
-            "on uncertainty. Keep the answer short: the fact or a brief Yes/No."
+            "on uncertainty. For agreement/comparison questions, answer Yes only "
+            "if every clause is supported, No if any clause is contradicted, and "
+            "Different only when the evidence confirms the items differ; otherwise "
+            "reply with only the bare fact. Keep the answer short and never leave "
+            "it blank."
         ),
         model=model,
         allowed_tools=[],
@@ -139,12 +155,66 @@ class _InMemoryCheckpointStore:
         self.saved.append(state.model_copy(deep=True))
 
 
+class _CitationAwareContextAssembler(ContextAssembler):
+    """Expands retrieval to quoted citations so the agent sees source-rich context."""
+
+    def _retrieval_query(
+        self,
+        query: str | None,
+        task: object | None,
+        profile: object | None,
+    ) -> str:
+        base = super()._retrieval_query(query, task, profile)
+        return " ".join(_retrieval_subqueries(base))
+
+
+def _evidence_text(hit: Any) -> str:
+    """Prepend citation metadata to a chunk body when the corpus provides it."""
+
+    metadata = getattr(getattr(hit, "chunk", None), "metadata", None)
+    header: list[str] = []
+    if isinstance(metadata, Mapping):
+        for key in ("title", "source", "published_at"):
+            value = metadata.get(key)
+            if isinstance(value, str) and value.strip():
+                header.append(f"{key}: {value.strip()}")
+    body = hit.chunk.text
+    return "\n".join([*header, body]) if header else body
+
+
+def _evidence_from_state(state: RunState) -> tuple[list[str], list[str]]:
+    """Collect deduplicated evidence texts/ids from every successful search."""
+
+    texts: dict[str, str] = {}
+    for step in state.steps:
+        for result in step.tool_results:
+            if not result.ok or not isinstance(result.output, Mapping):
+                continue
+            hits = result.output.get("hits")
+            if not isinstance(hits, list):
+                continue
+            for hit in hits:
+                if not isinstance(hit, Mapping):
+                    continue
+                evidence_id = hit.get("evidence_id")
+                if not isinstance(evidence_id, str):
+                    evidence_id = hit.get("source")
+                text = hit.get("text")
+                if not isinstance(evidence_id, str) or not evidence_id:
+                    continue
+                if not isinstance(text, str) or not text:
+                    continue
+                texts.setdefault(evidence_id, text)
+    return list(texts.values()), list(texts.keys())
+
+
 def _build_agentic_runtime(
     provider: ModelProvider,
     prepared: _PreparedDataset,
     *,
     staging: Path,
-) -> AgentRuntime:
+    config: RAGAnswerEvalConfig,
+) -> tuple[AgentRuntime, HybridKnowledgeStore]:
     """Build a real AgentRuntime whose knowledge base is the evaluation corpus."""
 
     chunks = [
@@ -158,11 +228,18 @@ def _build_agentic_runtime(
             metadata={
                 "knowledge_base_id": "answer-eval",
                 "evidence_id": document.document_id,
+                **document.metadata,
             },
         )
         for document in prepared.dataset.documents
     ]
-    knowledge = InMemoryKnowledgeStore(chunks)
+    index = BM25Index(
+        (knowledge_to_hybrid_chunk(chunk) for chunk in chunks),
+        k1=config.retrieval.bm25_k1,
+        b=config.retrieval.bm25_b,
+        field_weights=config.retrieval.bm25_field_weights,
+    )
+    knowledge = HybridKnowledgeStore(index, chunks)
     memory = InMemoryMemoryStore()
     registry = create_tool_registry(
         workspace_root=staging,
@@ -170,21 +247,60 @@ def _build_agentic_runtime(
         knowledge_store=knowledge,
         memory_store=memory,
     )
-    return AgentRuntime(
-        provider=provider,
-        registry=registry,
-        policy=CapabilityPolicy(registry),
-        checkpoint=_InMemoryCheckpointStore(),
-        context=ContextAssembler(knowledge, memory),
+    return (
+        AgentRuntime(
+            provider=provider,
+            registry=registry,
+            policy=CapabilityPolicy(registry),
+            checkpoint=_InMemoryCheckpointStore(),
+            context=_CitationAwareContextAssembler(knowledge, memory),
+        ),
+        knowledge,
     )
+
+
+def _retrieval_subqueries(query: str) -> list[str]:
+    """Deterministic citation-aware queries: the question plus every quoted phrase."""
+
+    queries = [query]
+    for phrase in re.findall(r"'([^']+)'", query):
+        cleaned = " ".join(phrase.split())
+        if cleaned and cleaned not in queries:
+            queries.append(cleaned)
+    return queries
+
+
+def _host_evidence(
+    knowledge: HybridKnowledgeStore,
+    case: RAGEvalCase,
+    config: RAGAnswerEvalConfig,
+) -> tuple[list[str], list[str]]:
+    """Host-side multi-query retrieval so a single weak search cannot starve evidence."""
+
+    principal = AccessContext(tenant_id="local", user_id="demo")
+    texts: dict[str, str] = {}
+    for query in _retrieval_subqueries(case.query):
+        hits = knowledge.search(
+            query,
+            principal,
+            top_k=config.evidence_top_k + 3,
+            knowledge_base_ids=["answer-eval"],
+        )
+        for hit in hits:
+            evidence_id = str(
+                hit.chunk.metadata.get("evidence_id") or hit.chunk.chunk_id
+            )
+            texts.setdefault(evidence_id, _evidence_text(hit))
+    return list(texts.values()), list(texts.keys())
 
 
 async def _agentic_answer(
     runtime: AgentRuntime,
+    knowledge: HybridKnowledgeStore,
     case: RAGEvalCase,
     config: RAGAnswerEvalConfig,
-) -> tuple[str | None, int]:
-    """Let the model drive retrieval (multiple knowledge_search) before answering."""
+) -> tuple[str | None, int, list[str]]:
+    """Let the model drive retrieval, then force a bare answer if its budget ends."""
 
     task = Task(
         tenant_id="local",
@@ -195,12 +311,18 @@ async def _agentic_answer(
         id="answer-eval-agent",
         name="Answer eval agent",
         instructions=(
-            "Answer the research question using ONLY the knowledge base. Use "
-            "knowledge_search to gather evidence; you may search multiple times "
-            "and refine your query. For questions that compare sources or judge "
-            "consistency across articles, first check what each relevant source "
-            "says and whether they agree, then determine the answer. Reply with "
-            "ONLY the final fact or a brief Yes/No; do not include reasoning, "
+            "Answer the research question using ONLY the knowledge base. You must "
+            "make at least one knowledge_search call before your final answer; "
+            "never answer from memory. Plan one knowledge_search for every source, "
+            "publication, date, or entity named in the question; request limit 10 "
+            "and refine queries until each named article is covered. The question's "
+            "clauses are the claim to verify: answer Yes only if every clause is "
+            "supported by the retrieved articles, No if any clause is contradicted, "
+            "and Different only when the question asks whether the items differ and "
+            "the evidence confirms a difference. Answer with exactly one of Yes, No, "
+            "or Different for agreement/comparison questions; otherwise reply with "
+            "only the bare fact. Never leave the answer blank; if evidence is "
+            "ambiguous, choose the best-supported answer. Do not include reasoning, "
             "markdown, or explanations."
         ),
         model=config.model,
@@ -210,9 +332,27 @@ async def _agentic_answer(
     )
     state = await runtime.run(task, profile)
     steps = len(state.steps)
+    agent_texts, agent_ids = _evidence_from_state(state)
     if state.status != RunStatus.COMPLETED or not state.final_answer:
-        return None, steps
-    return state.final_answer, steps
+        host_texts, host_ids = _host_evidence(knowledge, case, config)
+        merged_texts = list(agent_texts)
+        merged_ids = list(agent_ids)
+        seen = set(agent_ids)
+        for evidence_id, text in zip(host_ids, host_texts):
+            if evidence_id not in seen:
+                merged_ids.append(evidence_id)
+                merged_texts.append(text)
+                seen.add(evidence_id)
+        forced = await _generate_answer(
+            provider=runtime.provider,
+            case=case,
+            evidence_texts=merged_texts,
+            model=config.model,
+            max_evidence_chars=config.max_evidence_chars,
+        )
+        if forced is not None:
+            return forced, steps, merged_ids
+    return state.final_answer, steps, agent_ids
 
 
 def _indexes(
@@ -269,7 +409,9 @@ async def run_rag_answer_eval(
     try:
         prepared = _prepare_dataset(config, repository, staging)
         if config.mode == "agentic":
-            runtime = _build_agentic_runtime(provider, prepared, staging=staging)
+            runtime, knowledge = _build_agentic_runtime(
+                provider, prepared, staging=staging, config=config
+            )
             index = None
         else:
             chunks = _hybrid_chunks(prepared.dataset, prepared.cases, config)
@@ -282,8 +424,9 @@ async def run_rag_answer_eval(
         rows: list[dict[str, Any]] = []
         for case in cases:
             if config.mode == "agentic":
-                answer, steps = await _agentic_answer(runtime, case, config)
-                retrieved_ids: list[str] = []
+                answer, steps, retrieved_ids = await _agentic_answer(
+                    runtime, knowledge, case, config
+                )
                 mode = "agentic"
             else:
                 request = _search_request(
@@ -298,7 +441,7 @@ async def run_rag_answer_eval(
                 # Feed the model the top retrieved chunk texts directly (not a
                 # whole-document truncation) so the answer sentence is not cut away.
                 evidence = [
-                    hit.chunk.text
+                    _evidence_text(hit)
                     for hit in response.hits[: config.evidence_top_k]
                 ]
                 answer = await _generate_answer(

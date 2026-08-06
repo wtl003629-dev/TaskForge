@@ -293,6 +293,21 @@ def create_tool_registry(
                         else None
                     ),
                     "source": hit.chunk.source_uri,
+                    "source_name": (
+                        str(hit.chunk.metadata["source"])
+                        if isinstance(hit.chunk.metadata.get("source"), str)
+                        else None
+                    ),
+                    "title": (
+                        str(hit.chunk.metadata["title"])
+                        if isinstance(hit.chunk.metadata.get("title"), str)
+                        else None
+                    ),
+                    "published_at": (
+                        str(hit.chunk.metadata["published_at"])
+                        if isinstance(hit.chunk.metadata.get("published_at"), str)
+                        else None
+                    ),
                     "version": hit.chunk.version,
                     "score": round(hit.score, 6),
                     "matched_terms": list(hit.matched_terms),
