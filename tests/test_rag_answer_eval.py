@@ -11,6 +11,7 @@ from taskforge.domain import ModelTurn, ToolRequest
 from taskforge.rag_answer_eval import (
     ANSWER_EVAL_METADATA_FIELD_WEIGHTS,
     RAGAnswerEvalConfig,
+    _query_time_window,
     run_rag_answer_eval,
 )
 from taskforge.rag_baseline import LockedSplitManifest, sha256_file
@@ -348,3 +349,32 @@ async def test_agentic_mode_forces_answer_after_step_limit(tmp_path: Path) -> No
     assert rows[0]["generated_answer"] == "The Verge"
     assert rows[0]["steps"] == 4
     assert rows[0]["retrieved_ids"]
+
+
+def test_query_time_window_between_dates() -> None:
+    after, before = _query_time_window(
+        "Between November 9, 2023 and November 15, 2023, did Polygon change?"
+    )
+    assert after == datetime(2023, 11, 9, tzinfo=UTC)
+    assert before == datetime(2023, 11, 15, tzinfo=UTC)
+
+
+def test_query_time_window_single_after_bound() -> None:
+    after, before = _query_time_window(
+        "After the TechCrunch report on October 7, 2023, what changed?"
+    )
+    assert after == datetime(2023, 10, 7, tzinfo=UTC)
+    assert before is None
+
+
+def test_query_time_window_single_before_bound() -> None:
+    after, before = _query_time_window(
+        "Has the portrayal remained consistent before October 22, 2023?"
+    )
+    assert after is None
+    assert before == datetime(2023, 10, 22, tzinfo=UTC)
+
+
+def test_query_time_window_leaves_dates_queries_unfiltered() -> None:
+    assert _query_time_window("What is the capital of France?") == (None, None)
+    assert _query_time_window("Who won the 2023 championship?") == (None, None)

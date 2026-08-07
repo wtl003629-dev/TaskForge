@@ -34,7 +34,16 @@ def knowledge_chunk(
     valid_until: datetime | None = None,
     previous: str | None = None,
     next_: str | None = None,
+    published_at: str | None = None,
 ) -> KnowledgeChunk:
+    metadata: dict[str, object] = {
+        "knowledge_base_id": knowledge_base,
+        "previous_chunk_id": previous,
+        "next_chunk_id": next_,
+        "page": 1,
+    }
+    if published_at is not None:
+        metadata["published_at"] = published_at
     return KnowledgeChunk(
         chunk_id=chunk_id,
         tenant_id="tenant-a",
@@ -45,12 +54,7 @@ def knowledge_chunk(
         version_order=version_order,
         acl=acl,
         valid_until=valid_until,
-        metadata={
-            "knowledge_base_id": knowledge_base,
-            "previous_chunk_id": previous,
-            "next_chunk_id": next_,
-            "page": 1,
-        },
+        metadata=metadata,
     )
 
 
@@ -234,3 +238,47 @@ def test_catalog_conversion_and_time_window_validation_are_explicit() -> None:
     invisible = knowledge_chunk("no-acl", "approval", acl=frozenset())
     with pytest.raises(HybridKnowledgeError, match="cannot be indexed safely"):
         knowledge_to_hybrid_chunk(invisible)
+
+
+def test_publication_time_window_filters_candidates() -> None:
+    chunks = [
+        knowledge_chunk(
+            "older",
+            "October 2023 policy evidence",
+            published_at="2023-10-01T00:00:00+00:00",
+        ),
+        knowledge_chunk(
+            "newer",
+            "December 2023 policy evidence",
+            published_at="2023-12-01T00:00:00+00:00",
+        ),
+        # Missing publication time must survive (fail-open), not vanish.
+        knowledge_chunk("undated", "policy without a date"),
+    ]
+    store, _ = make_store(chunks)
+    principal = AccessContext("tenant-a", user_id="alice")
+
+    after_hits = store.search(
+        "policy",
+        principal,
+        published_after="2023-11-01T00:00:00+00:00",
+        now=NOW,
+    )
+    assert {hit.chunk.chunk_id for hit in after_hits} == {"newer", "undated"}
+
+    before_hits = store.search(
+        "policy",
+        principal,
+        published_before="2023-11-01T00:00:00+00:00",
+        now=NOW,
+    )
+    assert {hit.chunk.chunk_id for hit in before_hits} == {"older", "undated"}
+
+    window_hits = store.search(
+        "policy",
+        principal,
+        published_after="2023-10-01T00:00:00+00:00",
+        published_before="2023-12-01T00:00:00+00:00",
+        now=NOW,
+    )
+    assert {hit.chunk.chunk_id for hit in window_hits} == {"older", "undated"}

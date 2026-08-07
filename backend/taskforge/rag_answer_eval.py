@@ -10,6 +10,7 @@ CLI requires ``--confirm-live-call``.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import platform
 import re
@@ -26,7 +27,15 @@ from pydantic import Field
 from . import __version__
 from .builtins import create_tool_registry
 from .context import ContextAssembler
-from .domain import AgentProfile, RunState, RunStatus, StrictModel, Task, utc_now
+from .domain import (
+    AgentProfile,
+    ModelTurn,
+    RunState,
+    RunStatus,
+    StrictModel,
+    Task,
+    utc_now,
+)
 from .hybrid_knowledge import HybridKnowledgeStore, knowledge_to_hybrid_chunk
 from .hybrid_retrieval import (
     BM25Index,
@@ -35,9 +44,9 @@ from .hybrid_retrieval import (
     LexicalOverlapFallbackReranker,
     QdrantHybridIndex,
 )
-from .knowledge import AccessContext, KnowledgeChunk
+from .knowledge import AccessContext, KnowledgeChunk, KnowledgeHit
 from .memory import InMemoryMemoryStore
-from .providers import ModelProvider
+from .providers import ModelProvider, RetryableProviderError
 from .rag_evaluation import (
     RAGEvalCase,
     answer_exact_match,
@@ -56,6 +65,7 @@ from .rag_experiment import (
     _sha256_bytes,
     _source_hashes,
     _write_new,
+    chunk_text,
 )
 from .runtime import AgentRuntime
 from .tooling import CapabilityPolicy
@@ -128,19 +138,31 @@ async def _generate_answer(
         model=model,
         allowed_tools=[],
     )
-    turn = await provider.complete(
-        task=task,
-        profile=profile,
-        context={
-            "assembled": {
-                "evidence": joined,
-                "question": case.query,
-            },
-            "trajectory": [],
-        },
-        tools=[],
-    )
-    if turn.kind != "final" or not turn.final_answer:
+    # The host-evidence fallback runs outside the AgentRuntime step loop, so a
+    # transient provider failure here would otherwise abort the whole eval.  A
+    # small bounded retry keeps a single connection blip from discarding the
+    # case.  The agentic path already has its own durable retry in the runtime.
+    turn: ModelTurn | None = None
+    for attempt in range(3):
+        try:
+            turn = await provider.complete(
+                task=task,
+                profile=profile,
+                context={
+                    "assembled": {
+                        "evidence": joined,
+                        "question": case.query,
+                    },
+                    "trajectory": [],
+                },
+                tools=[],
+            )
+            break
+        except RetryableProviderError:
+            if attempt == 2:
+                raise
+            await asyncio.sleep(0.5 * (2**attempt))
+    if turn is None or turn.kind != "final" or not turn.final_answer:
         return None
     return turn.final_answer
 
@@ -217,29 +239,68 @@ def _build_agentic_runtime(
 ) -> tuple[AgentRuntime, HybridKnowledgeStore]:
     """Build a real AgentRuntime whose knowledge base is the evaluation corpus."""
 
-    chunks = [
-        KnowledgeChunk(
-            chunk_id=document.document_id,
-            tenant_id="local",
-            text=document.text,
-            source_uri=document.source_uri,
-            document_id=document.document_id,
-            acl=frozenset({"user:demo"}),
-            metadata={
-                "knowledge_base_id": "answer-eval",
-                "evidence_id": document.document_id,
-                **document.metadata,
-            },
+    chunks: list[KnowledgeChunk] = []
+    for document in sorted(
+        prepared.dataset.documents, key=lambda value: value.document_id
+    ):
+        texts = (
+            chunk_text(
+                document.text,
+                max_chars=config.retrieval.chunk_max_chars,
+                overlap_chars=config.retrieval.chunk_overlap_chars,
+            )
+            if config.retrieval.chunking
+            else [document.text]
         )
-        for document in prepared.dataset.documents
-    ]
-    index = BM25Index(
-        (knowledge_to_hybrid_chunk(chunk) for chunk in chunks),
-        k1=config.retrieval.bm25_k1,
-        b=config.retrieval.bm25_b,
-        field_weights=config.retrieval.bm25_field_weights,
-    )
-    knowledge = HybridKnowledgeStore(index, chunks)
+        for index, text in enumerate(texts):
+            chunk_id = (
+                f"{document.document_id}::chunk::{index}"
+                if len(texts) > 1
+                else document.document_id
+            )
+            chunks.append(
+                KnowledgeChunk(
+                    chunk_id=chunk_id,
+                    tenant_id="local",
+                    text=text,
+                    source_uri=document.source_uri,
+                    document_id=document.document_id,
+                    acl=frozenset({"user:demo"}),
+                    metadata={
+                        "knowledge_base_id": "answer-eval",
+                        # Evidence stays document-granular so host verification
+                        # and the model's citations keep referring to the same
+                        # retrieved document, not to one of its chunks.
+                        "evidence_id": document.document_id,
+                        **document.metadata,
+                    },
+                )
+            )
+    hybrid_chunks = [knowledge_to_hybrid_chunk(chunk) for chunk in chunks]
+    if config.retriever == "bm25":
+        index = BM25Index(
+            hybrid_chunks,
+            k1=config.retrieval.bm25_k1,
+            b=config.retrieval.bm25_b,
+            field_weights=config.retrieval.bm25_field_weights,
+        )
+        knowledge = _TimeAwareHybridKnowledgeStore(index, chunks)
+    else:
+        if config.retrieval.semantic_embedding:
+            embedder = FastEmbedEmbedder(config.retrieval.semantic_model)
+        else:
+            embedder = DeterministicHashEmbedder(config.retrieval.hash_dimension)
+        qdrant = QdrantHybridIndex.in_memory(
+            collection_name="taskforge-answer-eval-agentic",
+            embedder=embedder,
+            reranker=LexicalOverlapFallbackReranker(),
+        )
+        qdrant.upsert(hybrid_chunks)
+        knowledge = _TimeAwareHybridKnowledgeStore(
+            qdrant,
+            chunks,
+            rerank=config.retriever == "qdrant_rrf_rerank",
+        )
     memory = InMemoryMemoryStore()
     registry = create_tool_registry(
         workspace_root=staging,
@@ -268,6 +329,82 @@ def _retrieval_subqueries(query: str) -> list[str]:
         if cleaned and cleaned not in queries:
             queries.append(cleaned)
     return queries
+
+
+_MONTH_NAMES = (
+    "January|February|March|April|May|June|July|August|September|October|"
+    "November|December"
+)
+# "October 7, 2023" — full and abbreviated month names.
+_DATE_RE = re.compile(
+    r"\b(?:(?P<full>" + _MONTH_NAMES + r")|(?P<abbr>[A-Z][a-z]{2}))\.?\s+"
+    r"(?P<day>\d{1,2})(?:st|nd|rd|th)?,?\s+(?P<year>\d{4})\b"
+)
+_DIRECTION_BEFORE = re.compile(
+    r"\b(before|prior to|as of|no later than)\b", re.IGNORECASE
+)
+_DIRECTION_AFTER = re.compile(
+    r"\b(after|since|following|subsequent to)\b", re.IGNORECASE
+)
+_BETWEEN = re.compile(r"\bbetween\b", re.IGNORECASE)
+
+
+def _query_time_window(
+    query: str,
+) -> tuple[datetime | None, datetime | None]:
+    """Best-effort ``(after, before)`` publication window from a question.
+
+    Returns ``(None, None)`` when the query has no unambiguous date signal, so
+    non-temporal retrieval is never accidentally constrained.  ``between A and
+    B`` maps to ``(after=A, before=B)``; a single ``before``/``after`` bound
+    applies to the first detected date.  This is an intentional heuristic, not
+    a parser: host evidence retrieval stays deterministic and fails open.
+    """
+
+    matches = list(_DATE_RE.finditer(query))
+    if not matches:
+        return None, None
+    def _parse(match: re.Match[str]) -> datetime | None:
+        month = match.group("full") or match.group("abbr")
+        try:
+            return datetime(
+                int(match.group("year")),
+                int(datetime.strptime(month, "%b").month)
+                if match.group("abbr")
+                else int(datetime.strptime(match.group("full"), "%B").month),
+                int(match.group("day")),
+                tzinfo=UTC,
+            )
+        except ValueError:
+            return None
+    dates = [_parse(m) for m in matches]
+    dates = [d for d in dates if d is not None]
+    if not dates:
+        return None, None
+    if _BETWEEN.search(query):
+        return dates[0], dates[-1]
+    if _DIRECTION_BEFORE.search(query):
+        return None, dates[0]
+    if _DIRECTION_AFTER.search(query):
+        return dates[0], None
+    return None, None
+
+
+class _TimeAwareHybridKnowledgeStore(HybridKnowledgeStore):
+    """Wraps search so date phrases in the query bound publication time."""
+
+    def search(
+        self,
+        query: str,
+        principal: AccessContext,
+        **kwargs: Any,
+    ) -> list[KnowledgeHit]:
+        after, before = _query_time_window(query)
+        if after is not None:
+            kwargs.setdefault("published_after", after)
+        if before is not None:
+            kwargs.setdefault("published_before", before)
+        return super().search(query, principal, **kwargs)
 
 
 def _host_evidence(
@@ -315,7 +452,13 @@ async def _agentic_answer(
             "make at least one knowledge_search call before your final answer; "
             "never answer from memory. Plan one knowledge_search for every source, "
             "publication, date, or entity named in the question; request limit 10 "
-            "and refine queries until each named article is covered. The question's "
+            "and refine queries until each named article is covered. Stop "
+            "retrieving as soon as the evidence covers every source, publication, "
+            "date, and entity named in the question; do not search on when the "
+            "needed articles are already in hand. When the question names a date "
+            "or a period, pass published_before / published_after (ISO-8601) to "
+            "knowledge_search so retrieval is confined to articles published in "
+            "that window. The question's "
             "clauses are the claim to verify: answer Yes only if every clause is "
             "supported by the retrieved articles, No if any clause is contradicted, "
             "and Different only when the question asks whether the items differ and "

@@ -66,6 +66,12 @@ def parser() -> argparse.ArgumentParser:
         help="Limit to the first N locked cases (for a quick smoke).",
     )
     value.add_argument(
+        "--multihop-split",
+        type=str,
+        default=None,
+        help="Repository-relative MultiHop-RAG locked split manifest.",
+    )
+    value.add_argument(
         "--model",
         default=None,
         help="Model name; defaults to TASKFORGE_DEEPSEEK_MODEL.",
@@ -75,6 +81,11 @@ def parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Override the agentic answer loop's step budget.",
+    )
+    value.add_argument(
+        "--chunking",
+        action="store_true",
+        help="Enable document chunking (chunk_max_chars=1500) in the answer-eval index.",
     )
     value.add_argument(
         "--output",
@@ -114,13 +125,19 @@ def main(argv: list[str] | None = None) -> int:
     ).strip()
 
     dataset_kind = "tatqa_locked" if args.dataset == "tatqa" else "multihop_rag_locked"
+    dataset_kwargs: dict[str, str] = {}
+    if args.multihop_split is not None:
+        dataset_kwargs["multihop_rag_locked_split_path"] = (
+            args.multihop_split.strip().replace("\\", "/")
+        )
     retriever = args.retriever or (
         "qdrant_rrf_rerank" if args.semantic else "bm25"
     )
     config = RAGAnswerEvalConfig(
-        dataset=ExperimentDatasetConfig(kind=dataset_kind),
+        dataset=ExperimentDatasetConfig(kind=dataset_kind, **dataset_kwargs),
         retrieval=ExperimentRetrievalConfig(
             semantic_embedding=args.semantic,
+            chunking=args.chunking,
             bm25_field_weights=dict(ANSWER_EVAL_METADATA_FIELD_WEIGHTS),
         ),
         retriever=retriever,

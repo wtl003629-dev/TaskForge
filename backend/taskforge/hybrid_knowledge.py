@@ -106,6 +106,53 @@ def _bounded(value: float | None) -> float:
     return max(0.0, min(1.0, score))
 
 
+def _as_bound(value: datetime | str | None) -> datetime | None:
+    """Normalise a publication-time filter bound to an aware UTC datetime."""
+
+    if value is None:
+        return None
+    if isinstance(value, str):
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError(
+                "published filter must be an ISO-8601 timestamp or datetime"
+            ) from exc
+        return as_utc(parsed)
+    return as_utc(value)
+
+
+def _published_in_window(
+    chunk: KnowledgeChunk,
+    *,
+    before: datetime | None,
+    after: datetime | None,
+) -> bool:
+    """True when a chunk's ``metadata["published_at"]`` satisfies the window.
+
+    Publication time is an optional host-side constraint, not a security
+    boundary: a chunk whose ``published_at`` is missing or unparseable is
+    kept (fail-open) so a corpus without dates is not silently empty.
+    """
+
+    if before is None and after is None:
+        return True
+    raw = chunk.metadata.get("published_at")
+    if not isinstance(raw, str) or not raw.strip():
+        return True
+    try:
+        published = as_utc(datetime.fromisoformat(raw.replace("Z", "+00:00")))
+    except ValueError:
+        return True
+    if after is not None and published < after:
+        return False
+    # ``before`` is a strict upper bound: an article published exactly on the
+    # boundary is excluded, matching the plain reading of "before <date>".
+    if before is not None and published >= before:
+        return False
+    return True
+
+
 class HybridKnowledgeStore:
     """Knowledge-store compatible adapter over a hybrid retrieval backend."""
 
@@ -171,6 +218,8 @@ class HybridKnowledgeStore:
         now: datetime | None = None,
         source_uris: Iterable[str] | None = None,
         knowledge_base_ids: Iterable[str] | None = None,
+        published_before: datetime | str | None = None,
+        published_after: datetime | str | None = None,
         latest_only: bool = True,
         semantic_scores: Mapping[str, float] | None = None,
         lexical_weight: float = 0.70,
@@ -190,6 +239,10 @@ class HybridKnowledgeStore:
         instant = as_utc(now)
         allowed_sources = _clean_filter(source_uris)
         allowed_bases = _clean_filter(knowledge_base_ids)
+        before = _as_bound(published_before)
+        after = _as_bound(published_after)
+        if before is not None and after is not None and after > before:
+            raise ValueError("published_after must not be later than published_before")
         candidates = [
             entry
             for (tenant_id, _), entry in self._catalog.items()
@@ -204,6 +257,7 @@ class HybridKnowledgeStore:
                 allowed_bases is None
                 or entry[1].knowledge_base_id in allowed_bases
             )
+            and _published_in_window(entry[0], before=before, after=after)
         ]
 
         if latest_only:
