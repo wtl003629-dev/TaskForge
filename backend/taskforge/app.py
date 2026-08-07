@@ -33,7 +33,11 @@ from fastapi.responses import JSONResponse
 from pydantic import Field, model_validator
 
 from .builtins import agent_profiles, create_tool_registry, local_knowledge_chunks
-from .case_profiles import enterprise_review_profiles, research_survey_profiles
+from .case_profiles import (
+    ResearchSurveyDepth,
+    enterprise_review_profiles,
+    research_survey_profiles,
+)
 from .case_runtime import CaseAgentExecutor, CaseRuntimeError
 from .checkpoints import CheckpointNotFoundError, SQLiteCheckpointStore
 from .config import Settings
@@ -230,6 +234,7 @@ class ReviewCaseCreate(StrictModel):
     kind: CaseKind
     title: str = Field(min_length=1, max_length=500)
     submission: CaseSubmission
+    survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
 
     @model_validator(mode="after")
     def title_is_trimmed(self) -> ReviewCaseCreate:
@@ -1290,6 +1295,7 @@ def create_app(
             kind=body.kind,
             title=body.title,
             submission=body.submission,
+            survey_depth=body.survey_depth,
             idempotency_key=idempotency_key,
         )
         _index_review_case_evidence(knowledge, review_case)

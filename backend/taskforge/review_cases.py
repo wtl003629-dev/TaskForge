@@ -23,6 +23,7 @@ from uuid import uuid4
 
 from pydantic import Field, field_validator, model_validator
 
+from .case_profiles import ResearchSurveyDepth
 from .domain import StrictModel, utc_now
 
 _MAX_JSON_BYTES = 1_000_000
@@ -394,6 +395,7 @@ class ReviewCase(StrictModel):
     kind: CaseKind
     title: str = Field(min_length=1, max_length=500)
     submission: CaseSubmission
+    survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
     status: CaseStatus = CaseStatus.DRAFT
     recommendation: ModelRecommendation | None = None
     human_decision: HumanDecision | None = None
@@ -687,6 +689,7 @@ class SQLiteReviewCaseStore:
         title: str,
         submission: CaseSubmission | Mapping[str, Any],
         idempotency_key: str,
+        survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS,
         case_id: str | None = None,
         now: datetime | None = None,
     ) -> ReviewCase:
@@ -698,6 +701,7 @@ class SQLiteReviewCaseStore:
             else CaseSubmission.model_validate(submission)
         )
         kind = CaseKind(kind)
+        survey_depth = ResearchSurveyDepth(survey_depth)
         timestamp = _utc(now)
         request_hash = _command_hash(
             access,
@@ -706,6 +710,7 @@ class SQLiteReviewCaseStore:
                 "kind": kind.value,
                 "title": title,
                 "submission": validated_submission.model_dump(mode="json"),
+                "survey_depth": survey_depth.value,
                 "requested_case_id": case_id,
             },
         )
@@ -725,6 +730,7 @@ class SQLiteReviewCaseStore:
                 kind=kind,
                 title=title,
                 submission=validated_submission,
+                survey_depth=survey_depth,
                 created_at=timestamp,
                 updated_at=timestamp,
             )
@@ -927,7 +933,9 @@ class SQLiteReviewCaseStore:
 
         def transform(current: ReviewCase, timestamp: datetime) -> ReviewCase:
             _require_transition(current.status, CaseStatus.SUBMITTED)
-            if not current.submission.evidence_refs:
+            if not current.submission.evidence_refs and (
+                current.kind != CaseKind.RESEARCH_SURVEY
+            ):
                 raise CaseDecisionRuleError(
                     "a submitted enterprise review requires at least one evidence reference"
                 )

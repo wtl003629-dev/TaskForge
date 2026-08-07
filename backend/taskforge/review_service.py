@@ -25,6 +25,7 @@ from pydantic import Field
 from .case_profiles import (
     ENTERPRISE_REVIEW_ROLES,
     RESEARCH_SURVEY_ROLES,
+    ResearchSurveyDepth,
     enterprise_review_slots,
     research_survey_slots,
 )
@@ -62,6 +63,8 @@ _DECISION_SLOT_ID = "decision"
 _DECISION_ROLE_ID = "decision_synthesizer"
 _SURVEY_SLOT_ID = "critic"
 _SURVEY_ROLE_ID = "critical_reviewer"
+_SURVEY_WRITER_SLOT_ID = "writer"
+_SURVEY_WRITER_ROLE_ID = "synthesis_writer"
 _OUTCOME_FACT_KEYS = frozenset(
     {
         "decision.outcome",
@@ -72,11 +75,19 @@ _OUTCOME_FACT_KEYS = frozenset(
 )
 
 
-def _terminal_role_for(kind: CaseKind) -> tuple[str, str]:
-    """Return the terminal slot/role that produces the final recommendation."""
+def _terminal_role_for(
+    kind: CaseKind, survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
+) -> tuple[str, str]:
+    """Return the terminal slot/role that produces the final recommendation.
+
+    The research survey's terminal step depends on depth: the critic owns the
+    verdict under rigorous, otherwise the writer (the chain's last step) does.
+    """
 
     if kind == CaseKind.RESEARCH_SURVEY:
-        return _SURVEY_SLOT_ID, _SURVEY_ROLE_ID
+        if survey_depth == ResearchSurveyDepth.RIGOROUS:
+            return _SURVEY_SLOT_ID, _SURVEY_ROLE_ID
+        return _SURVEY_WRITER_SLOT_ID, _SURVEY_WRITER_ROLE_ID
     return _DECISION_SLOT_ID, _DECISION_ROLE_ID
 
 
@@ -183,6 +194,7 @@ class ReviewCaseCoordinator:
         title: str,
         submission: CaseSubmission | Mapping[str, Any],
         idempotency_key: str,
+        survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS,
         case_id: str | None = None,
     ) -> ReviewCase:
         """Create an idempotent draft whose conversation ID equals its case ID."""
@@ -193,6 +205,7 @@ class ReviewCaseCoordinator:
             kind=kind,
             title=title,
             submission=submission,
+            survey_depth=survey_depth,
             idempotency_key=self._stage_key(identifier, "create", idempotency_key),
             case_id=identifier,
         )
@@ -364,8 +377,10 @@ class ReviewCaseCoordinator:
         if review_case.status == CaseStatus.DRAFT:
             raise ReviewPlanError("a draft cannot materialise a review/survey plan")
         if review_case.kind == CaseKind.RESEARCH_SURVEY:
-            slots = research_survey_slots()
-            allowed_roles = list(RESEARCH_SURVEY_ROLES)
+            slots = research_survey_slots(review_case.survey_depth)
+            allowed_roles = [
+                role for role in RESEARCH_SURVEY_ROLES if role in {s.role_id for s in slots}
+            ]
             objective = self._research_objective(review_case)
         else:
             slots = enterprise_review_slots()
@@ -393,7 +408,9 @@ class ReviewCaseCoordinator:
 
         access = self._orchestration_access(review_case.case_id)
         runs = self.orchestration_store.list_role_runs(access, plan.plan_id)
-        terminal_slot, terminal_role = _terminal_role_for(review_case.kind)
+        terminal_slot, terminal_role = _terminal_role_for(
+            review_case.kind, review_case.survey_depth
+        )
         decision = self._successful_decision_run(
             plan, runs, slot_id=terminal_slot, role_id=terminal_role
         )

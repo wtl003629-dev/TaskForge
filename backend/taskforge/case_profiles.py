@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from enum import Enum
+
 from .domain import AgentProfile
 from .orchestration import SpeakerSlot
 
@@ -11,6 +13,19 @@ ENTERPRISE_REVIEW_ROLES = (
     "risk_reviewer",
     "decision_synthesizer",
 )
+
+
+class ResearchSurveyDepth(str, Enum):
+    """How much of the research survey DAG a case materialises.
+
+    The four role steps form a dependency chain ``planner -> evaluator ->
+    writer -> critic``; each depth truncates the *tail* while keeping the
+    chain valid, and the terminal step always submits the ``survey.verdict``.
+    """
+
+    MINIMAL = "minimal"  # planner -> writer
+    STANDARD = "standard"  # planner -> evaluator -> writer
+    RIGOROUS = "rigorous"  # planner -> evaluator -> writer -> critic
 
 
 def enterprise_review_profiles(*, model: str) -> list[AgentProfile]:
@@ -119,11 +134,27 @@ RESEARCH_SURVEY_ROLES = (
 )
 
 
-def research_survey_profiles(*, model: str) -> list[AgentProfile]:
-    """Return role-bound research profiles; callers may not substitute metadata."""
+def research_survey_profiles(
+    *, model: str, depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
+) -> list[AgentProfile]:
+    """Return role-bound research profiles; callers may not substitute metadata.
+
+    ``depth`` selects which roles participate: minimal keeps planner+writer,
+    standard adds the source evaluator, rigorous keeps the full four-role
+    chain (including the critical reviewer that owns the verdict).
+    """
 
     common_tools = ["knowledge_search", "calculator", "memory_recall"]
     common_scopes = ["tenant", "user", "task"]
+    include_roles = {
+        ResearchSurveyDepth.MINIMAL: {"retrieval_planner", "synthesis_writer"},
+        ResearchSurveyDepth.STANDARD: {
+            "retrieval_planner",
+            "source_evaluator",
+            "synthesis_writer",
+        },
+        ResearchSurveyDepth.RIGOROUS: set(RESEARCH_SURVEY_ROLES),
+    }[depth]
     definitions = [
         (
             "case-research-planner-agent",
@@ -158,6 +189,9 @@ def research_survey_profiles(*, model: str) -> list[AgentProfile]:
             "反向质疑综述并给出人工复核建议。",
         ),
     ]
+    selected = [
+        item for item in definitions if item[2] in include_roles
+    ]
     return [
         AgentProfile(
             id=profile_id,
@@ -175,66 +209,89 @@ def research_survey_profiles(*, model: str) -> list[AgentProfile]:
                 "human_decision_required": True,
             },
         )
-        for profile_id, name, role_id, instructions, description in definitions
+        for profile_id, name, role_id, instructions, description in selected
     ]
 
 
-def research_survey_slots() -> list[SpeakerSlot]:
-    """Return the fixed research DAG: plan -> evaluate -> write -> critique."""
+def research_survey_slots(
+    depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS,
+) -> list[SpeakerSlot]:
+    """Return the research DAG truncated at ``depth``.
 
-    return [
-        SpeakerSlot(
-            slot_id="planner",
-            role_id="retrieval_planner",
-            agent_profile_id="case-research-planner-agent",
-            instruction=(
-                "Decompose the research question into searchable sub-questions, "
-                "plan the retrieval strategy, and record the retrieved source "
-                "inventory with exact evidence references."
-            ),
-            order=10,
+    ``plan -> evaluate -> write -> critique`` under rigorous; standard drops
+    the critic (writer becomes the terminal verdict owner); minimal also drops
+    the evaluator and makes the writer depend directly on the planner.
+    """
+
+    planner = SpeakerSlot(
+        slot_id="planner",
+        role_id="retrieval_planner",
+        agent_profile_id="case-research-planner-agent",
+        instruction=(
+            "Decompose the research question into searchable sub-questions, "
+            "plan the retrieval strategy, and record the retrieved source "
+            "inventory with exact evidence references."
         ),
-        SpeakerSlot(
-            slot_id="evaluator",
-            role_id="source_evaluator",
-            agent_profile_id="case-research-evaluator-agent",
-            instruction=(
-                "Assess credibility, relevance, and recency of the retrieved "
-                "sources; flag authoritative vs questionable sources and evidence gaps."
-            ),
-            depends_on=["planner"],
-            order=20,
+        order=10,
+    )
+    writer_depends = ["evaluator"] if depth != ResearchSurveyDepth.MINIMAL else ["planner"]
+    # When the critic is absent, the writer is the terminal step and must own
+    # the verdict; otherwise the critic does.
+    writer_owns_verdict = depth != ResearchSurveyDepth.RIGOROUS
+    writer_verdict = (
+        " As the final step, submit one survey.verdict claim (accept / "
+        "needs_revision / more_evidence) after finishing the survey; final "
+        "authority is human."
+        if writer_owns_verdict
+        else ""
+    )
+    writer = SpeakerSlot(
+        slot_id="writer",
+        role_id="synthesis_writer",
+        agent_profile_id="case-research-writer-agent",
+        instruction=(
+            "Write the survey in sections; every claim must cite a real "
+            "retrieved source (evidence_id or source). Never invent citations."
+            + writer_verdict
         ),
-        SpeakerSlot(
-            slot_id="writer",
-            role_id="synthesis_writer",
-            agent_profile_id="case-research-writer-agent",
-            instruction=(
-                "Write the survey in sections; every claim must cite a real "
-                "retrieved source (evidence_id or source). Never invent citations."
-            ),
-            depends_on=["evaluator"],
-            order=30,
+        depends_on=writer_depends,
+        order=30,
+    )
+    if depth == ResearchSurveyDepth.MINIMAL:
+        return [planner, writer]
+    evaluator = SpeakerSlot(
+        slot_id="evaluator",
+        role_id="source_evaluator",
+        agent_profile_id="case-research-evaluator-agent",
+        instruction=(
+            "Assess credibility, relevance, and recency of the retrieved "
+            "sources; flag authoritative vs questionable sources and evidence gaps."
         ),
-        SpeakerSlot(
-            slot_id="critic",
-            role_id="critical_reviewer",
-            agent_profile_id="case-research-critic-agent",
-            instruction=(
-                "Critically review the survey: do claims exceed what the cited "
-                "sources support? Are counter-evidence and section gaps missed? "
-                "Submit one survey.verdict claim (accept / needs_revision / "
-                "more_evidence); final authority is human."
-            ),
-            depends_on=["writer"],
-            order=40,
+        depends_on=["planner"],
+        order=20,
+    )
+    if depth == ResearchSurveyDepth.STANDARD:
+        return [planner, evaluator, writer]
+    critic = SpeakerSlot(
+        slot_id="critic",
+        role_id="critical_reviewer",
+        agent_profile_id="case-research-critic-agent",
+        instruction=(
+            "Critically review the survey: do claims exceed what the cited "
+            "sources support? Are counter-evidence and section gaps missed? "
+            "Submit one survey.verdict claim (accept / needs_revision / "
+            "more_evidence); final authority is human."
         ),
-    ]
+        depends_on=["writer"],
+        order=40,
+    )
+    return [planner, evaluator, writer, critic]
 
 
 __all__ = [
     "ENTERPRISE_REVIEW_ROLES",
     "RESEARCH_SURVEY_ROLES",
+    "ResearchSurveyDepth",
     "enterprise_review_profiles",
     "enterprise_review_slots",
     "research_survey_profiles",
