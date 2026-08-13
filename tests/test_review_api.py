@@ -32,9 +32,14 @@ def make_settings(tmp_path: Path, **overrides: object) -> Settings:
         "orchestration_sqlite_path": state / "orchestration.sqlite3",
         "review_case_sqlite_path": state / "review-cases.sqlite3",
         "verification_sqlite_path": state / "verification.sqlite3",
+        "literature_sqlite_path": state / "literature.sqlite3",
+        "literature_cache_path": state / "literature-cache.sqlite3",
         "workspace_root": workspace,
         "artifact_root": tmp_path / "artifacts",
         "provider": "demo",
+        "retrieval_routing": "lexical",
+        "general_text_backend": "bm25",
+        "research_reranker_model": None,
     }
     values.update(overrides)
     return Settings(_env_file=None, **values)
@@ -130,7 +135,7 @@ def test_demo_review_case_requires_a_human_final_decision(tmp_path: Path) -> Non
         assert len(waiting["role_runs"]) == 4
         assert all(item["status"] == "succeeded" for item in waiting["role_runs"])
         assert all("runtime_run_id" not in item for item in waiting["role_runs"])
-        assert all(item["runtime_metrics"]["step_count"] >= 3 for item in waiting["role_runs"])
+        assert all(item["runtime_metrics"]["step_count"] >= 2 for item in waiting["role_runs"])
         assert all(
             item["runtime_metrics"]["tool_failure_count"] == 0
             for item in waiting["role_runs"]

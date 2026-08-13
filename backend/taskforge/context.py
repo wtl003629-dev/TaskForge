@@ -72,6 +72,8 @@ class AssembledContext:
     knowledge_hits: tuple[KnowledgeHit, ...]
     memory_hits: tuple[MemoryHit, ...]
     retrieval_query: str
+    retrieval_profile: str | None
+    retrieval_backend: str | None
     used_chars: int
     char_budget: int
     truncated: bool
@@ -252,12 +254,30 @@ class ContextAssembler:
 
         text = "".join(blocks)
         truncated = any_truncated or len(citations) < len(candidates)
+        retrieval_profile = next(
+            (
+                hit.retrieval_profile
+                for hit in knowledge_hits
+                if hit.retrieval_profile is not None
+            ),
+            None,
+        )
+        retrieval_backend = next(
+            (
+                hit.retrieval_backend
+                for hit in knowledge_hits
+                if hit.retrieval_backend is not None
+            ),
+            None,
+        )
         return AssembledContext(
             text=text,
             citations=tuple(citations),
             knowledge_hits=tuple(selected_knowledge),
             memory_hits=tuple(selected_memory),
             retrieval_query=retrieval_query,
+            retrieval_profile=retrieval_profile,
+            retrieval_backend=retrieval_backend,
             used_chars=len(text),
             char_budget=budget,
             truncated=truncated,

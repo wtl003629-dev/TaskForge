@@ -1,0 +1,336 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "direct_pdf_upload_retrieval_recall",
+  "created_at": "2026-08-12T14:17:28.210940+00:00",
+  "suite_id": "TaskForge-Synthetic-PDF-v1",
+  "license": "CC0-1.0",
+  "documents": 3,
+  "cases": 12,
+  "pipeline": [
+    "direct_upload",
+    "pdf_parse",
+    "chunk",
+    "index",
+    "bounded_search"
+  ],
+  "passed": true,
+  "thresholds": {
+    "recall_at_10": 0.8
+  },
+  "metrics": {
+    "recall_at_1": 0.875,
+    "recall_at_5": 1.0,
+    "recall_at_10": 1.0,
+    "recall_at_50": 1.0,
+    "p50_ms": 18.885399998907815,
+    "p95_ms": 31.256099999154685
+  },
+  "by_category": {
+    "cross-page": {
+      "cases": 3,
+      "recall_at_1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_50": 1.0
+    },
+    "table": {
+      "cases": 6,
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_50": 1.0
+    },
+    "text": {
+      "cases": 3,
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_50": 1.0
+    }
+  },
+  "ingestion": [
+    {
+      "document_id": "change-control",
+      "filename": "change-control.pdf",
+      "bytes": 4189,
+      "evidence_count": 2,
+      "scope_status": "ready"
+    },
+    {
+      "document_id": "vendor-review",
+      "filename": "vendor-review.pdf",
+      "bytes": 4218,
+      "evidence_count": 2,
+      "scope_status": "ready"
+    },
+    {
+      "document_id": "access-review",
+      "filename": "access-review.pdf",
+      "bytes": 4174,
+      "evidence_count": 2,
+      "scope_status": "ready"
+    }
+  ],
+  "rows": [
+    {
+      "case_id": "high-risk-approvals",
+      "document_id": "change-control",
+      "category": "table",
+      "question": "Who must approve a high risk production change?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 22.197600001163664,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "high-risk-lead-time",
+      "document_id": "change-control",
+      "category": "table",
+      "question": "What is the minimum lead time for a high risk change?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 18.885399998907815,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "rollback-window",
+      "document_id": "change-control",
+      "category": "text",
+      "question": "How quickly must rollback begin after an error budget breach?",
+      "gold_pages": [
+        2
+      ],
+      "retrieved_pages": [
+        "2",
+        "1"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 17.748199999914505,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "change-combined",
+      "document_id": "change-control",
+      "category": "cross-page",
+      "question": "For a high risk change, state both the required approvers and the rollback start window.",
+      "gold_pages": [
+        1,
+        2
+      ],
+      "retrieved_pages": [
+        "2",
+        "1"
+      ],
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 20.89010000054259,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "tier-one-review",
+      "document_id": "vendor-review",
+      "category": "table",
+      "question": "How often is a Tier 1 vendor reviewed?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 18.32760000070266,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "tier-one-insurance",
+      "document_id": "vendor-review",
+      "category": "table",
+      "question": "What insurance floor applies to a Tier 1 vendor?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 31.56189999936032,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "vendor-notification",
+      "document_id": "vendor-review",
+      "category": "text",
+      "question": "When must a vendor notify the incident desk after unauthorized access is confirmed?",
+      "gold_pages": [
+        2
+      ],
+      "retrieved_pages": [
+        "2",
+        "1"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 17.338799998469767,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "vendor-combined",
+      "document_id": "vendor-review",
+      "category": "cross-page",
+      "question": "For a Tier 1 vendor, combine the review frequency with the unauthorized access notification deadline.",
+      "gold_pages": [
+        1,
+        2
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 19.11889999973937,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "database-reviewer",
+      "document_id": "access-review",
+      "category": "table",
+      "question": "Who reviews database administrator access?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 16.489699999510776,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "billing-cadence",
+      "document_id": "access-review",
+      "category": "table",
+      "question": "What is the review cadence for billing administrator access?",
+      "gold_pages": [
+        1
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 17.64080000066315,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "emergency-expiry",
+      "document_id": "access-review",
+      "category": "text",
+      "question": "When does emergency privileged access expire without renewal?",
+      "gold_pages": [
+        2
+      ],
+      "retrieved_pages": [
+        "2",
+        "1"
+      ],
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 17.94059999883757,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "access-combined",
+      "document_id": "access-review",
+      "category": "cross-page",
+      "question": "Who reviews database administrator access and how long is its approval record retained?",
+      "gold_pages": [
+        1,
+        2
+      ],
+      "retrieved_pages": [
+        "1",
+        "2"
+      ],
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "latency_ms": 31.256099999154685,
+      "retrieval_rounds": 1
+    }
+  ],
+  "elapsed_ms": 2064.1527000007045,
+  "limitations": [
+    "The suite contains 12 self-authored cases over 3 real PDF binaries.",
+    "It is a pipeline regression gate, not a production-scale public benchmark."
+  ]
+}

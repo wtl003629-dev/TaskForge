@@ -1,0 +1,1878 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "qasper_direct_pdf_upload_retrieval",
+  "created_at": "2026-08-12T20:04:34.120045+00:00",
+  "dataset": "QASPER v0.3 official dev locked split",
+  "license": "CC BY 4.0",
+  "source_dataset": ".taskforge\\eval-cache\\qasper-dev-v0.3.json",
+  "split": "eval\\splits\\qasper-dev-general-100-v1.json",
+  "papers": 38,
+  "cases": 100,
+  "case_offset": 0,
+  "pipeline": [
+    "render_pdf",
+    "direct_upload",
+    "parse",
+    "chunk",
+    "index",
+    "search"
+  ],
+  "retrieval": {
+    "backend": "fastembed",
+    "graph_enabled": false,
+    "reranker_backend": "transformers",
+    "reranker_model": ".taskforge/models/minilm-qasper-full",
+    "rewrite_enabled": false,
+    "candidate_k": 100
+  },
+  "metrics": {
+    "recall_at_1": 0.2770238095238095,
+    "recall_at_5": 0.5944642857142857,
+    "recall_at_10": 0.7685714285714286,
+    "recall_at_50": 1.0,
+    "ndcg_at_10": 0.548999129022869,
+    "p50_ms": 872.861700001522,
+    "p95_ms": 1717.0240000050399
+  },
+  "passed": false,
+  "thresholds": {
+    "recall_at_10": 0.8
+  },
+  "ingestion": [
+    {
+      "paper_id": "1912.01214",
+      "pages": 47,
+      "gold_evidence_units": 47,
+      "indexed_chunks": 47
+    },
+    {
+      "paper_id": "1810.08699",
+      "pages": 38,
+      "gold_evidence_units": 38,
+      "indexed_chunks": 40
+    },
+    {
+      "paper_id": "1609.00425",
+      "pages": 64,
+      "gold_evidence_units": 64,
+      "indexed_chunks": 66
+    },
+    {
+      "paper_id": "1801.05147",
+      "pages": 93,
+      "gold_evidence_units": 93,
+      "indexed_chunks": 93
+    },
+    {
+      "paper_id": "1811.00383",
+      "pages": 23,
+      "gold_evidence_units": 23,
+      "indexed_chunks": 23
+    },
+    {
+      "paper_id": "1909.09067",
+      "pages": 44,
+      "gold_evidence_units": 44,
+      "indexed_chunks": 44
+    },
+    {
+      "paper_id": "1704.06194",
+      "pages": 55,
+      "gold_evidence_units": 55,
+      "indexed_chunks": 56
+    },
+    {
+      "paper_id": "1909.00512",
+      "pages": 45,
+      "gold_evidence_units": 45,
+      "indexed_chunks": 45
+    },
+    {
+      "paper_id": "2003.03106",
+      "pages": 71,
+      "gold_evidence_units": 71,
+      "indexed_chunks": 74
+    },
+    {
+      "paper_id": "1708.01464",
+      "pages": 53,
+      "gold_evidence_units": 53,
+      "indexed_chunks": 54
+    },
+    {
+      "paper_id": "2002.03407",
+      "pages": 44,
+      "gold_evidence_units": 44,
+      "indexed_chunks": 52
+    },
+    {
+      "paper_id": "1909.11687",
+      "pages": 47,
+      "gold_evidence_units": 47,
+      "indexed_chunks": 47
+    },
+    {
+      "paper_id": "1605.06083",
+      "pages": 31,
+      "gold_evidence_units": 31,
+      "indexed_chunks": 32
+    },
+    {
+      "paper_id": "1804.05918",
+      "pages": 60,
+      "gold_evidence_units": 60,
+      "indexed_chunks": 61
+    },
+    {
+      "paper_id": "1809.04267",
+      "pages": 57,
+      "gold_evidence_units": 57,
+      "indexed_chunks": 57
+    },
+    {
+      "paper_id": "1901.05287",
+      "pages": 30,
+      "gold_evidence_units": 30,
+      "indexed_chunks": 30
+    },
+    {
+      "paper_id": "1612.06685",
+      "pages": 17,
+      "gold_evidence_units": 17,
+      "indexed_chunks": 17
+    },
+    {
+      "paper_id": "1912.04961",
+      "pages": 56,
+      "gold_evidence_units": 56,
+      "indexed_chunks": 60
+    },
+    {
+      "paper_id": "1910.10781",
+      "pages": 40,
+      "gold_evidence_units": 40,
+      "indexed_chunks": 42
+    },
+    {
+      "paper_id": "1603.09631",
+      "pages": 51,
+      "gold_evidence_units": 51,
+      "indexed_chunks": 54
+    },
+    {
+      "paper_id": "1911.06964",
+      "pages": 30,
+      "gold_evidence_units": 30,
+      "indexed_chunks": 32
+    },
+    {
+      "paper_id": "2001.02284",
+      "pages": 102,
+      "gold_evidence_units": 102,
+      "indexed_chunks": 107
+    },
+    {
+      "paper_id": "2002.01664",
+      "pages": 20,
+      "gold_evidence_units": 20,
+      "indexed_chunks": 22
+    },
+    {
+      "paper_id": "1808.09111",
+      "pages": 58,
+      "gold_evidence_units": 58,
+      "indexed_chunks": 62
+    },
+    {
+      "paper_id": "1906.08593",
+      "pages": 46,
+      "gold_evidence_units": 46,
+      "indexed_chunks": 47
+    },
+    {
+      "paper_id": "1809.00540",
+      "pages": 42,
+      "gold_evidence_units": 42,
+      "indexed_chunks": 42
+    },
+    {
+      "paper_id": "2004.03354",
+      "pages": 63,
+      "gold_evidence_units": 63,
+      "indexed_chunks": 65
+    },
+    {
+      "paper_id": "1611.04798",
+      "pages": 45,
+      "gold_evidence_units": 45,
+      "indexed_chunks": 46
+    },
+    {
+      "paper_id": "1912.13337",
+      "pages": 68,
+      "gold_evidence_units": 68,
+      "indexed_chunks": 69
+    },
+    {
+      "paper_id": "1809.01541",
+      "pages": 44,
+      "gold_evidence_units": 44,
+      "indexed_chunks": 47
+    },
+    {
+      "paper_id": "1809.09194",
+      "pages": 28,
+      "gold_evidence_units": 28,
+      "indexed_chunks": 29
+    },
+    {
+      "paper_id": "1604.05372",
+      "pages": 34,
+      "gold_evidence_units": 34,
+      "indexed_chunks": 36
+    },
+    {
+      "paper_id": "2002.08795",
+      "pages": 25,
+      "gold_evidence_units": 25,
+      "indexed_chunks": 25
+    },
+    {
+      "paper_id": "1802.06024",
+      "pages": 51,
+      "gold_evidence_units": 51,
+      "indexed_chunks": 57
+    },
+    {
+      "paper_id": "1809.00530",
+      "pages": 60,
+      "gold_evidence_units": 60,
+      "indexed_chunks": 64
+    },
+    {
+      "paper_id": "1710.07960",
+      "pages": 60,
+      "gold_evidence_units": 60,
+      "indexed_chunks": 61
+    },
+    {
+      "paper_id": "1912.03804",
+      "pages": 44,
+      "gold_evidence_units": 44,
+      "indexed_chunks": 44
+    },
+    {
+      "paper_id": "1912.08960",
+      "pages": 40,
+      "gold_evidence_units": 40,
+      "indexed_chunks": 40
+    }
+  ],
+  "rows": [
+    {
+      "case_id": "qasper:1912.01214:b6f15fb6279b82e34a5bf4828b7b5ddabfdf1d54",
+      "paper_id": "1912.01214",
+      "query": "which multilingual approaches do they compare with?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 788.6822000000393,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.01214:f5e6f43454332e0521a778db0b769481e23e7682",
+      "paper_id": "1912.01214",
+      "query": "what are the pivot-based baselines?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.2640681225725909,
+      "latency_ms": 1047.8298000016366,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.01214:9a05a5f4351db75da371f7ac12eb0b03607c4b87",
+      "paper_id": "1912.01214",
+      "query": "which datasets did they experiment with?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.38685280723454163,
+      "latency_ms": 770.7210000007763,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.01214:5eda469a8a77f028d0c5f1acd296111085614537",
+      "paper_id": "1912.01214",
+      "query": "what language pairs are explored?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 747.095899998385,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1810.08699:18c5d366b1da8447b5404eab71f4cc658ba12e6f",
+      "paper_id": "1810.08699",
+      "query": "what ner models were evaluated?",
+      "gold_evidence_units": 4,
+      "recall_at_k": {
+        "1": 0.25,
+        "5": 0.5,
+        "10": 0.75,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.7495275800817669,
+      "latency_ms": 649.2131999984849,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1810.08699:b5e4866f0685299f1d7af267bbcc4afe2aab806f",
+      "paper_id": "1810.08699",
+      "query": "what is the source of the news sentences?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 662.6020000039716,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1810.08699:1f085b9bb7bfd0d6c8cba1a9d73f08fcf2da7590",
+      "paper_id": "1810.08699",
+      "query": "did they use a crowdsourcing platform for manual annotations?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.8503449055347546,
+      "latency_ms": 696.8081000013626,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1609.00425:b6ae8e10c6a0d34c834f18f66ab730b670fb528c",
+      "paper_id": "1609.00425",
+      "query": "what are the topics pulled from Reddit?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 944.6371999947587,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1609.00425:a87a009c242d57c51fc94fe312af5e02070f898b",
+      "paper_id": "1609.00425",
+      "query": "What predictive model do they build?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 862.2888999962015,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1801.05147:2df4a045a9cd7b44874340b6fdf9308d3c55327a",
+      "paper_id": "1801.05147",
+      "query": "What crowdsourcing platform is used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1619.2697000005865,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1811.00383:a313e98994fc039a82aa2447c411dda92c65a470",
+      "paper_id": "1811.00383",
+      "query": "How do they match words before reordering them?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 487.4937000058708,
+      "retrieved_count": 23,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1811.00383:37861be6aecd9242c4fdccdfcd06e48f3f1f8f81",
+      "paper_id": "1811.00383",
+      "query": "On how many language pairs do they show that preordering assisting language sentences helps translation quality?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3562071871080222,
+      "latency_ms": 490.96239999926183,
+      "retrieved_count": 23,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1811.00383:7e62a53823aba08bc26b2812db016f5ce6159565",
+      "paper_id": "1811.00383",
+      "query": "Which dataset(s) do they experiment with?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 470.74140000040643,
+      "retrieved_count": 23,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1909.09067:9eabb54c2408dac24f00f92cf1061258c7ea2e1a",
+      "paper_id": "1909.09067",
+      "query": "Which information about text structure is included in the corpus?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.48247555939075504,
+      "latency_ms": 781.6726000019116,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1909.09067:3d013f15796ae7fed5272183a166c45f16e24e39",
+      "paper_id": "1909.09067",
+      "query": "Which information about typography is included in the corpus?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.4227898344066503,
+      "latency_ms": 791.8209999988903,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1704.06194:9ee07edc371e014df686ced4fb0c3a7b9ce3d5dc",
+      "paper_id": "1704.06194",
+      "query": "On which benchmarks they achieve the state of the art?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 1151.638899995305,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1704.06194:d3aa0449708cc861a51551b128d73e11d62207d2",
+      "paper_id": "1704.06194",
+      "query": "What they use in their propsoed framework?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 938.2759000000078,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1704.06194:cfbec1ef032ac968560a7c76dec70faf1269b27c",
+      "paper_id": "1704.06194",
+      "query": "What does KBQA abbreviate for",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1337.2565999961807,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1704.06194:c0e341c4d2253eb42c8840381b082aae274eddad",
+      "paper_id": "1704.06194",
+      "query": "What is te core component for KBQA?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 1129.4255999964662,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1909.00512:1ec152119cf756b16191b236c85522afeed11f59",
+      "paper_id": "1909.00512",
+      "query": "What experiments are proposed to test that upper layers produce context-specific embeddings?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 775.8581999951275,
+      "retrieved_count": 45,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2003.03106:66c96c297c2cffdf5013bab5e95b59101cb38655",
+      "paper_id": "2003.03106",
+      "query": "What is the performance of BERT on the task?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.38685280723454163,
+      "latency_ms": 972.0251000035205,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2003.03106:6b53e1f46ae4ba9b75117fc6e593abded89366be",
+      "paper_id": "2003.03106",
+      "query": "What are the other algorithms tested?",
+      "gold_evidence_units": 3,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 952.1415999988676,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2003.03106:c0bee6539eb6956a7347daa9d2419b367bd02064",
+      "paper_id": "2003.03106",
+      "query": "Does BERT reach the best performance among all the algorithms compared?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3065735963827292,
+      "latency_ms": 992.5029000005452,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2003.03106:3de0487276bb5961586acc6e9f82934ef8cb668c",
+      "paper_id": "2003.03106",
+      "query": "What are the clinical datasets used in the paper?",
+      "gold_evidence_units": 3,
+      "recall_at_k": {
+        "1": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "10": 0.6666666666666666,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6257049680303419,
+      "latency_ms": 951.5112999943085,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1708.01464:113d791df6fcfc9cecfb7b1bebaf32cc2e4402ab",
+      "paper_id": "1708.01464",
+      "query": "how is model compactness measured?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 820.613299998513,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1708.01464:0752d71a0a1f73b3482a888313622ce9e9870d6e",
+      "paper_id": "1708.01464",
+      "query": "what was the baseline?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1062.89910000487,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1708.01464:55c8f7acbfd4f5cde634aaecd775b3bb32e9ffa3",
+      "paper_id": "1708.01464",
+      "query": "what evaluation metrics were used?",
+      "gold_evidence_units": 4,
+      "recall_at_k": {
+        "1": 0.25,
+        "5": 0.75,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.8756458727267334,
+      "latency_ms": 834.2412999991211,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1708.01464:4eaf9787f51cd7cdc45eb85cf223d752328c6ee4",
+      "paper_id": "1708.01464",
+      "query": "what datasets did they use?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6131471927654584,
+      "latency_ms": 802.0950000063749,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.03407:31735ec3d83c40b79d11df5c34154849aeb3fb47",
+      "paper_id": "2002.03407",
+      "query": "Who were the human evaluators used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 857.7124000003096,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.03407:10d450960907091f13e0be55f40bcb96f44dd074",
+      "paper_id": "2002.03407",
+      "query": "Is the template-based model realistic?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1003.0645000006189,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.03407:b5608076d91450b0d295ad14c3e3a90d7e168d0e",
+      "paper_id": "2002.03407",
+      "query": "Is the student reflection data very different from the newspaper data?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 888.9815000002272,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.03407:c21b87c97d1afac85ece2450ee76d01c946de668",
+      "paper_id": "2002.03407",
+      "query": "What is the recent abstractive summarization method in this paper?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3333333333333333,
+      "latency_ms": 909.4913000008091,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1909.11687:d087539e6a38c42f0a521ff2173ef42c0733878e",
+      "paper_id": "1909.11687",
+      "query": "Why are prior knowledge distillation techniques models are ineffective in producing student models with vocabularies different from the original teacher models?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1080.287299999327,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1909.11687:efe9bad55107a6be7704ed97ecce948a8ca7b1d2",
+      "paper_id": "1909.11687",
+      "query": "What state-of-the-art compression techniques were used in the comparison?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.38685280723454163,
+      "latency_ms": 846.071199994185,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1605.06083:7561a968470a8936d10e1ba722d2f38b5a9a4d38",
+      "paper_id": "1605.06083",
+      "query": "What is the size of the dataset?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6131471927654584,
+      "latency_ms": 583.0873000013526,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1605.06083:6d4400f45bd97b812e946b8a682b018826e841f1",
+      "paper_id": "1605.06083",
+      "query": "Which methods are considered to find examples of biases and unwarranted inferences??",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 612.19689999416,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1605.06083:26c2e1eb12143d985e4fb50543cf0d1eb4395e67",
+      "paper_id": "1605.06083",
+      "query": "What biases are found in the dataset?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5640920940185894,
+      "latency_ms": 574.3662000022596,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1804.05918:f17ca24b135f9fe6bb25dc5084b13e1637ec7744",
+      "paper_id": "1804.05918",
+      "query": "What discourse relations does it work best/worst for?",
+      "gold_evidence_units": 3,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.6666666666666666,
+        "10": 0.6666666666666666,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.49818925746641285,
+      "latency_ms": 855.1331999988179,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1804.05918:bd5bd1765362c2d972a762ca12675108754aa437",
+      "paper_id": "1804.05918",
+      "query": "How much does this model improve state-of-the-art?",
+      "gold_evidence_units": 3,
+      "recall_at_k": {
+        "1": 0.3333333333333333,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.9060254355346823,
+      "latency_ms": 872.861700001522,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.04267:d9b6c61fc6d29ad399d27b931b6cb7b1117b314a",
+      "paper_id": "1809.04267",
+      "query": "Where is a question generation model used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 891.5349000017159,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1901.05287:d27438b11bc70e706431dda0af2b1c0b0d209f96",
+      "paper_id": "1901.05287",
+      "query": "Were any of these tasks evaluated in any previous work?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.8065735963827293,
+      "latency_ms": 419.7296000056667,
+      "retrieved_count": 30,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1612.06685:8d4ac4afbf5b14f412171729ceb5e822afcfa3f4",
+      "paper_id": "1612.06685",
+      "query": "Do they build a model to automatically detect demographic, lingustic or psycological dimensons of people?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3333333333333333,
+      "latency_ms": 518.8877999971737,
+      "retrieved_count": 17,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1612.06685:3c93894c4baf49deacc6ed2a14ef5e0f13b7d96f",
+      "paper_id": "1612.06685",
+      "query": "Which demographic dimensions of people do they obtain?",
+      "gold_evidence_units": 3,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.3333333333333333,
+        "10": 0.6666666666666666,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.431733884398313,
+      "latency_ms": 302.93170000368264,
+      "retrieved_count": 17,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1612.06685:07d15501a599bae7eb4a9ead63e9df3d55b3dc35",
+      "paper_id": "1612.06685",
+      "query": "How do they obtain psychological dimensions of people?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 314.18800000392366,
+      "retrieved_count": 17,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.04961:99e78c390932594bd833be0f5c890af5c605d808",
+      "paper_id": "1912.04961",
+      "query": "What is the baseline?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3562071871080222,
+      "latency_ms": 833.6653000005754,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.04961:861187338c5ad445b9acddba8f2c7688785667b1",
+      "paper_id": "1912.04961",
+      "query": "Is the data de-identified?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 834.2258999982732,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.04961:f161e6d5aecf8fae3a26374dcb3e4e1b40530c95",
+      "paper_id": "1912.04961",
+      "query": "What embeddings are used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 844.1609000001336,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1910.10781:12c50dea84f9a8845795fa8b8c1679328bd66246",
+      "paper_id": "1910.10781",
+      "query": "What datasets did they use for evaluation?",
+      "gold_evidence_units": 4,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.25,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.369453583111095,
+      "latency_ms": 658.3940999989863,
+      "retrieved_count": 42,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1910.10781:0810b43404686ddfe4ca84783477ae300fdd2ea4",
+      "paper_id": "1910.10781",
+      "query": "On top of BERT does the RNN layer work better or the transformer layer?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.39780880120575696,
+      "latency_ms": 662.869599997066,
+      "retrieved_count": 42,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1603.09631:455d4ef8611f62b1361be4f6387b222858bb5e56",
+      "paper_id": "1603.09631",
+      "query": "How was this data collected?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 802.0442999986699,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1603.09631:bc16ce6e9c61ae13d46970ebe6c4728a47f8f425",
+      "paper_id": "1603.09631",
+      "query": "What is the average length of dialog?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 547.4221999975271,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1911.06964:1ff0fccf0dca95a6630380c84b0422bed854269a",
+      "paper_id": "1911.06964",
+      "query": "How are models evaluated in this human-machine communication game?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 387.06200000160607,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1911.06964:3d7d865e905295d11f1e85af5fa89b210e3e9fdf",
+      "paper_id": "1911.06964",
+      "query": "How many participants were trying this communication game?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 360.8769999991637,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1911.06964:2ad4d3d222f5237ed97923640bc8e199409cbe52",
+      "paper_id": "1911.06964",
+      "query": "What user variations have been tested?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 390.02569999865955,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1911.06964:3fad42be0fb2052bb404b989cc7d58b440cd23a0",
+      "paper_id": "1911.06964",
+      "query": "What are the baselines used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 375.33609999809414,
+      "retrieved_count": 32,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2001.02284:ca5a82b54cb707c9b947aa8445aac51ea218b23a",
+      "paper_id": "2001.02284",
+      "query": "How does the IPA label data after interacting with users?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5802792108518124,
+      "latency_ms": 1554.6283000003314,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2001.02284:da55bd769721b878dd17f07f124a37a0a165db02",
+      "paper_id": "2001.02284",
+      "query": "What kind of repetitive and time-consuming activities does their assistant handle?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.43067655807339306,
+      "latency_ms": 1678.977700001269,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.01664:feb448860918ef5b905bb25d7b855ba389117c1f",
+      "paper_id": "2002.01664",
+      "query": "How was the audio data gathered?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.8175295903539445,
+      "latency_ms": 784.0303999983007,
+      "retrieved_count": 22,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.01664:4bc2784be43d599000cb71d31928908250d4cef3",
+      "paper_id": "2002.01664",
+      "query": "What is the GhostVLAD approach?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 583.6883000010857,
+      "retrieved_count": 22,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1808.09111:6424e442b34a576f904d9649d63acf1e4fdefdfc",
+      "paper_id": "1808.09111",
+      "query": "What datasets do they evaluate on?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1023.0248000007123,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1808.09111:5eabfc6cc8aa8a99e6e42514ef9584569cb75dec",
+      "paper_id": "1808.09111",
+      "query": "Do they evaluate only on English datasets?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 935.4186999989906,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1808.09111:887c6727e9f25ade61b4853a869fe712fe0b703d",
+      "paper_id": "1808.09111",
+      "query": "What is the invertibility condition?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 1044.158000004245,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1906.08593:6236762b5631d9e395f81e1ebccc4bf3ab9b24ac",
+      "paper_id": "1906.08593",
+      "query": "Do they show on which examples how conflict works better than attention?",
+      "gold_evidence_units": 12,
+      "recall_at_k": {
+        "1": 0.08333333333333333,
+        "5": 0.08333333333333333,
+        "10": 0.16666666666666666,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.28952298823485745,
+      "latency_ms": 680.965899999137,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1906.08593:31d695ba855d821d3e5cdb7bea638c7dbb7c87c7",
+      "paper_id": "1906.08593",
+      "query": "Which neural architecture do they use as a base for their attention conflict mechanisms?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.31546487678572877,
+      "latency_ms": 697.8826999984449,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.00540:2c78993524ca62bf1f525b60f2220a374d0e3535",
+      "paper_id": "1809.00540",
+      "query": "What are the sources of the datasets?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.43067655807339306,
+      "latency_ms": 773.0820999931893,
+      "retrieved_count": 42,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2004.03354:16535db1d73a9373ffe9d6eedaa2369cefd91ac4",
+      "paper_id": "2004.03354",
+      "query": "What in-domain text did they use?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1253.2500000015716,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1611.04798:41ac23e32bf208b69414f4b687c4f324c6132464",
+      "paper_id": "1611.04798",
+      "query": "Which languages do they test on for the under-resourced scenario?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 884.3602999986615,
+      "retrieved_count": 46,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.13337:e97186c51d4af490dba6faaf833d269c8256426c",
+      "paper_id": "1912.13337",
+      "query": "Are the automatically constructed datasets subject to quality control?",
+      "gold_evidence_units": 16,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.125,
+        "10": 0.25,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.33788625765431984,
+      "latency_ms": 1348.2556999952067,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.13337:5bb3c27606c59d73fd6944ba7382096de4fa58d8",
+      "paper_id": "1912.13337",
+      "query": "Do they focus on Reading Comprehension or multiple choice question answering?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1263.6360000033164,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.13337:8de9f14c7c4f37ab103bc8a639d6d80ade1bc27b",
+      "paper_id": "1912.13337",
+      "query": "After how many hops does accuracy decrease?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 1235.929499998747,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.13337:85590bb26fed01a802241bc537d85ba5ef1c6dc2",
+      "paper_id": "1912.13337",
+      "query": "How do they control for annotation artificats?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1320.7351999953971,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.13337:75ff6e425ce304a35f18c0230c0d13d3913a31a9",
+      "paper_id": "1912.13337",
+      "query": "Is WordNet useful for taxonomic reasoning for this task?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1315.7973999987007,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.01541:5cb610d3d5d7d447b4cd5736d6a7d8262140af58",
+      "paper_id": "1809.01541",
+      "query": "How do they perform multilingual training?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6131471927654584,
+      "latency_ms": 522.3782999964897,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.01541:b9d168da5321a7d7b812c52bb102a05210fe45bd",
+      "paper_id": "1809.01541",
+      "query": "Does the model have attention?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3562071871080222,
+      "latency_ms": 765.3126000004704,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.01541:0c234db3b380c27c4c70579a5d6948e1e3b24ff1",
+      "paper_id": "1809.01541",
+      "query": "What architecture does the decoder have?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 591.1665000021458,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.01541:fa527becb8e2551f4fd2ae840dbd4a68971349e0",
+      "paper_id": "1809.01541",
+      "query": "What architecture does the encoder have?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 726.5012999996543,
+      "retrieved_count": 47,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.09194:d3dbb5c22ef204d85707d2d24284cc77fa816b6c",
+      "paper_id": "1809.09194",
+      "query": "What other models do they compare to?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.38685280723454163,
+      "latency_ms": 528.8452000022517,
+      "retrieved_count": 29,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.09194:a5e49cdb91d9fd0ca625cc1ede236d3d4672403c",
+      "paper_id": "1809.09194",
+      "query": "What is the architecture of the span detector?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.5,
+        "5": 0.5,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6131471927654584,
+      "latency_ms": 642.9695999977412,
+      "retrieved_count": 29,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1604.05372:aefa333b2cf0a4000cd40566149816f5b36135e7",
+      "paper_id": "1604.05372",
+      "query": "What evaluation metric do they use?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 757.4268000025768,
+      "retrieved_count": 36,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.08795:eb2d5edcdfe18bd708348283f92a32294bb193a5",
+      "paper_id": "2002.08795",
+      "query": "What are the baselines?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3333333333333333,
+      "latency_ms": 787.3354999974254,
+      "retrieved_count": 25,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:2002.08795:88ab7811662157680144ed3fdd00939e36552672",
+      "paper_id": "2002.08795",
+      "query": "What are the two new strategies?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.43067655807339306,
+      "latency_ms": 960.1212999987183,
+      "retrieved_count": 25,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1802.06024:286078813136943dfafb5155ee15d2429e7601d9",
+      "paper_id": "1802.06024",
+      "query": "How much better than the baseline is LiLi?",
+      "gold_evidence_units": 7,
+      "recall_at_k": {
+        "1": 0.14285714285714285,
+        "5": 0.2857142857142857,
+        "10": 0.2857142857142857,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.38121301394452073,
+      "latency_ms": 2042.3738000026788,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1802.06024:8f16dc7d7be0d284069841e456ebb2c69575b32b",
+      "paper_id": "1802.06024",
+      "query": "What baseline is used in the experiments?",
+      "gold_evidence_units": 6,
+      "recall_at_k": {
+        "1": 0.16666666666666666,
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.4935232796777482,
+      "latency_ms": 1895.0903000004473,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1802.06024:a7d020120a45c39bee624f65443e09b895c10533",
+      "paper_id": "1802.06024",
+      "query": "In what way does LiLi imitate how humans acquire knowledge and perform inference during an interactive conversation?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 2060.0045999963186,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1802.06024:585626d18a20d304ae7df228c2128da542d248ff",
+      "paper_id": "1802.06024",
+      "query": "What metrics are used to establish that this makes chatbots more knowledgeable and better at learning and conversation?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5,
+      "latency_ms": 1988.6609000022872,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1802.06024:bfc2dc913e7b78f3bd45e5449d71383d0aa4a890",
+      "paper_id": "1802.06024",
+      "query": "What are the components of the general knowledge learning engine?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1999.9912999992375,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.00530:b46c0015a122ee5fb95c2a45691cb97f80de1bb6",
+      "paper_id": "1809.00530",
+      "query": "What is the architecture of the model?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.3889580943680543,
+      "latency_ms": 1717.0240000050399,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.00530:5b7a4994bfdbf8882f391adf1cd2218dbc2255a0",
+      "paper_id": "1809.00530",
+      "query": "What are the baseline methods?",
+      "gold_evidence_units": 7,
+      "recall_at_k": {
+        "1": 0.14285714285714285,
+        "5": 0.2857142857142857,
+        "10": 0.5714285714285714,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.5676305914797375,
+      "latency_ms": 1493.3460999964154,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1809.00530:9176d2ba1c638cdec334971c4c7f1bb959495a8e",
+      "paper_id": "1809.00530",
+      "query": "What are the source and target domains?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 1537.1408000064548,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1710.07960:0ba3ea93eef5660a79ea3c26c6a270eac32dfa4c",
+      "paper_id": "1710.07960",
+      "query": "Did they use a crowdsourcing platform for annotations?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 1416.6174000056344,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1710.07960:5e324846a99a5573cd2e843d1657e87f4eb22fa6",
+      "paper_id": "1710.07960",
+      "query": "How do they deal with unknown distribution senses?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6240505200038379,
+      "latency_ms": 1110.8421999961138,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.03804:2ccc26e11df4eb26fcccdd1f446dc749aff5d572",
+      "paper_id": "1912.03804",
+      "query": "Do they report results only on English data?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.36181498356361597,
+      "latency_ms": 1065.2228999970248,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.03804:f318a2851d7061f05a5b32b94251f943480fbd15",
+      "paper_id": "1912.03804",
+      "query": "What conclusions do the authors draw from their finding that the emotional appeal of ISIS and Catholic materials are similar?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.6309297535714575,
+      "latency_ms": 1096.1234999995213,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.03804:6bbbb9933aab97ce2342200447c6322527427061",
+      "paper_id": "1912.03804",
+      "query": "How id Depechemood trained?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 1105.7543999995687,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.03804:2007bfb8f66e88a235c3a8d8c0a3b3dd88734706",
+      "paper_id": "1912.03804",
+      "query": "How are similarities and differences between the texts from violent and non-violent religious groups analyzed?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.19342640361727081,
+      "latency_ms": 1035.0354999973206,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.03804:d859cc37799a508bbbe4270ed291ca6394afce2c",
+      "paper_id": "1912.03804",
+      "query": "How are prominent topics idenified in Dabiq and Rumiyah?",
+      "gold_evidence_units": 2,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.5,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.17723928678404774,
+      "latency_ms": 1094.7916000004625,
+      "retrieved_count": 44,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.08960:50e80cfa84200717921840fddcf3b051a9216ad8",
+      "paper_id": "1912.08960",
+      "query": "Are the images from a specific domain?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.43067655807339306,
+      "latency_ms": 998.925899999449,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.08960:b1bc9ae9d40e7065343c12f860a461c7c730a612",
+      "paper_id": "1912.08960",
+      "query": "Which datasets are used?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.43067655807339306,
+      "latency_ms": 1093.833099999756,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.08960:63a1cbe66fd58ff0ead895a8bac1198c38c008aa",
+      "paper_id": "1912.08960",
+      "query": "Which existing models are evaluated?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.2890648263178879,
+      "latency_ms": 922.2351999997045,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    },
+    {
+      "case_id": "qasper:1912.08960:509af1f11bd6f3db59284258e18fdfebe86cae47",
+      "paper_id": "1912.08960",
+      "query": "How is diversity measured?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 1.0,
+      "latency_ms": 941.6333999979543,
+      "retrieved_count": 40,
+      "retrieval_rounds": 1
+    }
+  ],
+  "elapsed_ms": 132382.29449999926,
+  "limitations": [
+    "QASPER text and labels are real; the PDF layout is generated locally.",
+    "The run uses the fastembed product retrieval path with graph_enabled=False."
+  ]
+}

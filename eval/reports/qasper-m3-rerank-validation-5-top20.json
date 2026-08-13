@@ -1,0 +1,2732 @@
+{
+  "schema_version": "1.0",
+  "dataset": "QASPER",
+  "run": ".taskforge\\eval-runs\\qasper-train-validation-200-graph-rerank-v6-20260811",
+  "model": ".taskforge\\models\\bge-reranker-v2-m3",
+  "cases": 5,
+  "offset": 0,
+  "top_n": 20,
+  "metrics": {
+    "recall_at_1": 0.2,
+    "recall_at_5": 0.4,
+    "recall_at_10": 0.6666666666666667,
+    "recall_at_20": 0.9333333333333333,
+    "recall_at_50": 0.9333333333333333,
+    "ndcg_at_10": 0.3994948319935702
+  },
+  "telemetry": {
+    "backend": "flagembedding",
+    "model": ".taskforge\\models\\bge-reranker-v2-m3",
+    "device": "cpu",
+    "use_fp16": false,
+    "batch_size": 16,
+    "scored_pairs": 100
+  },
+  "elapsed_ms": 43711.41700000226,
+  "rows": [
+    {
+      "backend": "qasper_hierarchical_in_memory_dense",
+      "base_scores": [
+        0.6136913299560547,
+        0.6207897067070007,
+        0.6114873886108398,
+        0.6284582614898682,
+        0.594539225101471,
+        0.6059039831161499,
+        0.5893911123275757,
+        0.5884909629821777,
+        0.5723952651023865,
+        0.5912339687347412,
+        0.5806641578674316,
+        0.5802466869354248,
+        0.5696755647659302,
+        0.5794928073883057,
+        0.5754778385162354,
+        0.5735670328140259,
+        0.58696448802948,
+        0.5705177783966064,
+        0.5775262713432312,
+        0.5707296133041382,
+        0.5684654712677002,
+        0.5672182440757751,
+        0.5663184523582458,
+        0.5620871186256409,
+        0.5615026354789734,
+        0.5613460540771484,
+        0.5611287355422974,
+        0.5576694011688232,
+        0.5544499158859253,
+        0.5536237359046936,
+        0.552272379398346,
+        0.5515076518058777,
+        0.5507413744926453,
+        0.5485171675682068,
+        0.5483995676040649,
+        0.5471581220626831,
+        0.5467214584350586,
+        0.5465095043182373,
+        0.545967698097229,
+        0.5436373949050903,
+        0.5435625910758972,
+        0.5422160625457764,
+        0.5408445596694946,
+        0.5406045317649841,
+        0.5399543642997742,
+        0.5394797325134277,
+        0.5386477708816528,
+        0.5372955799102783,
+        0.5360255837440491,
+        0.5356998443603516
+      ],
+      "case_id": "qasper:1812.03593:40a45d59a2ef7a67c8ab0f2b2d5b43fc85b85498",
+      "category": "text",
+      "experiment_mode": "semantic_dense",
+      "filter_request": {
+        "acl_principals": [
+          "user:evaluator"
+        ],
+        "allowed_chunk_count": null,
+        "allowed_chunk_ids_sha256": null,
+        "knowledge_base_ids": [
+          "taskforge-evaluation"
+        ],
+        "parent_document_ids": [
+          "qasper:1812.03593:paper"
+        ],
+        "tenant_id": "tenant-evaluation",
+        "version_orders": [
+          1
+        ],
+        "versions": [
+          "1"
+        ]
+      },
+      "filters_applied_before_ranking": true,
+      "graph": null,
+      "production_semantic_dense": true,
+      "query": "Is the model evaluated on other datasets?",
+      "raw_candidate_counts": {
+        "in_memory_dense": 50
+      },
+      "relevant_ids": [
+        "qasper:1812.03593:paper:section:0:paragraph:3"
+      ],
+      "reranker_scores": [
+        1.4501875638961792,
+        1.4076846837997437,
+        0.8236058950424194,
+        -4.432461738586426,
+        -4.526642322540283,
+        -7.081315040588379,
+        -8.419147491455078,
+        -8.465694427490234,
+        -8.757568359375,
+        -8.834468841552734,
+        -8.999397277832031,
+        -9.414888381958008,
+        -9.54365348815918,
+        -9.921290397644043,
+        -10.02996826171875,
+        -10.586389541625977,
+        -10.661285400390625,
+        -10.702827453613281,
+        -10.876335144042969,
+        -11.291059494018555,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "retrieval_profile": {
+        "name": "general_text",
+        "selection": {
+          "corpus": {
+            "document_count": 47701,
+            "has_page_coordinates": false,
+            "has_table_structure": false,
+            "page_count": 0,
+            "source_count": 1,
+            "source_labels": [
+              "qasper"
+            ],
+            "table_count": 0
+          },
+          "query_features": {
+            "has_cross_document_language": false,
+            "has_numeric_operation": false,
+            "has_pdf_layout_language": false,
+            "has_table_language": false,
+            "numeric_tokens": []
+          }
+        }
+      },
+      "retrieval_sources": [
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ]
+      ],
+      "retrieved_cell_ids": [],
+      "retrieved_complete_table_ids": [],
+      "retrieved_ids": [
+        "qasper:1812.03593:paper:section:0:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:3",
+        "qasper:1812.03593:paper:section:6:paragraph:3",
+        "qasper:1812.03593:paper:section:6:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:4",
+        "qasper:1812.03593:paper:section:2:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:5",
+        "qasper:1812.03593:paper:section:2:paragraph:3",
+        "qasper:1812.03593:paper:section:7:paragraph:1",
+        "qasper:1812.03593:paper:section:5:paragraph:5",
+        "qasper:1812.03593:paper:section:4:paragraph:8",
+        "qasper:1812.03593:paper:section:2:paragraph:0",
+        "qasper:1812.03593:paper:abstract",
+        "qasper:1812.03593:paper:section:0:paragraph:2",
+        "qasper:1812.03593:paper:section:8:paragraph:1",
+        "qasper:1812.03593:paper:section:3:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:10",
+        "qasper:1812.03593:paper:section:5:paragraph:0",
+        "qasper:1812.03593:paper:section:2:paragraph:1",
+        "qasper:1812.03593:paper:section:8:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:2",
+        "qasper:1812.03593:paper:section:7:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:3",
+        "qasper:1812.03593:paper:section:1:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:9",
+        "qasper:1812.03593:paper:section:8:paragraph:3",
+        "qasper:1812.03593:paper:section:3:paragraph:1",
+        "qasper:1812.03593:paper:section:1:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:6",
+        "qasper:1812.03593:paper:section:8:paragraph:2",
+        "qasper:1812.03593:paper:section:5:paragraph:1",
+        "qasper:1812.03593:paper:section:5:paragraph:6",
+        "qasper:1812.03593:paper:section:4:paragraph:0",
+        "qasper:1812.03593:paper:section:5:paragraph:4",
+        "qasper:1812.03593:paper:section:5:paragraph:7",
+        "qasper:1812.03593:paper:section:5:paragraph:2",
+        "qasper:1812.03593:paper:section:4:paragraph:6",
+        "qasper:1812.03593:paper:section:4:paragraph:5",
+        "qasper:1812.03593:paper:section:0:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:7",
+        "qasper:1812.03593:paper:section:4:paragraph:14",
+        "qasper:1812.03593:paper:section:4:paragraph:13",
+        "qasper:1812.03593:paper:section:4:paragraph:15",
+        "qasper:1812.03593:paper:section:4:paragraph:1",
+        "qasper:1812.03593:paper:section:4:paragraph:4",
+        "qasper:1812.03593:paper:section:5:paragraph:8",
+        "qasper:1812.03593:paper:section:5:paragraph:3",
+        "qasper:1812.03593:paper:section:5:paragraph:9"
+      ],
+      "retrieved_parent_ids": [
+        "qasper:1812.03593:paper"
+      ],
+      "retrieved_row_ids": [],
+      "retrieved_table_units_by_hit": [],
+      "scores": [
+        1.4501875638961792,
+        1.4076846837997437,
+        0.8236058950424194,
+        -4.432461738586426,
+        -4.526642322540283,
+        -7.081315040588379,
+        -8.419147491455078,
+        -8.465694427490234,
+        -8.757568359375,
+        -8.834468841552734,
+        -8.999397277832031,
+        -9.414888381958008,
+        -9.54365348815918,
+        -9.921290397644043,
+        -10.02996826171875,
+        -10.586389541625977,
+        -10.661285400390625,
+        -10.702827453613281,
+        -10.876335144042969,
+        -11.291059494018555,
+        0.5684654712677002,
+        0.5672182440757751,
+        0.5663184523582458,
+        0.5620871186256409,
+        0.5615026354789734,
+        0.5613460540771484,
+        0.5611287355422974,
+        0.5576694011688232,
+        0.5544499158859253,
+        0.5536237359046936,
+        0.552272379398346,
+        0.5515076518058777,
+        0.5507413744926453,
+        0.5485171675682068,
+        0.5483995676040649,
+        0.5471581220626831,
+        0.5467214584350586,
+        0.5465095043182373,
+        0.545967698097229,
+        0.5436373949050903,
+        0.5435625910758972,
+        0.5422160625457764,
+        0.5408445596694946,
+        0.5406045317649841,
+        0.5399543642997742,
+        0.5394797325134277,
+        0.5386477708816528,
+        0.5372955799102783,
+        0.5360255837440491,
+        0.5356998443603516
+      ],
+      "search_query": "Is the model evaluated on other datasets?",
+      "stage": "qdrant_qasper_dense_rerank",
+      "reranked_ids": [
+        "qasper:1812.03593:paper:section:6:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:1",
+        "qasper:1812.03593:paper:section:0:paragraph:3",
+        "qasper:1812.03593:paper:section:6:paragraph:3",
+        "qasper:1812.03593:paper:section:6:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:5",
+        "qasper:1812.03593:paper:section:6:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:4",
+        "qasper:1812.03593:paper:section:2:paragraph:3",
+        "qasper:1812.03593:paper:section:5:paragraph:5",
+        "qasper:1812.03593:paper:abstract",
+        "qasper:1812.03593:paper:section:7:paragraph:1",
+        "qasper:1812.03593:paper:section:4:paragraph:8",
+        "qasper:1812.03593:paper:section:3:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:2",
+        "qasper:1812.03593:paper:section:8:paragraph:1",
+        "qasper:1812.03593:paper:section:2:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:10",
+        "qasper:1812.03593:paper:section:2:paragraph:2",
+        "qasper:1812.03593:paper:section:5:paragraph:0"
+      ],
+      "m3_scores": [
+        0.7929186514219044,
+        0.6835877782345868,
+        0.6405805247609836,
+        0.13280992705990055,
+        0.01687784445132768,
+        0.009799433443603024,
+        0.0035772605781007626,
+        0.0032678391701258767,
+        0.0024415046834658036,
+        0.0023047896566595,
+        0.001979769541681172,
+        0.0011790880863845493,
+        0.0011119477780618216,
+        0.001073176976210002,
+        0.0009717936890145584,
+        0.0006600645602634575,
+        0.0003272240944000029,
+        0.0003248440875807829,
+        3.4593916039703576e-05,
+        2.9880633628122215e-05
+      ]
+    },
+    {
+      "backend": "qasper_hierarchical_in_memory_dense",
+      "base_scores": [
+        0.6832849979400635,
+        0.6690348386764526,
+        0.6673851013183594,
+        0.6612755656242371,
+        0.6777381896972656,
+        0.652703046798706,
+        0.6591930985450745,
+        0.6796436309814453,
+        0.6579663157463074,
+        0.6576263308525085,
+        0.6593285799026489,
+        0.6670669317245483,
+        0.6599447131156921,
+        0.6797336339950562,
+        0.6748429536819458,
+        0.65605229139328,
+        0.6628209352493286,
+        0.6619921922683716,
+        0.6625353097915649,
+        0.6530367136001587,
+        0.6508217453956604,
+        0.6500343084335327,
+        0.6488871574401855,
+        0.6471338272094727,
+        0.6468968391418457,
+        0.6462099552154541,
+        0.6445452570915222,
+        0.6443100571632385,
+        0.6440683603286743,
+        0.6434910297393799,
+        0.6433635950088501,
+        0.6432545185089111,
+        0.6430846452713013,
+        0.642889142036438,
+        0.6399157047271729,
+        0.639743983745575,
+        0.6372717618942261,
+        0.635504961013794,
+        0.6349151134490967,
+        0.6342775821685791,
+        0.6342290043830872,
+        0.63371741771698,
+        0.6335021257400513,
+        0.6332122087478638,
+        0.6314882636070251,
+        0.6312706470489502,
+        0.6299992799758911,
+        0.6265507936477661,
+        0.6226931810379028,
+        0.6195116639137268
+      ],
+      "case_id": "qasper:1812.03593:b29b5c39575454da9566b3dd27707fced8c6f4a1",
+      "category": "text",
+      "experiment_mode": "semantic_dense",
+      "filter_request": {
+        "acl_principals": [
+          "user:evaluator"
+        ],
+        "allowed_chunk_count": null,
+        "allowed_chunk_ids_sha256": null,
+        "knowledge_base_ids": [
+          "taskforge-evaluation"
+        ],
+        "parent_document_ids": [
+          "qasper:1812.03593:paper"
+        ],
+        "tenant_id": "tenant-evaluation",
+        "version_orders": [
+          1
+        ],
+        "versions": [
+          "1"
+        ]
+      },
+      "filters_applied_before_ranking": true,
+      "graph": null,
+      "production_semantic_dense": true,
+      "query": "Does the model incorporate coreference and entailment?",
+      "raw_candidate_counts": {
+        "in_memory_dense": 50
+      },
+      "relevant_ids": [
+        "qasper:1812.03593:paper:section:4:paragraph:8"
+      ],
+      "reranker_scores": [
+        0.33951640129089355,
+        -0.29217082262039185,
+        -8.05955696105957,
+        -8.781402587890625,
+        -9.668745994567871,
+        -10.245868682861328,
+        -10.449291229248047,
+        -10.483596801757812,
+        -10.774344444274902,
+        -10.854103088378906,
+        -10.924560546875,
+        -11.0325288772583,
+        -11.063539505004883,
+        -11.066319465637207,
+        -11.126115798950195,
+        -11.132256507873535,
+        -11.189181327819824,
+        -11.408856391906738,
+        -11.48519515991211,
+        -11.505317687988281,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "retrieval_profile": {
+        "name": "general_text",
+        "selection": {
+          "corpus": {
+            "document_count": 47701,
+            "has_page_coordinates": false,
+            "has_table_structure": false,
+            "page_count": 0,
+            "source_count": 1,
+            "source_labels": [
+              "qasper"
+            ],
+            "table_count": 0
+          },
+          "query_features": {
+            "has_cross_document_language": false,
+            "has_numeric_operation": false,
+            "has_pdf_layout_language": false,
+            "has_table_language": false,
+            "numeric_tokens": []
+          }
+        }
+      },
+      "retrieval_sources": [
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ]
+      ],
+      "retrieved_cell_ids": [],
+      "retrieved_complete_table_ids": [],
+      "retrieved_ids": [
+        "qasper:1812.03593:paper:abstract",
+        "qasper:1812.03593:paper:section:4:paragraph:8",
+        "qasper:1812.03593:paper:section:0:paragraph:1",
+        "qasper:1812.03593:paper:section:7:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:2",
+        "qasper:1812.03593:paper:section:2:paragraph:0",
+        "qasper:1812.03593:paper:section:7:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:0",
+        "qasper:1812.03593:paper:section:2:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:3",
+        "qasper:1812.03593:paper:section:2:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:5",
+        "qasper:1812.03593:paper:section:1:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:2",
+        "qasper:1812.03593:paper:section:2:paragraph:3",
+        "qasper:1812.03593:paper:section:1:paragraph:0",
+        "qasper:1812.03593:paper:section:6:paragraph:6",
+        "qasper:1812.03593:paper:section:5:paragraph:5",
+        "qasper:1812.03593:paper:section:5:paragraph:8",
+        "qasper:1812.03593:paper:section:5:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:4",
+        "qasper:1812.03593:paper:section:3:paragraph:0",
+        "qasper:1812.03593:paper:section:5:paragraph:7",
+        "qasper:1812.03593:paper:section:0:paragraph:0",
+        "qasper:1812.03593:paper:section:6:paragraph:1",
+        "qasper:1812.03593:paper:section:5:paragraph:3",
+        "qasper:1812.03593:paper:section:5:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:3",
+        "qasper:1812.03593:paper:section:4:paragraph:9",
+        "qasper:1812.03593:paper:section:4:paragraph:12",
+        "qasper:1812.03593:paper:section:8:paragraph:0",
+        "qasper:1812.03593:paper:section:5:paragraph:9",
+        "qasper:1812.03593:paper:section:4:paragraph:7",
+        "qasper:1812.03593:paper:section:4:paragraph:0",
+        "qasper:1812.03593:paper:section:4:paragraph:4",
+        "qasper:1812.03593:paper:section:4:paragraph:3",
+        "qasper:1812.03593:paper:section:4:paragraph:15",
+        "qasper:1812.03593:paper:section:4:paragraph:5",
+        "qasper:1812.03593:paper:section:5:paragraph:1",
+        "qasper:1812.03593:paper:section:5:paragraph:4",
+        "qasper:1812.03593:paper:section:4:paragraph:10",
+        "qasper:1812.03593:paper:section:4:paragraph:13",
+        "qasper:1812.03593:paper:section:3:paragraph:1",
+        "qasper:1812.03593:paper:section:4:paragraph:14",
+        "qasper:1812.03593:paper:section:4:paragraph:11",
+        "qasper:1812.03593:paper:section:4:paragraph:2",
+        "qasper:1812.03593:paper:section:5:paragraph:6",
+        "qasper:1812.03593:paper:section:8:paragraph:1",
+        "qasper:1812.03593:paper:section:8:paragraph:2",
+        "qasper:1812.03593:paper:section:4:paragraph:6"
+      ],
+      "retrieved_parent_ids": [
+        "qasper:1812.03593:paper"
+      ],
+      "retrieved_row_ids": [],
+      "retrieved_table_units_by_hit": [],
+      "scores": [
+        0.33951640129089355,
+        -0.29217082262039185,
+        -8.05955696105957,
+        -8.781402587890625,
+        -9.668745994567871,
+        -10.245868682861328,
+        -10.449291229248047,
+        -10.483596801757812,
+        -10.774344444274902,
+        -10.854103088378906,
+        -10.924560546875,
+        -11.0325288772583,
+        -11.063539505004883,
+        -11.066319465637207,
+        -11.126115798950195,
+        -11.132256507873535,
+        -11.189181327819824,
+        -11.408856391906738,
+        -11.48519515991211,
+        -11.505317687988281,
+        0.6508217453956604,
+        0.6500343084335327,
+        0.6488871574401855,
+        0.6471338272094727,
+        0.6468968391418457,
+        0.6462099552154541,
+        0.6445452570915222,
+        0.6443100571632385,
+        0.6440683603286743,
+        0.6434910297393799,
+        0.6433635950088501,
+        0.6432545185089111,
+        0.6430846452713013,
+        0.642889142036438,
+        0.6399157047271729,
+        0.639743983745575,
+        0.6372717618942261,
+        0.635504961013794,
+        0.6349151134490967,
+        0.6342775821685791,
+        0.6342290043830872,
+        0.63371741771698,
+        0.6335021257400513,
+        0.6332122087478638,
+        0.6314882636070251,
+        0.6312706470489502,
+        0.6299992799758911,
+        0.6265507936477661,
+        0.6226931810379028,
+        0.6195116639137268
+      ],
+      "search_query": "Does the model incorporate coreference and entailment?",
+      "stage": "qdrant_qasper_dense_rerank",
+      "reranked_ids": [
+        "qasper:1812.03593:paper:section:4:paragraph:8",
+        "qasper:1812.03593:paper:abstract",
+        "qasper:1812.03593:paper:section:7:paragraph:0",
+        "qasper:1812.03593:paper:section:0:paragraph:1",
+        "qasper:1812.03593:paper:section:0:paragraph:2",
+        "qasper:1812.03593:paper:section:6:paragraph:0",
+        "qasper:1812.03593:paper:section:1:paragraph:0",
+        "qasper:1812.03593:paper:section:7:paragraph:1",
+        "qasper:1812.03593:paper:section:2:paragraph:0",
+        "qasper:1812.03593:paper:section:6:paragraph:6",
+        "qasper:1812.03593:paper:section:6:paragraph:2",
+        "qasper:1812.03593:paper:section:1:paragraph:1",
+        "qasper:1812.03593:paper:section:6:paragraph:3",
+        "qasper:1812.03593:paper:section:2:paragraph:3",
+        "qasper:1812.03593:paper:section:6:paragraph:5",
+        "qasper:1812.03593:paper:section:2:paragraph:1",
+        "qasper:1812.03593:paper:section:5:paragraph:5",
+        "qasper:1812.03593:paper:section:5:paragraph:8",
+        "qasper:1812.03593:paper:section:2:paragraph:2",
+        "qasper:1812.03593:paper:section:5:paragraph:2"
+      ],
+      "m3_scores": [
+        0.4263572934662444,
+        0.17500402493851316,
+        0.01662213231554007,
+        0.014091290936607088,
+        0.005509083279676372,
+        0.004055029222388596,
+        0.0032232778153369647,
+        0.002065207737422327,
+        0.002010858802326279,
+        0.0011275272973736749,
+        0.001119514226755273,
+        0.0011043855943938942,
+        0.0008173539449415545,
+        0.0007968890296877264,
+        0.0006115909017346346,
+        0.0005995438591093901,
+        0.00031983415501485877,
+        0.00012033471002370346,
+        0.00010432110818263568,
+        3.0246688681358182e-05
+      ]
+    },
+    {
+      "backend": "qasper_hierarchical_in_memory_dense",
+      "base_scores": [
+        0.7996739745140076,
+        0.7830177545547485,
+        0.7948901057243347,
+        0.7856285572052002,
+        0.7573070526123047,
+        0.7775440812110901,
+        0.7496014833450317,
+        0.7658043503761292,
+        0.7494914531707764,
+        0.7474746704101562,
+        0.7582906484603882,
+        0.7571674585342407,
+        0.756878137588501,
+        0.7487971782684326,
+        0.7638152837753296,
+        0.8013875484466553,
+        0.748279333114624,
+        0.7500630617141724,
+        0.7472641468048096,
+        0.7514368295669556,
+        0.7461169362068176,
+        0.7459027767181396,
+        0.7458780407905579,
+        0.7444232106208801,
+        0.7440668344497681,
+        0.7418763637542725,
+        0.741073727607727,
+        0.7403823137283325,
+        0.7383540868759155,
+        0.7351056337356567,
+        0.7347465753555298,
+        0.7310470342636108,
+        0.72925865650177,
+        0.7291697263717651,
+        0.7289555072784424,
+        0.7288066148757935,
+        0.7253713607788086,
+        0.7250564694404602,
+        0.7240583896636963,
+        0.7211610078811646,
+        0.7176520824432373,
+        0.7174513339996338,
+        0.7149825096130371,
+        0.7133517861366272,
+        0.7125129699707031,
+        0.7111588716506958,
+        0.7087088823318481,
+        0.7084916830062866,
+        0.7073984146118164,
+        0.7067643404006958
+      ],
+      "case_id": "qasper:1902.00756:6916596253d67f74dba9222f48b9e8799581bad9",
+      "category": "text",
+      "experiment_mode": "semantic_dense",
+      "filter_request": {
+        "acl_principals": [
+          "user:evaluator"
+        ],
+        "allowed_chunk_count": null,
+        "allowed_chunk_ids_sha256": null,
+        "knowledge_base_ids": [
+          "taskforge-evaluation"
+        ],
+        "parent_document_ids": [
+          "qasper:1902.00756:paper"
+        ],
+        "tenant_id": "tenant-evaluation",
+        "version_orders": [
+          1
+        ],
+        "versions": [
+          "1"
+        ]
+      },
+      "filters_applied_before_ranking": true,
+      "graph": null,
+      "production_semantic_dense": true,
+      "query": "So this paper turns unstructured text inputs to parameters that GNNs can read?",
+      "raw_candidate_counts": {
+        "in_memory_dense": 50
+      },
+      "relevant_ids": [
+        "qasper:1902.00756:paper:section:3:paragraph:1"
+      ],
+      "reranker_scores": [
+        3.6533403396606445,
+        3.549849271774292,
+        2.3461999893188477,
+        -0.9328962564468384,
+        -1.5184299945831299,
+        -2.3023476600646973,
+        -2.5919198989868164,
+        -2.858368158340454,
+        -2.969791889190674,
+        -3.252284049987793,
+        -3.5364990234375,
+        -3.856451988220215,
+        -4.943212509155273,
+        -5.53417444229126,
+        -6.079888343811035,
+        -6.372342109680176,
+        -10.06167984008789,
+        -10.266910552978516,
+        -10.36591911315918,
+        -10.687719345092773,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "retrieval_profile": {
+        "name": "general_text",
+        "selection": {
+          "corpus": {
+            "document_count": 47701,
+            "has_page_coordinates": false,
+            "has_table_structure": false,
+            "page_count": 0,
+            "source_count": 1,
+            "source_labels": [
+              "qasper"
+            ],
+            "table_count": 0
+          },
+          "query_features": {
+            "has_cross_document_language": false,
+            "has_numeric_operation": false,
+            "has_pdf_layout_language": false,
+            "has_table_language": false,
+            "numeric_tokens": []
+          }
+        }
+      },
+      "retrieval_sources": [
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ]
+      ],
+      "retrieved_cell_ids": [],
+      "retrieved_complete_table_ids": [],
+      "retrieved_ids": [
+        "qasper:1902.00756:paper:section:0:paragraph:2",
+        "qasper:1902.00756:paper:abstract",
+        "qasper:1902.00756:paper:section:14:paragraph:0",
+        "qasper:1902.00756:paper:section:0:paragraph:5",
+        "qasper:1902.00756:paper:section:1:paragraph:0",
+        "qasper:1902.00756:paper:section:3:paragraph:0",
+        "qasper:1902.00756:paper:section:3:paragraph:1",
+        "qasper:1902.00756:paper:section:0:paragraph:6",
+        "qasper:1902.00756:paper:section:6:paragraph:0",
+        "qasper:1902.00756:paper:section:0:paragraph:0",
+        "qasper:1902.00756:paper:section:0:paragraph:3",
+        "qasper:1902.00756:paper:section:13:paragraph:0",
+        "qasper:1902.00756:paper:section:6:paragraph:2",
+        "qasper:1902.00756:paper:section:7:paragraph:1",
+        "qasper:1902.00756:paper:section:9:paragraph:8",
+        "qasper:1902.00756:paper:section:9:paragraph:7",
+        "qasper:1902.00756:paper:section:4:paragraph:4",
+        "qasper:1902.00756:paper:section:4:paragraph:1",
+        "qasper:1902.00756:paper:section:4:paragraph:6",
+        "qasper:1902.00756:paper:section:4:paragraph:7",
+        "qasper:1902.00756:paper:section:10:paragraph:1",
+        "qasper:1902.00756:paper:section:5:paragraph:5",
+        "qasper:1902.00756:paper:section:6:paragraph:1",
+        "qasper:1902.00756:paper:section:0:paragraph:4",
+        "qasper:1902.00756:paper:section:4:paragraph:2",
+        "qasper:1902.00756:paper:section:6:paragraph:4",
+        "qasper:1902.00756:paper:section:6:paragraph:7",
+        "qasper:1902.00756:paper:section:8:paragraph:0",
+        "qasper:1902.00756:paper:section:9:paragraph:2",
+        "qasper:1902.00756:paper:section:5:paragraph:1",
+        "qasper:1902.00756:paper:section:7:paragraph:0",
+        "qasper:1902.00756:paper:section:9:paragraph:9",
+        "qasper:1902.00756:paper:section:6:paragraph:5",
+        "qasper:1902.00756:paper:section:12:paragraph:0",
+        "qasper:1902.00756:paper:section:6:paragraph:9",
+        "qasper:1902.00756:paper:section:4:paragraph:5",
+        "qasper:1902.00756:paper:section:5:paragraph:2",
+        "qasper:1902.00756:paper:section:9:paragraph:6",
+        "qasper:1902.00756:paper:section:4:paragraph:0",
+        "qasper:1902.00756:paper:section:6:paragraph:6",
+        "qasper:1902.00756:paper:section:5:paragraph:4",
+        "qasper:1902.00756:paper:section:4:paragraph:8",
+        "qasper:1902.00756:paper:section:2:paragraph:1",
+        "qasper:1902.00756:paper:section:4:paragraph:3",
+        "qasper:1902.00756:paper:section:10:paragraph:0",
+        "qasper:1902.00756:paper:section:11:paragraph:0",
+        "qasper:1902.00756:paper:section:9:paragraph:3",
+        "qasper:1902.00756:paper:section:5:paragraph:0",
+        "qasper:1902.00756:paper:section:4:paragraph:9",
+        "qasper:1902.00756:paper:section:5:paragraph:3"
+      ],
+      "retrieved_parent_ids": [
+        "qasper:1902.00756:paper"
+      ],
+      "retrieved_row_ids": [],
+      "retrieved_table_units_by_hit": [],
+      "scores": [
+        3.6533403396606445,
+        3.549849271774292,
+        2.3461999893188477,
+        -0.9328962564468384,
+        -1.5184299945831299,
+        -2.3023476600646973,
+        -2.5919198989868164,
+        -2.858368158340454,
+        -2.969791889190674,
+        -3.252284049987793,
+        -3.5364990234375,
+        -3.856451988220215,
+        -4.943212509155273,
+        -5.53417444229126,
+        -6.079888343811035,
+        -6.372342109680176,
+        -10.06167984008789,
+        -10.266910552978516,
+        -10.36591911315918,
+        -10.687719345092773,
+        0.7461169362068176,
+        0.7459027767181396,
+        0.7458780407905579,
+        0.7444232106208801,
+        0.7440668344497681,
+        0.7418763637542725,
+        0.741073727607727,
+        0.7403823137283325,
+        0.7383540868759155,
+        0.7351056337356567,
+        0.7347465753555298,
+        0.7310470342636108,
+        0.72925865650177,
+        0.7291697263717651,
+        0.7289555072784424,
+        0.7288066148757935,
+        0.7253713607788086,
+        0.7250564694404602,
+        0.7240583896636963,
+        0.7211610078811646,
+        0.7176520824432373,
+        0.7174513339996338,
+        0.7149825096130371,
+        0.7133517861366272,
+        0.7125129699707031,
+        0.7111588716506958,
+        0.7087088823318481,
+        0.7084916830062866,
+        0.7073984146118164,
+        0.7067643404006958
+      ],
+      "search_query": "So this paper turns unstructured text inputs to parameters that GNNs can read?",
+      "stage": "qdrant_qasper_dense_rerank",
+      "reranked_ids": [
+        "qasper:1902.00756:paper:abstract",
+        "qasper:1902.00756:paper:section:0:paragraph:2",
+        "qasper:1902.00756:paper:section:14:paragraph:0",
+        "qasper:1902.00756:paper:section:0:paragraph:5",
+        "qasper:1902.00756:paper:section:1:paragraph:0",
+        "qasper:1902.00756:paper:section:3:paragraph:1",
+        "qasper:1902.00756:paper:section:6:paragraph:2",
+        "qasper:1902.00756:paper:section:0:paragraph:0",
+        "qasper:1902.00756:paper:section:0:paragraph:6",
+        "qasper:1902.00756:paper:section:0:paragraph:3",
+        "qasper:1902.00756:paper:section:7:paragraph:1",
+        "qasper:1902.00756:paper:section:6:paragraph:0",
+        "qasper:1902.00756:paper:section:9:paragraph:7",
+        "qasper:1902.00756:paper:section:9:paragraph:8",
+        "qasper:1902.00756:paper:section:13:paragraph:0",
+        "qasper:1902.00756:paper:section:3:paragraph:0",
+        "qasper:1902.00756:paper:section:4:paragraph:1",
+        "qasper:1902.00756:paper:section:4:paragraph:6",
+        "qasper:1902.00756:paper:section:4:paragraph:4",
+        "qasper:1902.00756:paper:section:4:paragraph:7"
+      ],
+      "m3_scores": [
+        0.9873518955692141,
+        0.9607590324191665,
+        0.6622877443310395,
+        0.26299084351234864,
+        0.14217913837728005,
+        0.02801750471160071,
+        0.022484935321298957,
+        0.020715449343296395,
+        0.019742000241499826,
+        0.010289209127830146,
+        0.0031799629886772383,
+        0.001884586407609756,
+        0.0018732972295348706,
+        0.0016844100833109596,
+        0.0010696331896611273,
+        0.0003120976637487319,
+        8.741025921057197e-05,
+        8.169044688031332e-05,
+        3.317706156389093e-05,
+        2.1268774392286343e-05
+      ]
+    },
+    {
+      "backend": "qasper_hierarchical_in_memory_dense",
+      "base_scores": [
+        0.7608938217163086,
+        0.7019482254981995,
+        0.7121556997299194,
+        0.7351152896881104,
+        0.7630386352539062,
+        0.7556201219558716,
+        0.7304914593696594,
+        0.716915488243103,
+        0.7586336135864258,
+        0.7273508310317993,
+        0.6931889653205872,
+        0.7121850252151489,
+        0.7186153531074524,
+        0.7403502464294434,
+        0.7403502464294434,
+        0.6894063949584961,
+        0.6888929009437561,
+        0.7175519466400146,
+        0.7177804708480835,
+        0.7006285190582275,
+        0.68831467628479,
+        0.68831467628479,
+        0.6882513761520386,
+        0.6882197260856628,
+        0.6871565580368042,
+        0.686217725276947,
+        0.6851614117622375,
+        0.6851614117622375,
+        0.683637797832489,
+        0.6795641779899597,
+        0.6795641779899597,
+        0.678489089012146,
+        0.6747047901153564,
+        0.6733859181404114,
+        0.6728655099868774,
+        0.6621330976486206,
+        0.6596851348876953,
+        0.6581639647483826,
+        0.6365418434143066,
+        0.6359249949455261,
+        0.6350555419921875,
+        0.6342519521713257,
+        0.6312981843948364,
+        0.6301390528678894,
+        0.6289029121398926,
+        0.6272032260894775,
+        0.6093491315841675,
+        0.6084211468696594,
+        0.600275993347168
+      ],
+      "case_id": "qasper:1707.03904:dcb18516369c3cf9838e83168357aed6643ae1b8",
+      "category": "text",
+      "experiment_mode": "semantic_dense",
+      "filter_request": {
+        "acl_principals": [
+          "user:evaluator"
+        ],
+        "allowed_chunk_count": null,
+        "allowed_chunk_ids_sha256": null,
+        "knowledge_base_ids": [
+          "taskforge-evaluation"
+        ],
+        "parent_document_ids": [
+          "qasper:1707.03904:paper"
+        ],
+        "tenant_id": "tenant-evaluation",
+        "version_orders": [
+          1
+        ],
+        "versions": [
+          "1"
+        ]
+      },
+      "filters_applied_before_ranking": true,
+      "graph": null,
+      "production_semantic_dense": true,
+      "query": "Which retrieval system was used for baselines?",
+      "raw_candidate_counts": {
+        "in_memory_dense": 49
+      },
+      "relevant_ids": [
+        "qasper:1707.03904:paper:section:1:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:0",
+        "qasper:1707.03904:paper:section:9:paragraph:0"
+      ],
+      "reranker_scores": [
+        4.68426513671875,
+        1.0212903022766113,
+        0.8707873821258545,
+        0.5638636946678162,
+        0.4266112446784973,
+        0.2130570411682129,
+        -0.24769097566604614,
+        -3.492770195007324,
+        -3.7655375003814697,
+        -5.078855514526367,
+        -5.150204658508301,
+        -5.189901351928711,
+        -5.1951518058776855,
+        -5.647005558013916,
+        -5.647005558013916,
+        -6.459766387939453,
+        -8.585563659667969,
+        -8.594937324523926,
+        -8.957115173339844,
+        -10.81577205657959,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "retrieval_profile": {
+        "name": "general_text",
+        "selection": {
+          "corpus": {
+            "document_count": 47701,
+            "has_page_coordinates": false,
+            "has_table_structure": false,
+            "page_count": 0,
+            "source_count": 1,
+            "source_labels": [
+              "qasper"
+            ],
+            "table_count": 0
+          },
+          "query_features": {
+            "has_cross_document_language": false,
+            "has_numeric_operation": false,
+            "has_pdf_layout_language": false,
+            "has_table_language": false,
+            "numeric_tokens": []
+          }
+        }
+      },
+      "retrieval_sources": [
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ]
+      ],
+      "retrieved_cell_ids": [],
+      "retrieved_complete_table_ids": [],
+      "retrieved_ids": [
+        "qasper:1707.03904:paper:section:8:paragraph:2",
+        "qasper:1707.03904:paper:section:10:paragraph:0",
+        "qasper:1707.03904:paper:section:8:paragraph:5",
+        "qasper:1707.03904:paper:section:9:paragraph:1",
+        "qasper:1707.03904:paper:section:8:paragraph:0",
+        "qasper:1707.03904:paper:section:9:paragraph:0",
+        "qasper:1707.03904:paper:section:8:paragraph:3",
+        "qasper:1707.03904:paper:section:0:paragraph:7",
+        "qasper:1707.03904:paper:section:9:paragraph:2",
+        "qasper:1707.03904:paper:section:3:paragraph:1",
+        "qasper:1707.03904:paper:abstract",
+        "qasper:1707.03904:paper:section:3:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:11",
+        "qasper:1707.03904:paper:section:3:paragraph:15",
+        "qasper:1707.03904:paper:section:3:paragraph:9",
+        "qasper:1707.03904:paper:section:3:paragraph:3",
+        "qasper:1707.03904:paper:section:0:paragraph:3",
+        "qasper:1707.03904:paper:section:7:paragraph:0",
+        "qasper:1707.03904:paper:section:5:paragraph:0",
+        "qasper:1707.03904:paper:section:11:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:12",
+        "qasper:1707.03904:paper:section:3:paragraph:4",
+        "qasper:1707.03904:paper:section:3:paragraph:7",
+        "qasper:1707.03904:paper:section:0:paragraph:5",
+        "qasper:1707.03904:paper:section:6:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:10",
+        "qasper:1707.03904:paper:section:3:paragraph:14",
+        "qasper:1707.03904:paper:section:3:paragraph:6",
+        "qasper:1707.03904:paper:section:13:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:13",
+        "qasper:1707.03904:paper:section:3:paragraph:5",
+        "qasper:1707.03904:paper:section:4:paragraph:0",
+        "qasper:1707.03904:paper:section:0:paragraph:6",
+        "qasper:1707.03904:paper:section:2:paragraph:1",
+        "qasper:1707.03904:paper:section:3:paragraph:2",
+        "qasper:1707.03904:paper:section:0:paragraph:4",
+        "qasper:1707.03904:paper:section:0:paragraph:2",
+        "qasper:1707.03904:paper:section:8:paragraph:1",
+        "qasper:1707.03904:paper:section:8:paragraph:6",
+        "qasper:1707.03904:paper:section:1:paragraph:0",
+        "qasper:1707.03904:paper:section:8:paragraph:4",
+        "qasper:1707.03904:paper:section:0:paragraph:0",
+        "qasper:1707.03904:paper:section:2:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:8",
+        "qasper:1707.03904:paper:section:2:paragraph:2",
+        "qasper:1707.03904:paper:section:0:paragraph:1",
+        "qasper:1707.03904:paper:section:12:paragraph:0",
+        "qasper:1707.03904:paper:section:7:paragraph:1",
+        "qasper:1707.03904:paper:section:8:paragraph:7"
+      ],
+      "retrieved_parent_ids": [
+        "qasper:1707.03904:paper"
+      ],
+      "retrieved_row_ids": [],
+      "retrieved_table_units_by_hit": [],
+      "scores": [
+        4.68426513671875,
+        1.0212903022766113,
+        0.8707873821258545,
+        0.5638636946678162,
+        0.4266112446784973,
+        0.2130570411682129,
+        -0.24769097566604614,
+        -3.492770195007324,
+        -3.7655375003814697,
+        -5.078855514526367,
+        -5.150204658508301,
+        -5.189901351928711,
+        -5.1951518058776855,
+        -5.647005558013916,
+        -5.647005558013916,
+        -6.459766387939453,
+        -8.585563659667969,
+        -8.594937324523926,
+        -8.957115173339844,
+        -10.81577205657959,
+        0.68831467628479,
+        0.68831467628479,
+        0.6882513761520386,
+        0.6882197260856628,
+        0.6871565580368042,
+        0.686217725276947,
+        0.6851614117622375,
+        0.6851614117622375,
+        0.683637797832489,
+        0.6795641779899597,
+        0.6795641779899597,
+        0.678489089012146,
+        0.6747047901153564,
+        0.6733859181404114,
+        0.6728655099868774,
+        0.6621330976486206,
+        0.6596851348876953,
+        0.6581639647483826,
+        0.6365418434143066,
+        0.6359249949455261,
+        0.6350555419921875,
+        0.6342519521713257,
+        0.6312981843948364,
+        0.6301390528678894,
+        0.6289029121398926,
+        0.6272032260894775,
+        0.6093491315841675,
+        0.6084211468696594,
+        0.600275993347168
+      ],
+      "search_query": "Which retrieval system was used for baselines?",
+      "stage": "qdrant_qasper_dense_rerank",
+      "reranked_ids": [
+        "qasper:1707.03904:paper:section:0:paragraph:7",
+        "qasper:1707.03904:paper:abstract",
+        "qasper:1707.03904:paper:section:10:paragraph:0",
+        "qasper:1707.03904:paper:section:9:paragraph:1",
+        "qasper:1707.03904:paper:section:8:paragraph:0",
+        "qasper:1707.03904:paper:section:8:paragraph:2",
+        "qasper:1707.03904:paper:section:9:paragraph:2",
+        "qasper:1707.03904:paper:section:8:paragraph:3",
+        "qasper:1707.03904:paper:section:9:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:15",
+        "qasper:1707.03904:paper:section:3:paragraph:9",
+        "qasper:1707.03904:paper:section:5:paragraph:0",
+        "qasper:1707.03904:paper:section:7:paragraph:0",
+        "qasper:1707.03904:paper:section:0:paragraph:3",
+        "qasper:1707.03904:paper:section:3:paragraph:11",
+        "qasper:1707.03904:paper:section:3:paragraph:3",
+        "qasper:1707.03904:paper:section:8:paragraph:5",
+        "qasper:1707.03904:paper:section:3:paragraph:1",
+        "qasper:1707.03904:paper:section:11:paragraph:0",
+        "qasper:1707.03904:paper:section:3:paragraph:0"
+      ],
+      "m3_scores": [
+        0.8435124499693576,
+        0.7422549478533749,
+        0.6470292396914006,
+        0.6438860145934189,
+        0.5844478231878945,
+        0.5168375106427354,
+        0.15770793457397247,
+        0.07184460501151292,
+        0.07129290570910288,
+        0.020179835529212892,
+        0.020179835529212892,
+        0.00473177457543004,
+        0.002236065004257485,
+        0.0017967177747114193,
+        0.00047988856612808504,
+        0.00012839069230286581,
+        0.00010656118684001328,
+        6.48772827614986e-05,
+        2.3361981601307574e-05,
+        1.6167617721037353e-05
+      ]
+    },
+    {
+      "backend": "qasper_hierarchical_in_memory_dense",
+      "base_scores": [
+        0.6420568227767944,
+        0.6103654503822327,
+        0.5949140787124634,
+        0.60487961769104,
+        0.5964577794075012,
+        0.5930149555206299,
+        0.6030144691467285,
+        0.5783348083496094,
+        0.5811341404914856,
+        0.5930192470550537,
+        0.5793517231941223,
+        0.6051594018936157,
+        0.595897376537323,
+        0.5776247382164001,
+        0.5922640562057495,
+        0.5859917998313904,
+        0.612209677696228,
+        0.5851184129714966,
+        0.5788708925247192,
+        0.585588276386261,
+        0.5774815678596497,
+        0.5772937536239624,
+        0.5753517150878906,
+        0.5752830505371094,
+        0.5729169845581055,
+        0.5719817876815796,
+        0.5705496072769165,
+        0.5703525543212891,
+        0.5695202350616455,
+        0.5685439109802246,
+        0.5684735774993896,
+        0.5680789947509766,
+        0.5680373907089233,
+        0.5676275491714478,
+        0.5667157173156738,
+        0.5662435293197632,
+        0.5654059052467346,
+        0.5652734041213989,
+        0.5644989013671875,
+        0.5619136691093445,
+        0.5618224740028381,
+        0.5613571405410767,
+        0.5613319873809814,
+        0.561289370059967,
+        0.5608721375465393,
+        0.5602944493293762,
+        0.559849739074707,
+        0.5595530867576599,
+        0.5575254559516907,
+        0.5572056770324707
+      ],
+      "case_id": "qasper:1910.09295:50e3fd6778dadf8ec0ff589aa8b18c61bdcacd41",
+      "category": "text",
+      "experiment_mode": "semantic_dense",
+      "filter_request": {
+        "acl_principals": [
+          "user:evaluator"
+        ],
+        "allowed_chunk_count": null,
+        "allowed_chunk_ids_sha256": null,
+        "knowledge_base_ids": [
+          "taskforge-evaluation"
+        ],
+        "parent_document_ids": [
+          "qasper:1910.09295:paper"
+        ],
+        "tenant_id": "tenant-evaluation",
+        "version_orders": [
+          1
+        ],
+        "versions": [
+          "1"
+        ]
+      },
+      "filters_applied_before_ranking": true,
+      "graph": null,
+      "production_semantic_dense": true,
+      "query": "What other datasets are used?",
+      "raw_candidate_counts": {
+        "in_memory_dense": 50
+      },
+      "relevant_ids": [
+        "qasper:1910.09295:paper:section:8:paragraph:0"
+      ],
+      "reranker_scores": [
+        -0.6919829249382019,
+        -2.944403886795044,
+        -3.1213266849517822,
+        -4.137716770172119,
+        -4.2928266525268555,
+        -4.640801906585693,
+        -4.683258533477783,
+        -5.416358470916748,
+        -6.226823806762695,
+        -6.542899131774902,
+        -6.663527011871338,
+        -7.331577301025391,
+        -9.627760887145996,
+        -9.893218994140625,
+        -10.045475006103516,
+        -10.15440845489502,
+        -10.234969139099121,
+        -10.236312866210938,
+        -10.394015312194824,
+        -10.742378234863281,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "retrieval_profile": {
+        "name": "general_text",
+        "selection": {
+          "corpus": {
+            "document_count": 47701,
+            "has_page_coordinates": false,
+            "has_table_structure": false,
+            "page_count": 0,
+            "source_count": 1,
+            "source_labels": [
+              "qasper"
+            ],
+            "table_count": 0
+          },
+          "query_features": {
+            "has_cross_document_language": false,
+            "has_numeric_operation": false,
+            "has_pdf_layout_language": false,
+            "has_table_language": false,
+            "numeric_tokens": []
+          }
+        }
+      },
+      "retrieval_sources": [
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "learned_cross_encoder_rerank",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ],
+        [
+          "qdrant_dense",
+          "raw_evidence_projection"
+        ]
+      ],
+      "retrieved_cell_ids": [],
+      "retrieved_complete_table_ids": [],
+      "retrieved_ids": [
+        "qasper:1910.09295:paper:section:0:paragraph:3",
+        "qasper:1910.09295:paper:section:12:paragraph:0",
+        "qasper:1910.09295:paper:section:0:paragraph:4",
+        "qasper:1910.09295:paper:section:7:paragraph:2",
+        "qasper:1910.09295:paper:section:8:paragraph:1",
+        "qasper:1910.09295:paper:section:7:paragraph:1",
+        "qasper:1910.09295:paper:section:7:paragraph:0",
+        "qasper:1910.09295:paper:section:0:paragraph:6",
+        "qasper:1910.09295:paper:section:0:paragraph:1",
+        "qasper:1910.09295:paper:section:19:paragraph:0",
+        "qasper:1910.09295:paper:section:11:paragraph:3",
+        "qasper:1910.09295:paper:section:3:paragraph:3",
+        "qasper:1910.09295:paper:section:20:paragraph:0",
+        "qasper:1910.09295:paper:section:11:paragraph:4",
+        "qasper:1910.09295:paper:section:5:paragraph:2",
+        "qasper:1910.09295:paper:section:10:paragraph:1",
+        "qasper:1910.09295:paper:section:8:paragraph:0",
+        "qasper:1910.09295:paper:section:3:paragraph:0",
+        "qasper:1910.09295:paper:section:10:paragraph:0",
+        "qasper:1910.09295:paper:section:5:paragraph:0",
+        "qasper:1910.09295:paper:section:17:paragraph:1",
+        "qasper:1910.09295:paper:abstract",
+        "qasper:1910.09295:paper:section:10:paragraph:3",
+        "qasper:1910.09295:paper:section:23:paragraph:1",
+        "qasper:1910.09295:paper:section:22:paragraph:0",
+        "qasper:1910.09295:paper:section:21:paragraph:0",
+        "qasper:1910.09295:paper:section:4:paragraph:3",
+        "qasper:1910.09295:paper:section:3:paragraph:1",
+        "qasper:1910.09295:paper:section:4:paragraph:0",
+        "qasper:1910.09295:paper:section:21:paragraph:2",
+        "qasper:1910.09295:paper:section:6:paragraph:1",
+        "qasper:1910.09295:paper:section:19:paragraph:1",
+        "qasper:1910.09295:paper:section:5:paragraph:1",
+        "qasper:1910.09295:paper:section:11:paragraph:2",
+        "qasper:1910.09295:paper:section:22:paragraph:2",
+        "qasper:1910.09295:paper:section:19:paragraph:3",
+        "qasper:1910.09295:paper:section:14:paragraph:2",
+        "qasper:1910.09295:paper:section:1:paragraph:0",
+        "qasper:1910.09295:paper:section:4:paragraph:2",
+        "qasper:1910.09295:paper:section:15:paragraph:1",
+        "qasper:1910.09295:paper:section:14:paragraph:0",
+        "qasper:1910.09295:paper:section:22:paragraph:1",
+        "qasper:1910.09295:paper:section:13:paragraph:1",
+        "qasper:1910.09295:paper:section:8:paragraph:2",
+        "qasper:1910.09295:paper:section:10:paragraph:2",
+        "qasper:1910.09295:paper:section:23:paragraph:0",
+        "qasper:1910.09295:paper:section:9:paragraph:0",
+        "qasper:1910.09295:paper:section:20:paragraph:1",
+        "qasper:1910.09295:paper:section:0:paragraph:2",
+        "qasper:1910.09295:paper:section:6:paragraph:0"
+      ],
+      "retrieved_parent_ids": [
+        "qasper:1910.09295:paper"
+      ],
+      "retrieved_row_ids": [],
+      "retrieved_table_units_by_hit": [],
+      "scores": [
+        -0.6919829249382019,
+        -2.944403886795044,
+        -3.1213266849517822,
+        -4.137716770172119,
+        -4.2928266525268555,
+        -4.640801906585693,
+        -4.683258533477783,
+        -5.416358470916748,
+        -6.226823806762695,
+        -6.542899131774902,
+        -6.663527011871338,
+        -7.331577301025391,
+        -9.627760887145996,
+        -9.893218994140625,
+        -10.045475006103516,
+        -10.15440845489502,
+        -10.234969139099121,
+        -10.236312866210938,
+        -10.394015312194824,
+        -10.742378234863281,
+        0.5774815678596497,
+        0.5772937536239624,
+        0.5753517150878906,
+        0.5752830505371094,
+        0.5729169845581055,
+        0.5719817876815796,
+        0.5705496072769165,
+        0.5703525543212891,
+        0.5695202350616455,
+        0.5685439109802246,
+        0.5684735774993896,
+        0.5680789947509766,
+        0.5680373907089233,
+        0.5676275491714478,
+        0.5667157173156738,
+        0.5662435293197632,
+        0.5654059052467346,
+        0.5652734041213989,
+        0.5644989013671875,
+        0.5619136691093445,
+        0.5618224740028381,
+        0.5613571405410767,
+        0.5613319873809814,
+        0.561289370059967,
+        0.5608721375465393,
+        0.5602944493293762,
+        0.559849739074707,
+        0.5595530867576599,
+        0.5575254559516907,
+        0.5572056770324707
+      ],
+      "search_query": "What other datasets are used?",
+      "stage": "qdrant_qasper_dense_rerank",
+      "reranked_ids": [
+        "qasper:1910.09295:paper:section:0:paragraph:3",
+        "qasper:1910.09295:paper:section:7:paragraph:0",
+        "qasper:1910.09295:paper:section:12:paragraph:0",
+        "qasper:1910.09295:paper:section:0:paragraph:4",
+        "qasper:1910.09295:paper:section:0:paragraph:1",
+        "qasper:1910.09295:paper:section:8:paragraph:1",
+        "qasper:1910.09295:paper:section:0:paragraph:6",
+        "qasper:1910.09295:paper:section:11:paragraph:3",
+        "qasper:1910.09295:paper:section:7:paragraph:2",
+        "qasper:1910.09295:paper:section:19:paragraph:0",
+        "qasper:1910.09295:paper:section:3:paragraph:3",
+        "qasper:1910.09295:paper:section:11:paragraph:4",
+        "qasper:1910.09295:paper:section:7:paragraph:1",
+        "qasper:1910.09295:paper:section:8:paragraph:0",
+        "qasper:1910.09295:paper:section:3:paragraph:0",
+        "qasper:1910.09295:paper:section:10:paragraph:0",
+        "qasper:1910.09295:paper:section:5:paragraph:2",
+        "qasper:1910.09295:paper:section:10:paragraph:1",
+        "qasper:1910.09295:paper:section:20:paragraph:0",
+        "qasper:1910.09295:paper:section:5:paragraph:0"
+      ],
+      "m3_scores": [
+        0.8028771916021706,
+        0.24022369639839694,
+        0.2389695494169627,
+        0.1421154682746503,
+        0.1400153859957674,
+        0.04764526275991953,
+        0.030774511008028277,
+        0.027431767462197047,
+        0.011864312490749276,
+        0.005878849903756077,
+        0.004224392460727331,
+        0.0033252206364839483,
+        0.003235568031762534,
+        0.001334988807343697,
+        0.000783286878842442,
+        0.0006554582827158297,
+        0.0006197955480000364,
+        0.00037998813720685454,
+        0.00016353205069559784,
+        8.574949582209774e-05
+      ]
+    }
+  ]
+}

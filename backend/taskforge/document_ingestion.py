@@ -130,6 +130,7 @@ def extract_pdf_document(
     max_pages: int = 200,
     max_blocks: int = 20_000,
     chunk_chars: int = 2_000,
+    preserve_page_boundaries: bool = False,
     table_settings: Mapping[str, Any] | None = None,
 ) -> StructuredDocument:
     """Extract a bounded, unencrypted, machine-generated PDF.
@@ -208,6 +209,7 @@ def extract_pdf_document(
         blocks,
         document_id=document_id,
         chunk_chars=chunk_chars,
+        preserve_page_boundaries=preserve_page_boundaries,
     )
     return StructuredDocument(
         document_id=document_id,
@@ -225,8 +227,9 @@ def build_structure_chunks(
     *,
     document_id: str,
     chunk_chars: int = 2_000,
+    preserve_page_boundaries: bool = False,
 ) -> tuple[StructureChunk, ...]:
-    """Group ordered blocks without crossing heading/paragraph boundaries."""
+    """Group blocks while optionally retaining page-level retrieval provenance."""
 
     if not document_id.strip():
         raise ValueError("document_id is required")
@@ -255,6 +258,8 @@ def build_structure_chunks(
         current_heading = active_heading
 
     for block in ordered:
+        if current and preserve_page_boundaries and current[-1].page != block.page:
+            flush()
         if block.is_heading:
             flush()
             active_heading = block.text

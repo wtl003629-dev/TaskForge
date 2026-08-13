@@ -54,6 +54,14 @@ from .orchestration import (
     SQLiteOrchestrationStore,
     VersionConflictError,
 )
+from .research_protocol import (
+    CriticHandoff,
+    EvaluatorHandoff,
+    EvidenceCard,
+    PlannerHandoff,
+    ResearchRolePayload,
+    WriterHandoff,
+)
 from .runtime import AgentRuntime
 from .tooling import ToolRegistry, ToolRisk, ToolSpec
 
@@ -69,6 +77,9 @@ _CASE_CONTEXT_TEXT_BUDGET = 1_200
 # envelope back over the hard budget after the pop-to-budget loop.
 _CASE_CONTEXT_HEADROOM = 1_024
 _CONTEXT_EFFECTIVE_BUDGET = _CASE_CONTEXT_CHAR_BUDGET - _CASE_CONTEXT_HEADROOM
+_RESEARCH_ROLE_IDS = frozenset(
+    {"retrieval_planner", "source_evaluator", "synthesis_writer", "critical_reviewer"}
+)
 
 
 def _validate_claim_json(
@@ -209,6 +220,7 @@ class RoleResultSubmission(StrictModel):
     claims: list[RoleClaim] = Field(max_length=64)
     summary: str = Field(min_length=1, max_length=12_000)
     handoff_summary: str = Field(min_length=1, max_length=12_000)
+    research_payload: ResearchRolePayload | None = None
 
     @field_validator("summary", "handoff_summary")
     @classmethod
@@ -244,70 +256,109 @@ class _ExecutionBinding(StrictModel):
     role_run_id: str = Field(min_length=1)
 
 
-def submit_role_result_spec() -> ToolSpec:
+def submit_role_result_spec(
+    *,
+    role_id: str | None = None,
+    require_research_payload: bool = False,
+) -> ToolSpec:
     """Return the strict model-visible schema for the result envelope."""
 
+    # Research roles communicate through their typed payloads.  The generic
+    # summary fields are deliberately short receipts rather than a second copy
+    # of the plan/ledger/draft/review, and only the terminal role may need one
+    # generic verdict claim.  Keeping the legacy envelope wider preserves the
+    # existing non-research case adapter.
+    max_claims = 1 if require_research_payload else 64
+    max_summary_chars = 400 if require_research_payload else 12_000
+    max_evidence_refs = 4 if require_research_payload else 32
+
+    payload_models = {
+        "retrieval_planner": PlannerHandoff,
+        "source_evaluator": EvaluatorHandoff,
+        "synthesis_writer": WriterHandoff,
+        "critical_reviewer": CriticHandoff,
+    }
+    properties: dict[str, Any] = {
+        "claims": {
+            "type": "array",
+            "maxItems": max_claims,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "fact_key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 240,
+                    },
+                    "value": {},
+                    "evidence_refs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": max_evidence_refs,
+                        "uniqueItems": True,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500,
+                        },
+                    },
+                    "confidence": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                    },
+                },
+                "required": [
+                    "fact_key",
+                    "value",
+                    "evidence_refs",
+                    "confidence",
+                ],
+                "additionalProperties": False,
+            },
+        },
+        "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": max_summary_chars,
+        },
+        "handoff_summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": max_summary_chars,
+        },
+    }
+    payload_model = payload_models.get(role_id or "")
+    schema_definitions: dict[str, Any] = {}
+    if payload_model is not None and require_research_payload:
+        payload_schema = payload_model.model_json_schema()
+        raw_definitions = payload_schema.pop("$defs", {})
+        if isinstance(raw_definitions, Mapping):
+            schema_definitions.update(deepcopy(dict(raw_definitions)))
+        properties["research_payload"] = payload_schema
+    required = ["claims", "summary", "handoff_summary"]
+    if require_research_payload:
+        if payload_model is None:
+            raise ValueError("a scoped research result requires a research role")
+        required.append("research_payload")
+    parameters: dict[str, Any] = {
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+    }
+    if schema_definitions:
+        parameters["$defs"] = schema_definitions
     return ToolSpec(
         name=SUBMIT_ROLE_RESULT,
         description=(
             "Submit the role's final structured claims and summaries exactly once. "
-            "Claims remain unverified until a trusted host receipt verifies them."
+            "For research roles, keep both summaries under 400 characters and put "
+            "all role data only in research_payload; claims is empty except for the "
+            "single terminal survey.verdict. Claims remain unverified until a "
+            "trusted host receipt verifies them."
         ),
-        parameters={
-            "type": "object",
-            "properties": {
-                "claims": {
-                    "type": "array",
-                    "maxItems": 64,
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "fact_key": {
-                                "type": "string",
-                                "minLength": 1,
-                                "maxLength": 240,
-                            },
-                            "value": {},
-                            "evidence_refs": {
-                                "type": "array",
-                                "minItems": 1,
-                                "maxItems": 32,
-                                "uniqueItems": True,
-                                "items": {
-                                    "type": "string",
-                                    "minLength": 1,
-                                    "maxLength": 500,
-                                },
-                            },
-                            "confidence": {
-                                "type": "number",
-                                "minimum": 0.0,
-                                "maximum": 1.0,
-                            },
-                        },
-                        "required": [
-                            "fact_key",
-                            "value",
-                            "evidence_refs",
-                            "confidence",
-                        ],
-                        "additionalProperties": False,
-                    },
-                },
-                "summary": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 12_000,
-                },
-                "handoff_summary": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 12_000,
-                },
-            },
-            "required": ["claims", "summary", "handoff_summary"],
-            "additionalProperties": False,
-        },
+        parameters=parameters,
         risk=ToolRisk.COMPUTE,
         side_effecting=False,
         requires_approval=False,
@@ -793,6 +844,7 @@ class CaseAgentExecutor:
             access=access,
             role_run_id=role_run.role_run_id,
             claim_token=claim_token,
+            require_research_payload="research_scope_id" in task.metadata,
         )
         execution_failed = False
 
@@ -961,6 +1013,7 @@ class CaseAgentExecutor:
         access: OrchestrationAccess,
         role_run_id: str,
         claim_token: str,
+        require_research_payload: bool = False,
     ) -> AgentRuntime:
         submit_registry = ToolRegistry()
 
@@ -976,14 +1029,48 @@ class CaseAgentExecutor:
                     raise CaseRuntimeError(
                         "submit_role_result may execute at most once per runtime run"
                     )
-            submission = RoleResultSubmission.model_validate(arguments)
+            normalized_arguments = deepcopy(arguments)
+            if require_research_payload:
+                expected_protocol = {
+                    "retrieval_planner": "research.planner_handoff.v1",
+                    "source_evaluator": "research.evaluator_handoff.v1",
+                    "synthesis_writer": "research.writer_handoff.v1",
+                    "critical_reviewer": "research.critic_handoff.v1",
+                }.get(binding.role_id)
+                # The role binding is Host-owned, so the discriminator is not
+                # model-authored information.  Some otherwise valid providers
+                # omit a JSON field that has a schema default; inject that type
+                # tag before Pydantic evaluates the discriminated union.  This
+                # removes a costly retry without relaxing any payload field.
+                raw_payload = normalized_arguments.get("research_payload")
+                if expected_protocol is not None and isinstance(raw_payload, Mapping):
+                    normalized_arguments["research_payload"] = {
+                        **raw_payload,
+                        "protocol": raw_payload.get("protocol") or expected_protocol,
+                    }
+            submission = RoleResultSubmission.model_validate(normalized_arguments)
+            if require_research_payload:
+                if (
+                    expected_protocol is None
+                    or submission.research_payload is None
+                    or submission.research_payload.protocol != expected_protocol
+                ):
+                    raise CaseBindingError(
+                        "scoped research role submitted the wrong structured handoff payload"
+                    )
             return {
                 "receipt_type": _RECEIPT_TYPE,
                 "binding": binding.model_dump(mode="json"),
                 "submission": submission.model_dump(mode="json"),
             }
 
-        submit_registry.register(submit_role_result_spec(), submit_handler)
+        submit_registry.register(
+            submit_role_result_spec(
+                role_id=binding.role_id,
+                require_research_payload=require_research_payload,
+            ),
+            submit_handler,
+        )
         fence = _ExecutionLeaseFence(
             store=self.store,
             access=access,
@@ -1252,7 +1339,13 @@ class CaseAgentExecutor:
 
     @staticmethod
     def _retrieved_evidence_refs(state: RunState) -> list[str]:
-        """Collect the evidence refs genuinely retrieved by governed search."""
+        """Collect evidence IDs genuinely retrieved by governed search tools.
+
+        ``paper_search`` is the research-native equivalent of the legacy
+        ``knowledge_search`` tool.  Keeping both projections here preserves
+        the existing review-case contract while allowing the evaluator to use
+        the compact paper-research protocol.
+        """
 
         retrieved_evidence_refs: list[str] = []
         for step in state.steps:
@@ -1265,12 +1358,28 @@ class CaseAgentExecutor:
                 request = requests.get(receipt.call_id)
                 if (
                     request is None
-                    or request.name != "knowledge_search"
+                    or request.name not in {
+                        "knowledge_search",
+                        "paper_search",
+                        "paper_read",
+                        "citation_verify",
+                    }
                     or not receipt.ok
                     or not isinstance(receipt.output, Mapping)
                 ):
                     continue
-                hits = receipt.output.get("hits")
+                if request.name == "knowledge_search":
+                    hits = receipt.output.get("hits")
+                elif request.name == "paper_search":
+                    hits = receipt.output.get("evidence")
+                elif request.name == "paper_read":
+                    hits = [receipt.output]
+                else:
+                    hits = [
+                        {"evidence_id": value}
+                        for value in receipt.output.get("resolved_evidence_ids", [])
+                        if isinstance(value, str)
+                    ]
                 if not isinstance(hits, Sequence) or isinstance(hits, (str, bytes)):
                     continue
                 for hit in hits:
@@ -1463,6 +1572,121 @@ class CaseAgentExecutor:
             for step in state.steps
             for receipt in step.tool_results
         ]
+        evidence_cards: list[dict[str, Any]] = []
+        seen_cards: set[str] = set()
+        for step in state.steps:
+            if step.model_turn is None:
+                continue
+            requests = {request.call_id: request for request in step.model_turn.tool_requests}
+            for receipt in step.tool_results:
+                request = requests.get(receipt.call_id)
+                if (
+                    request is None
+                    or request.name not in {"paper_search", "knowledge_search"}
+                    or not receipt.ok
+                    or not isinstance(receipt.output, Mapping)
+                ):
+                    continue
+                raw_items = receipt.output.get(
+                    "evidence" if request.name == "paper_search" else "hits",
+                    [],
+                )
+                if not isinstance(raw_items, Sequence) or isinstance(raw_items, (str, bytes)):
+                    continue
+                for item in raw_items:
+                    if not isinstance(item, Mapping):
+                        continue
+                    evidence_id = item.get("evidence_id") or item.get("chunk_id")
+                    if not isinstance(evidence_id, str) or not evidence_id or evidence_id in seen_cards:
+                        continue
+                    try:
+                        card = (
+                            EvidenceCard.model_validate(item)
+                            if request.name == "paper_search"
+                            else EvidenceCard(
+                                evidence_id=evidence_id,
+                                source=str(item.get("source") or item.get("source_uri") or "unknown"),
+                                title=(str(item["title"]) if item.get("title") is not None else None),
+                                section=(str(item["section"]) if item.get("section") is not None else None),
+                                snippet=str(item.get("text") or item.get("excerpt") or "")[:500] or "[no snippet]",
+                            )
+                        )
+                    except ValueError:
+                        continue
+                    evidence_cards.append(card.model_dump(mode="json"))
+                    seen_cards.add(evidence_id)
+                    if len(evidence_cards) >= 10:
+                        break
+                if len(evidence_cards) >= 10:
+                    break
+            if len(evidence_cards) >= 10:
+                break
+        claim_manifest = [
+            {
+                "claim_id": claim.fact_key,
+                "claim_text": str(claim.value)[:2_000],
+                "evidence_ids": list(claim.evidence_refs),
+                "verification_status": "unverified",
+            }
+            for claim in submission.claims
+        ] if submission is not None else []
+        research_payload = (
+            submission.research_payload.model_dump(mode="json")
+            if submission is not None and submission.research_payload is not None
+            else None
+        )
+        if isinstance(research_payload, Mapping):
+            if research_payload.get("protocol") == "research.evaluator_handoff.v1":
+                ledger = research_payload.get("ledger")
+                if isinstance(ledger, Mapping):
+                    # Never trust model-authored IDs as proof of retrieval.
+                    # Replace them in the downstream projection with the exact
+                    # cards parsed from the successful governed search receipt.
+                    actual_ids = [
+                        str(card["evidence_id"])
+                        for card in evidence_cards
+                        if isinstance(card.get("evidence_id"), str)
+                    ][:10]
+                    projected_ledger = dict(ledger)
+                    projected_ledger["evidence_ids"] = actual_ids
+                    projected_ledger["receipt_ids"] = [
+                        receipt.call_id
+                        for receipt in tool_results
+                        if receipt.ok
+                        and receipt.metadata.get("tool") == "paper_search"
+                    ][:4]
+                    research_payload = {
+                        **dict(research_payload),
+                        "ledger": projected_ledger,
+                    }
+                    retrieved_evidence_refs = list(
+                        dict.fromkeys([*retrieved_evidence_refs, *actual_ids])
+                    )[:64]
+            elif research_payload.get("protocol") == "research.writer_handoff.v1":
+                raw_manifest = research_payload.get("claim_manifest", [])
+                if isinstance(raw_manifest, list):
+                    claim_manifest = [
+                        deepcopy(claim)
+                        for claim in raw_manifest[:64]
+                        if isinstance(claim, Mapping)
+                    ]
+        blackboard = {
+            "protocol": "research.blackboard.delta.v1",
+            "evidence_ids": retrieved_evidence_refs[:64],
+            "evidence_cards": evidence_cards,
+            "claim_manifest": claim_manifest,
+            "research_payload": research_payload,
+            "receipt_ids": [
+                receipt.call_id
+                for receipt in tool_results
+                if receipt.ok and receipt.metadata.get("tool") in {
+                    "paper_search",
+                    "paper_read",
+                    "citation_verify",
+                    SUBMIT_ROLE_RESULT,
+                }
+            ][:64],
+        }
         usage = audit_usage_from_state(state)
         elapsed_ms = max(
             0.0,
@@ -1479,6 +1703,7 @@ class CaseAgentExecutor:
             "evidence": deepcopy(state.evidence),
             "citations": citations,
             "retrieved_evidence_refs": retrieved_evidence_refs,
+            "blackboard": blackboard,
             "runtime_metrics": {
                 "step_count": len(state.steps),
                 "model_turn_count": sum(
@@ -1601,6 +1826,10 @@ class CaseAgentExecutor:
             if dependency.status != RoleRunStatus.SUCCEEDED:
                 continue
             output = dependency.output or {}
+            is_research = plan.strategy == "static" and any(
+                item.role_id in _RESEARCH_ROLE_IDS
+                for item in plan.slots
+            )
             raw_citations = output.get("citations", [])
             citations = (
                 [
@@ -1611,17 +1840,46 @@ class CaseAgentExecutor:
                 if isinstance(raw_citations, list)
                 else []
             )
-            add(
-                "dependency_results",
-                {
-                    "slot_id": dependency.slot_id,
-                    "role_id": dependency.role_id,
-                    "role_run_id": dependency.role_run_id,
-                    "summary": _clip_context_text(output.get("summary", "")),
-                    "citations": citations,
-                    "context_authority": "model_untrusted",
-                },
-            )
+            dependency_item = {
+                "slot_id": dependency.slot_id,
+                "role_id": dependency.role_id,
+                "role_run_id": dependency.role_run_id,
+                "summary": _clip_context_text(output.get("summary", "")),
+                "citations": [] if is_research else citations,
+                "context_authority": "model_untrusted",
+            }
+            if is_research and isinstance(output.get("blackboard"), Mapping):
+                # Pass a bounded blackboard delta between research roles.  The
+                # durable role output retains the complete audit trail.
+                board = output["blackboard"]
+                delta: dict[str, Any] = {
+                    "protocol": board.get("protocol"),
+                    "receipt_ids": list(board.get("receipt_ids", []))[:32],
+                }
+                payload = board.get("research_payload")
+                payload_protocol = (
+                    payload.get("protocol") if isinstance(payload, Mapping) else None
+                )
+                if slot.role_id == "source_evaluator" and payload_protocol == "research.planner_handoff.v1":
+                    delta["research_plan"] = deepcopy(payload.get("plan"))
+                elif slot.role_id == "synthesis_writer":
+                    if payload_protocol == "research.evaluator_handoff.v1":
+                        delta["evidence_ledger"] = deepcopy(payload.get("ledger"))
+                        delta["evidence_cards"] = list(board.get("evidence_cards", []))[:10]
+                    else:
+                        delta["evidence_ids"] = list(board.get("evidence_ids", []))[:64]
+                        delta["evidence_cards"] = list(board.get("evidence_cards", []))[:16]
+                elif slot.role_id == "critical_reviewer":
+                    if payload_protocol == "research.writer_handoff.v1":
+                        delta["draft"] = deepcopy(payload.get("draft"))
+                        delta["claim_manifest"] = list(payload.get("claim_manifest", []))[:64]
+                    else:
+                        delta["claim_manifest"] = list(board.get("claim_manifest", []))[:32]
+                else:
+                    delta["evidence_ids"] = list(board.get("evidence_ids", []))[:64]
+                dependency_item["blackboard_delta"] = delta
+                dependency_item["communication_protocol"] = "research.blackboard.delta.v1"
+            add("dependency_results", dependency_item)
 
         for handoff in self.store.list_handoffs(access, plan.plan_id):
             if handoff.to_slot_id != slot.slot_id:
@@ -1711,6 +1969,17 @@ class CaseAgentExecutor:
             separators=(",", ":"),
             allow_nan=False,
         )
+        scope_binding = self._research_scope_binding(plan)
+        metadata: dict[str, Any] = {
+            _BINDING_METADATA_KEY: binding.model_dump(mode="json"),
+            "plan_objective": plan.objective,
+            "slot_instruction": slot.instruction,
+            "attempt": role_run.attempt,
+            "case_context": context_envelope,
+        }
+        if scope_binding is not None:
+            metadata["research_scope_id"] = scope_binding[0]
+            metadata["research_scope_version"] = scope_binding[1]
         return Task(
             id=self._task_id(role_run),
             tenant_id=plan.tenant_id,
@@ -1731,14 +2000,36 @@ class CaseAgentExecutor:
                 "Call submit_role_result exactly once with all claims and evidence refs.",
                 "After the receipt, return a concise final response.",
             ],
-            metadata={
-                _BINDING_METADATA_KEY: binding.model_dump(mode="json"),
-                "plan_objective": plan.objective,
-                "slot_instruction": slot.instruction,
-                "attempt": role_run.attempt,
-                "case_context": context_envelope,
-            },
+            metadata=metadata,
         )
+
+    @staticmethod
+    def _research_scope_binding(plan: SpeakerPlan) -> tuple[str, int] | None:
+        if not any(slot.role_id in _RESEARCH_ROLE_IDS for slot in plan.slots):
+            return None
+        marker = "CASE_INPUT_JSON="
+        if marker not in plan.objective:
+            return None
+        try:
+            payload = json.loads(plan.objective.rsplit(marker, 1)[1])
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return None
+        if not isinstance(payload, Mapping):
+            return None
+        scope_id = payload.get("research_scope_id")
+        version = payload.get("research_scope_version")
+        if scope_id is None and version is None:
+            return None
+        if (
+            not isinstance(scope_id, str)
+            or not scope_id.strip()
+            or len(scope_id) > 240
+            or isinstance(version, bool)
+            or not isinstance(version, int)
+            or version < 1
+        ):
+            raise CaseBindingError("research plan contains an invalid Scope binding")
+        return scope_id, version
 
     @staticmethod
     def _task_id(role_run: RoleRun) -> str:

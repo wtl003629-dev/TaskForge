@@ -11,7 +11,7 @@ import hashlib
 import re
 from pathlib import Path
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 from pydantic import Field, model_validator
@@ -90,8 +90,43 @@ DEFAULT_DOWNLOAD_HOSTS = frozenset(
     {
         "huggingface.co",
         "raw.githubusercontent.com",
+        "us.aws.cdn.hf.co",
     }
 )
+
+
+def _validated_download_url(url: str, allowed_hosts: frozenset[str]) -> str:
+    parsed = urlsplit(url)
+    host = (parsed.hostname or "").casefold()
+    if parsed.scheme != "https" or not host or parsed.username:
+        raise DatasetDownloadError("download URL must be credential-free HTTPS")
+    if host not in allowed_hosts:
+        raise DatasetDownloadError(f"download host is not allowlisted: {host}")
+    return url
+
+
+def _open_download_stream(
+    http: httpx.Client,
+    url: str,
+    *,
+    allowed_hosts: frozenset[str],
+    max_redirects: int = 3,
+) -> httpx.Response:
+    """Open one stream while validating every redirect before connecting."""
+
+    current = _validated_download_url(url, allowed_hosts)
+    for redirect_count in range(max_redirects + 1):
+        response = http.send(http.build_request("GET", current), stream=True)
+        if not response.is_redirect:
+            return response
+        location = response.headers.get("location")
+        response.close()
+        if not location:
+            raise DatasetDownloadError("download redirect omitted Location")
+        if redirect_count >= max_redirects:
+            raise DatasetDownloadError("download exceeded redirect limit")
+        current = _validated_download_url(urljoin(current, location), allowed_hosts)
+    raise DatasetDownloadError("download redirect handling failed")
 
 
 def load_dataset_catalog(path: str | Path) -> DatasetCatalog:
@@ -114,6 +149,7 @@ def download_dataset_source(
     output_dir: str | Path,
     accept_noncommercial: bool = False,
     allowed_hosts: frozenset[str] = DEFAULT_DOWNLOAD_HOSTS,
+    trust_env: bool = False,
     client: httpx.Client | None = None,
 ) -> list[DownloadReceipt]:
     if not source.automated:
@@ -130,14 +166,12 @@ def download_dataset_source(
     http = client or httpx.Client(
         timeout=httpx.Timeout(60.0),
         follow_redirects=False,
-        trust_env=False,
+        trust_env=trust_env,
     )
     receipts: list[DownloadReceipt] = []
     try:
         for artifact in source.artifacts:
-            host = (urlsplit(artifact.url).hostname or "").casefold()
-            if host not in allowed_hosts:
-                raise DatasetDownloadError(f"download host is not allowlisted: {host}")
+            _validated_download_url(artifact.url, allowed_hosts)
             target = (root / artifact.filename).resolve()
             if target.parent != root:
                 raise DatasetDownloadError("artifact target escapes output directory")
@@ -164,7 +198,12 @@ def download_dataset_source(
             sha = hashlib.sha256()
             size = 0
             try:
-                with http.stream("GET", artifact.url) as response:
+                response = _open_download_stream(
+                    http,
+                    artifact.url,
+                    allowed_hosts=allowed_hosts,
+                )
+                try:
                     if not 200 <= response.status_code < 300:
                         raise DatasetDownloadError(
                             f"download returned HTTP {response.status_code}"
@@ -181,6 +220,8 @@ def download_dataset_source(
                                 )
                             sha.update(block)
                             handle.write(block)
+                finally:
+                    response.close()
                 digest = sha.hexdigest()
                 if digest != artifact.sha256:
                     raise DatasetDownloadError(

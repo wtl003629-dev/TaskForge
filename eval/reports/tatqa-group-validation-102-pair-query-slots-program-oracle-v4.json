@@ -1,0 +1,6724 @@
+{
+  "aggregate": {
+    "complete_table_at_document_k": 0.987012987012987,
+    "complete_table_at_evidence_hit_k": 0.987012987012987,
+    "context_cell_state_counts": {
+      "complete": 76,
+      "partial": 0,
+      "zero": 1
+    },
+    "context_row_state_counts": {
+      "complete": 76,
+      "partial": 0,
+      "zero": 1
+    },
+    "emitted_cell_state_counts": {
+      "complete": 0,
+      "partial": 0,
+      "zero": 77
+    },
+    "emitted_row_state_counts": {
+      "complete": 0,
+      "partial": 0,
+      "zero": 77
+    },
+    "hit_aligned_cell_state_counts": {
+      "complete": 0,
+      "partial": 0,
+      "zero": 77
+    },
+    "hit_aligned_context_cell_state_counts": {
+      "complete": 76,
+      "partial": 0,
+      "zero": 1
+    },
+    "hit_aligned_context_row_state_counts": {
+      "complete": 76,
+      "partial": 0,
+      "zero": 1
+    },
+    "hit_aligned_row_state_counts": {
+      "complete": 0,
+      "partial": 0,
+      "zero": 77
+    },
+    "query_slot_cell_state_counts": {
+      "complete": 66,
+      "partial": 4,
+      "zero": 7
+    },
+    "query_slot_row_state_counts": {
+      "complete": 71,
+      "partial": 3,
+      "zero": 3
+    },
+    "tagop_heuristic_context_cell_coverage": 0.987012987012987,
+    "tagop_heuristic_context_row_coverage": 0.987012987012987,
+    "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+    "tagop_heuristic_emitted_row_unit_recall": 0.0,
+    "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+    "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 0.987012987012987,
+    "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 0.987012987012987,
+    "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+    "tagop_heuristic_query_slot_cell_recall_at_k": 0.8858225108225107,
+    "tagop_heuristic_query_slot_row_recall_at_k": 0.9464285714285714
+  },
+  "annotation": {
+    "heuristically_generated": true,
+    "kind": "tagop_heuristic_mapping",
+    "manually_verified_gold": false,
+    "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\tatqa_dataset_tagop_train_870accc4.json",
+    "sha256": "cea22c36f4a3d4b5857bc8756312fa66ddb3b9abebcdd8e536f3fb113993c735",
+    "size_bytes": 16361279,
+    "source_commit": "870accc41953dcde885aabeb963d94aabdc0fbc3",
+    "source_url": "https://github.com/NExTplusplus/TAT-QA/blob/870accc41953dcde885aabeb963d94aabdc0fbc3/dataset_tagop/tatqa_dataset_train.json"
+  },
+  "by_category": {
+    "arithmetic": {
+      "case_count": 39,
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "context_cell_state_counts": {
+        "complete": 39,
+        "partial": 0,
+        "zero": 0
+      },
+      "context_row_state_counts": {
+        "complete": 39,
+        "partial": 0,
+        "zero": 0
+      },
+      "emitted_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 39
+      },
+      "emitted_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 39
+      },
+      "hit_aligned_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 39
+      },
+      "hit_aligned_context_cell_state_counts": {
+        "complete": 39,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_context_row_state_counts": {
+        "complete": 39,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 39
+      },
+      "query_slot_cell_state_counts": {
+        "complete": 37,
+        "partial": 1,
+        "zero": 1
+      },
+      "query_slot_row_state_counts": {
+        "complete": 39,
+        "partial": 0,
+        "zero": 0
+      },
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.9658119658119657,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    "count": {
+      "case_count": 8,
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "context_cell_state_counts": {
+        "complete": 8,
+        "partial": 0,
+        "zero": 0
+      },
+      "context_row_state_counts": {
+        "complete": 8,
+        "partial": 0,
+        "zero": 0
+      },
+      "emitted_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 8
+      },
+      "emitted_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 8
+      },
+      "hit_aligned_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 8
+      },
+      "hit_aligned_context_cell_state_counts": {
+        "complete": 8,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_context_row_state_counts": {
+        "complete": 8,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 8
+      },
+      "query_slot_cell_state_counts": {
+        "complete": 4,
+        "partial": 1,
+        "zero": 3
+      },
+      "query_slot_row_state_counts": {
+        "complete": 7,
+        "partial": 0,
+        "zero": 1
+      },
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.5416666666666666,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.875
+    },
+    "multi-span": {
+      "case_count": 11,
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "context_cell_state_counts": {
+        "complete": 11,
+        "partial": 0,
+        "zero": 0
+      },
+      "context_row_state_counts": {
+        "complete": 11,
+        "partial": 0,
+        "zero": 0
+      },
+      "emitted_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 11
+      },
+      "emitted_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 11
+      },
+      "hit_aligned_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 11
+      },
+      "hit_aligned_context_cell_state_counts": {
+        "complete": 11,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_context_row_state_counts": {
+        "complete": 11,
+        "partial": 0,
+        "zero": 0
+      },
+      "hit_aligned_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 11
+      },
+      "query_slot_cell_state_counts": {
+        "complete": 6,
+        "partial": 2,
+        "zero": 3
+      },
+      "query_slot_row_state_counts": {
+        "complete": 6,
+        "partial": 3,
+        "zero": 2
+      },
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.6553030303030303,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.7159090909090909
+    },
+    "table": {
+      "case_count": 19,
+      "complete_table_at_document_k": 0.9473684210526315,
+      "complete_table_at_evidence_hit_k": 0.9473684210526315,
+      "context_cell_state_counts": {
+        "complete": 18,
+        "partial": 0,
+        "zero": 1
+      },
+      "context_row_state_counts": {
+        "complete": 18,
+        "partial": 0,
+        "zero": 1
+      },
+      "emitted_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 19
+      },
+      "emitted_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 19
+      },
+      "hit_aligned_cell_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 19
+      },
+      "hit_aligned_context_cell_state_counts": {
+        "complete": 18,
+        "partial": 0,
+        "zero": 1
+      },
+      "hit_aligned_context_row_state_counts": {
+        "complete": 18,
+        "partial": 0,
+        "zero": 1
+      },
+      "hit_aligned_row_state_counts": {
+        "complete": 0,
+        "partial": 0,
+        "zero": 19
+      },
+      "query_slot_cell_state_counts": {
+        "complete": 19,
+        "partial": 0,
+        "zero": 0
+      },
+      "query_slot_row_state_counts": {
+        "complete": 19,
+        "partial": 0,
+        "zero": 0
+      },
+      "tagop_heuristic_context_cell_coverage": 0.9473684210526315,
+      "tagop_heuristic_context_row_coverage": 0.9473684210526315,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 0.9473684210526315,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 0.9473684210526315,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    }
+  },
+  "coverage": {
+    "deduplicated_repeated_coordinates": 2,
+    "header_row_mapping_cases": 5,
+    "hit_alignment_available_cases": 102,
+    "mapping_eligible_cases": 77,
+    "no_table_mapping_cases": 25,
+    "prediction_cases": 102
+  },
+  "cutoffs": {
+    "document_k": 10,
+    "emitted_unit_k": 10,
+    "evidence_hit_k": 10,
+    "query_slot_k": 10
+  },
+  "diagnostic_only": true,
+  "limitations": [
+    "TagOp mappings are heuristic preprocessing outputs, not official manually verified TAT-QA evidence labels.",
+    "A complete-table hit means the mapped coordinate is available in context, not that the answer generator attended to it.",
+    "Emitted row/cell lists are de-duplicated unit order rather than evidence-hit rank, so their cutoff is not document Recall@K.",
+    "Hit-aligned metrics are emitted only when every prediction records original evidence-hit ranks.",
+    "The current row-unit extractor cannot emit header row 0; header mappings therefore expose an instrumentation/representation gap.",
+    "This diagnostic must not be used to tune or inspect the hidden document-disjoint split.",
+    "The query slot selector consumes only question text and table contents; TagOp mappings are used only after selection for diagnostic scoring.",
+    "Program-oracle results use the gold derivation and only measure executor/operand-coverage upper bounds; they are not end-to-end answer accuracy."
+  ],
+  "per_case": [
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:f0e47f79-117c-4e6e-8fbd-4f633659385a",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "0.3066666666666666666666666667",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          2
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          3
+        ],
+        [
+          7,
+          1
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:b2003cb6-e6c7-4c02-98c5-668afb341cd8",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "1.38",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          13,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          13,
+          1
+        ],
+        [
+          13,
+          2
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:6a5d1468-02d6-434a-b326-af2ed4ae3319",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "1.076666666666666666666666667",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:c4f92486-2aa9-4bdc-bedc-0594d18efd12",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 7,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 3,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "multi_span",
+      "query_slot_row_state": "partial",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.6666666666666666
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:9c17aa22-3997-4ea9-a7ff-fd65148e7420",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 4,
+      "contains_header_row_coordinate": true,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "query_slot_operator": "compare",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:91633319-919f-468f-866e-752347aec1da",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "49.7",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:cbb37177-576e-446b-b590-979b142c84b5",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "13.50543478260869565217391304",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:b75887d0-9a19-4c1b-bdd4-4efbe0868149",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 2,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 3,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "partial",
+      "query_slot_coordinates": [
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "query_slot_operator": "multi_span",
+      "query_slot_row_state": "partial",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.3333333333333333,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.3333333333333333
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:9650c7a2-bd71-45d6-8778-0f12a8169162",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": true,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "query_slot_operator": "compare",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:118c4354-a5e2-443b-bd8c-79d88a027cc8",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "0.9",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:344e554d-f2dd-4b57-8965-8227f40da22f",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "69.23076923076923076923076923",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:05793687-a90c-4479-a55c-4b6e0073584e",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 2,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:22ac0501-f792-486c-874a-ad612b5ec71e",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 2,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-82",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:54226afa-bdb1-4271-83cc-916109140bbf",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "319.5",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:3148c61c-e7c9-4532-8f55-95f06020619d",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-1.410934744268077601410934740",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:144d2ac1-723e-4f2f-8008-af5e757fc6d2",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 3,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:27745523-22de-4de3-b893-43e37b4559e1",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "828",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:48053b2b-81f6-435b-acc0-3264484ffd74",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "1",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          0,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:1d85bd49-8cc0-4e08-9caa-180b35482a7a",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "2286",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:15fd1eb5-e867-47d2-8f9b-f4169b9267df",
+      "category": "table",
+      "complete_table_at_document_k": 0.0,
+      "complete_table_at_evidence_hit_k": 0.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": true,
+      "context_cell_state": "zero",
+      "context_row_state": "zero",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "zero",
+      "hit_aligned_context_row_state": "zero",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 0.0,
+      "tagop_heuristic_context_row_coverage": 0.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:ed24bff9-7544-4775-aed6-ee1816911416",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:019dae57-8c9a-41dc-a5d8-b52f0a05e606",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "2",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:62d3489a-24b1-47f0-ac12-b63227f1ef24",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "3",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "partial",
+      "query_slot_coordinates": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.6666666666666666,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:e99b599b-c5c2-4257-b781-bed1cfb5edb6",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "157.1428571428571428571428571",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:7d359cea-aff6-4c30-8bc0-fab3c069202f",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "zero",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:c7223ff1-819c-4afa-aa04-7ddf8d840516",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:cd6d1a62-ca73-4291-aad2-3d8e31e44a2e",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "3",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "partial",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.3333333333333333,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:5893eee9-3464-47b7-aa17-2d0cd4d8b843",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "20939",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:9f212b77-e8cb-414c-b2c4-526f48a1f71b",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-45.00",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:05c7a65c-ec12-4cc2-b17f-fa6f66fd5e73",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:c4fcf85b-582a-4b7a-8fbb-b580d2e20a9b",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:a9d19f4a-eb48-4f9b-b972-6a0e3057a3c8",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 2,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:fa542d01-cfd7-4400-8793-cc16c906a868",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "398",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:931aa227-9e18-45d8-861e-d742e9a88baa",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "1072",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:8826b261-e835-4663-980d-c3279711f106",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "47.17320849837954627295642780",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:765c9f73-f284-43e9-887a-6205ae7faa7b",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": true,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:b8a5a948-8251-4a7b-86c0-42abb5e8fb24",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:f76cc4c4-edd0-409f-b33c-b48461b8f460",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": true,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "2",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:c54b855d-1a21-4865-987a-41f6fbe189f6",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-38554",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:1f014fd8-7437-469b-97d9-0e67074def63",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-51.81117288957073199331620040",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:610bed77-b5b4-440a-b7de-e53c7098b646",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "multi_span",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:71678713-18a5-4882-8776-0901527e0d7d",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "multi_span",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:9c415766-fc53-4326-91b3-f55c754e26d9",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "75.22166889347746872343009838",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:8d228081-08bd-49f0-a02b-fcc97b04f225",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-10.09843338416747539165395813",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:cfe47937-cbc9-4c5e-a97c-6381993f6f40",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "413080",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:27239f82-eb81-4273-913b-3a0db7643a83",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:8f08d816-bb91-4f9e-ba52-3d170ab7b997",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 4,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "zero",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:e953ae19-0e40-4267-8545-f6f98870e3fe",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "compare",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:94bc4d77-55a8-4cb0-a095-f9d799b3c37b",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "10",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:a16452f6-ab99-4219-aaf4-f1a4487c3025",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-98.28417427758646503967659829",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:1c4216e2-ae51-484b-96bc-eb8b2526b57c",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 3,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:cbd168ec-cc98-4b2d-a46b-5cd107290605",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 4,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:22ac85ca-74db-41c3-8c7e-332e088de12d",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 3,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:2bcad99d-c7b7-4751-8a73-5ff484496a59",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "1",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "zero",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:57057d73-cc92-4fc3-bd87-b6e778a81f3b",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "1",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:5c6c4629-baf9-47e4-aeea-1841ad767fe8",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "2",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          5,
+          1
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:4aefde0b-e80c-43a3-8878-ac7af5201c22",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 8,
+      "gold_row_count": 8,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "partial",
+      "query_slot_coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "partial",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.875,
+      "tagop_heuristic_query_slot_row_recall_at_k": 0.875
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:30f776dd-c54b-43ca-9de5-75ed0892287c",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 8,
+      "gold_row_count": 8,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "8",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:54ab7a6e-d3c4-463c-941e-e2c782b8aa17",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 4,
+      "gold_row_count": 4,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "4",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:d6bb1f03-cc11-4483-9cb6-20c718328e7d",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 5,
+      "gold_row_count": 5,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "429.625",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          8,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:c042f71c-aaf7-4988-9762-be4fd3634cf9",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:450ef1f1-0131-4ecc-95e3-d00af46f5f76",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "8621",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:b79cb499-c49d-4cac-8842-05609723437e",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 2,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "85.53967405824205183008282127",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:8900cab0-1977-4692-8954-fc1a100ef110",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "750",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:76fab682-8963-4855-90a2-e68df40d6f4c",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:4512f332-f703-4af4-ac40-594f459f6d8d",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "0.5",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:935ce542-a630-4917-a5dd-fe4647b219a2",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 3,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "40.76666666666666666666666667",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:43534a69-ffbb-4c73-8605-7b787ff86979",
+      "category": "multi-span",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:24e5d679-e4f1-47b4-a0ca-77550ef8c4be",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-703",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:edfade0f-df94-4bdb-85b2-0b9862dae1ee",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "10069.5",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table",
+      "case_id": "tatqa:c502823a-fa1d-49e3-b14e-6973d72afc2f",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "-38110",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ]
+      ],
+      "query_slot_operator": "average",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:a72b8b11-67e5-403a-a7cb-55ac7f81b963",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          8,
+          3
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:b71bdb44-f7aa-4b2d-a6ec-64705d5f4b16",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:6415b929-f1c7-4c79-9ac7-6505124b39a5",
+      "category": "table",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 1,
+      "gold_row_count": 1,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "query_slot_operator": "lookup",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:1c5d1074-df2a-4109-b28d-098f4378fe23",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "2.3",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          5,
+          2
+        ]
+      ],
+      "query_slot_operator": "subtract",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:f8edd32f-828f-4d12-a38c-34973805ec53",
+      "category": "count",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": false,
+        "query_slots_gold_program_success": false,
+        "result": "2",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "zero",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          8,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          10,
+          3
+        ]
+      ],
+      "query_slot_operator": "count",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    },
+    {
+      "answer_from": "table-text",
+      "case_id": "tatqa:d97a1b71-1a52-4f5c-b2ec-cb947c254b8e",
+      "category": "arithmetic",
+      "complete_table_at_document_k": 1.0,
+      "complete_table_at_evidence_hit_k": 1.0,
+      "complete_table_rank": 1,
+      "contains_header_row_coordinate": false,
+      "context_cell_state": "complete",
+      "context_row_state": "complete",
+      "emitted_cell_state": "zero",
+      "emitted_row_state": "zero",
+      "gold_coordinate_count": 2,
+      "gold_row_count": 2,
+      "hit_aligned_cell_state": "zero",
+      "hit_aligned_context_cell_state": "complete",
+      "hit_aligned_context_row_state": "complete",
+      "hit_aligned_row_state": "zero",
+      "hit_alignment_available": true,
+      "program_oracle": {
+        "answer_correct": true,
+        "diagnostic_only": true,
+        "error": null,
+        "executable": true,
+        "provided_context_full_operand_coverage": true,
+        "provided_context_gold_program_success": true,
+        "query_slots_full_operand_coverage": true,
+        "query_slots_gold_program_success": true,
+        "result": "32.92360921424018938359282528",
+        "uses_gold_derivation": true
+      },
+      "query_slot_cell_state": "complete",
+      "query_slot_coordinates": [
+        [
+          0,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          12,
+          3
+        ],
+        [
+          6,
+          1
+        ]
+      ],
+      "query_slot_operator": "percentage_change",
+      "query_slot_row_state": "complete",
+      "tagop_heuristic_context_cell_coverage": 1.0,
+      "tagop_heuristic_context_row_coverage": 1.0,
+      "tagop_heuristic_emitted_cell_unit_recall": 0.0,
+      "tagop_heuristic_emitted_row_unit_recall": 0.0,
+      "tagop_heuristic_hit_aligned_cell_recall_at_k": 0.0,
+      "tagop_heuristic_hit_aligned_context_cell_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_context_row_coverage_at_k": 1.0,
+      "tagop_heuristic_hit_aligned_row_recall_at_k": 0.0,
+      "tagop_heuristic_query_slot_cell_recall_at_k": 1.0,
+      "tagop_heuristic_query_slot_row_recall_at_k": 1.0
+    }
+  ],
+  "predictions": {
+    "case_count": 102,
+    "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-runs\\tatqa-group-validation-102-pair-provided-context-hit-aligned-v2\\predictions.jsonl",
+    "sha256": "0ec3253853f05bad765545711bef8b65771d090373f2ec602f1b322807deed8c",
+    "size_bytes": 276821,
+    "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+  },
+  "program_oracle": {
+    "diagnostic_only": true,
+    "eligible_cases": 47,
+    "gold_program_answer_accuracy": 1.0,
+    "gold_program_executable_rate": 1.0,
+    "provided_context_full_operand_coverage": 1.0,
+    "provided_context_gold_program_success": 1.0,
+    "query_slots_full_operand_coverage": 0.8723404255319149,
+    "query_slots_gold_program_success": 0.8723404255319149,
+    "uses_gold_derivation": true
+  },
+  "promotion_eligible": false,
+  "schema_version": 1
+}

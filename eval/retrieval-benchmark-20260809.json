@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-08-09T06:52:00Z",
+  "scope": "retrieval_only_regression",
+  "protocol": {
+    "cases_per_dataset": 100,
+    "top_k": [1, 5, 10],
+    "candidate_k": 50,
+    "metrics": ["recall", "candidate_recall", "mrr", "ndcg", "latency_ms"],
+    "chunking": {
+      "enabled": true,
+      "max_chars": 1500,
+      "overlap_chars": 150,
+      "table_aware": false
+    },
+    "filters": {
+      "tenant_id": "tenant-evaluation",
+      "request_principals": ["user:evaluator"],
+      "knowledge_base_id": "taskforge-evaluation",
+      "version": "1",
+      "version_order": 1
+    },
+    "llm_api_calls": 0
+  },
+  "runs": [
+    {
+      "run_id": "70f85d6367cef1ad9f7c",
+      "dataset": "TAT-QA",
+      "artifact_path": ".taskforge/eval-runs/unified-retrieval-tatqa-c50-20260809",
+      "normalized_sha256": "6edca48066d891e27fb2e118731e3fdec8cea67d87c5da0079fe3fb02a0a6669",
+      "locked_split_sha256": "5e4ffa6341412488202c9b5a8ef28f72476cec391959f235f90af4211767596d",
+      "config_sha256": "23651b77daeeeabe9f731cee19dca1c9f107841f5582a5989b8031594c9538e2",
+      "metrics_sha256": "e75cce550c026c77508380be9979e953a9c1560ee7d07e42bd60aa51433d9aca",
+      "predictions_sha256": "82a1f58f4e50a44fb6f6045ea35b92ac163ea046c6dfcaa868a53005e138ffb0",
+      "stages": {
+        "lexical_bm25": {
+          "recall_at_1": 0.363333,
+          "recall_at_5": 0.593333,
+          "recall_at_10": 0.658333,
+          "candidate_recall_at_50": 0.786667,
+          "mrr_at_10": 0.537012,
+          "ndcg_at_10": 0.529914,
+          "p50_ms": 59.0199,
+          "p95_ms": 121.8839
+        },
+        "qdrant_dense": {
+          "recall_at_1": 0.338333,
+          "recall_at_5": 0.533333,
+          "recall_at_10": 0.628333,
+          "candidate_recall_at_50": 0.811667,
+          "mrr_at_10": 0.480536,
+          "ndcg_at_10": 0.489587,
+          "p50_ms": 123.3047,
+          "p95_ms": 198.3148
+        },
+        "bm25_dense_rrf": {
+          "recall_at_1": 0.388333,
+          "recall_at_5": 0.643333,
+          "recall_at_10": 0.688333,
+          "candidate_recall_at_50": 0.826667,
+          "mrr_at_10": 0.582052,
+          "ndcg_at_10": 0.566772,
+          "p50_ms": 238.138,
+          "p95_ms": 390.9257
+        },
+        "bm25_dense_rrf_rerank": {
+          "recall_at_1": 0.448333,
+          "recall_at_5": 0.643333,
+          "recall_at_10": 0.688333,
+          "candidate_recall_at_50": 0.84,
+          "mrr_at_10": 0.614595,
+          "ndcg_at_10": 0.594032,
+          "p50_ms": 3197.9767,
+          "p95_ms": 17771.2701
+        }
+      }
+    },
+    {
+      "run_id": "ec2664df44df038a0e15",
+      "dataset": "MultiHop-RAG",
+      "artifact_path": ".taskforge/eval-runs/unified-retrieval-multihop-c50-20260809",
+      "normalized_sha256": "a4a3d5a5996104f867e242998cd41bf601dfa46eaaef01341cc7b12393e06647",
+      "locked_split_sha256": "b3a7d2f11814a036185d2d55056e483053f2d29624e9c39eb27c5a3dec313bb5",
+      "config_sha256": "7e8eff694b8d895e9413088af292d4622d129bbd73ed56460b579a9095828e39",
+      "metrics_sha256": "735fe269d98452fe8ca6bd6aed9299ff26f99f13c17e87c11b6b824009046ec6",
+      "predictions_sha256": "c77c5f374a28aedd44a6449c45b39837ebcee1e13271f09fa8e330817ae03941",
+      "stages": {
+        "lexical_bm25": {
+          "recall_at_1": 0.304167,
+          "recall_at_5": 0.700833,
+          "recall_at_10": 0.820833,
+          "candidate_recall_at_50": 0.969167,
+          "mrr_at_10": 0.826262,
+          "ndcg_at_10": 0.730845,
+          "p50_ms": 662.5684,
+          "p95_ms": 987.1139
+        },
+        "bm25_source_coverage_rrf": {
+          "recall_at_1": 0.325,
+          "recall_at_5": 0.796667,
+          "recall_at_10": 0.901667,
+          "candidate_recall_at_50": 0.988333,
+          "mrr_at_10": 0.8695,
+          "ndcg_at_10": 0.809536,
+          "p50_ms": 746.9121,
+          "p95_ms": 940.4925
+        },
+        "bm25_multi_query_rrf": {
+          "recall_at_1": 0.2075,
+          "recall_at_5": 0.556667,
+          "recall_at_10": 0.689167,
+          "candidate_recall_at_50": 0.969167,
+          "mrr_at_10": 0.643623,
+          "ndcg_at_10": 0.566981,
+          "p50_ms": 1762.2215,
+          "p95_ms": 2440.3649
+        }
+      }
+    },
+    {
+      "run_id": "47627764766ff5ff387f",
+      "dataset": "MultiHop-RAG",
+      "artifact_path": ".taskforge/eval-runs/unified-retrieval-multihop-rerank-c50-20260809",
+      "normalized_sha256": "a4a3d5a5996104f867e242998cd41bf601dfa46eaaef01341cc7b12393e06647",
+      "locked_split_sha256": "b3a7d2f11814a036185d2d55056e483053f2d29624e9c39eb27c5a3dec313bb5",
+      "config_sha256": "ea9e5dcf2213aa97a61007ec283e5cc662122683e3fd9cd7e73e1fe5438bb205",
+      "metrics_sha256": "0dabb5746d1f50d259184d9adedcc2fa0e6fc11665add5b827de789871bf5046",
+      "predictions_sha256": "a0f3d08cdae4e8bc5b017e3de26a1ad891045c160027e91c26e2543f14b62d4d",
+      "stages": {
+        "lexical_bm25_rerank": {
+          "recall_at_1": 0.283333,
+          "recall_at_5": 0.570833,
+          "recall_at_10": 0.751667,
+          "candidate_recall_at_50": 0.971667,
+          "mrr_at_10": 0.762679,
+          "ndcg_at_10": 0.63615,
+          "p50_ms": 4965.8842,
+          "p95_ms": 6190.2996
+        }
+      }
+    },
+    {
+      "run_id": "b1723a5f5ea38f6a0ad9",
+      "dataset": "TAT-QA",
+      "artifact_path": ".taskforge/eval-runs/unified-retrieval-tatqa-table-router-c50-20260809",
+      "normalized_sha256": "6edca48066d891e27fb2e118731e3fdec8cea67d87c5da0079fe3fb02a0a6669",
+      "locked_split_sha256": "5e4ffa6341412488202c9b5a8ef28f72476cec391959f235f90af4211767596d",
+      "config_sha256": "59bdc21b38f6a291a4d90f7f75e5e6487b9f4e66700f24903d2ebbcd3083eb89",
+      "metrics_sha256": "897baf03d8d9689e970ebfee453cb4a8efa873407936708c2d2379896daa7a18",
+      "predictions_sha256": "750eba0927a9a924833404ec430f97f391af0c7b3753bad6e97f28a160658ca4",
+      "stages": {
+        "bm25_table_router": {
+          "recall_at_1": 0.363333,
+          "recall_at_5": 0.598333,
+          "recall_at_10": 0.653333,
+          "candidate_recall_at_50": 0.791667,
+          "mrr_at_10": 0.537456,
+          "ndcg_at_10": 0.529232,
+          "p50_ms": 77.6513,
+          "p95_ms": 177.0312
+        }
+      }
+    }
+  ],
+  "decisions": {
+    "tatqa_default_candidate": "bm25_dense_rrf",
+    "multihop_default_candidate": "bm25_source_coverage_rrf",
+    "rejected": [
+      "bm25_multi_query_rrf",
+      "bm25_table_router_default",
+      "generic_minilm_cross_encoder_default"
+    ],
+    "promotion_status": "retrieval regression only; live cited-answer gate not run"
+  }
+}

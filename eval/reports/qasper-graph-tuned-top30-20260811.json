@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "purpose": "training-selected graph feature rerank with independent QASPER validation",
+  "dataset": "QASPER",
+  "selection": {
+    "tuning_split": "eval/splits/qasper-train-tuning-200-v1.json",
+    "validation_split": "eval/splits/qasper-train-validation-200-v1.json",
+    "selection_rule": "weights selected on tuning only; validation was used once for confirmation",
+    "weights": {
+      "graph": 0.087379,
+      "entity": 0.261752,
+      "section": 0.001521,
+      "adjacency": 0.09747,
+      "ppr": 0.040464
+    },
+    "rerank_top_k": 30,
+    "candidate_k": 50,
+    "seed_k": 10,
+    "semantic_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": "Xenova/ms-marco-MiniLM-L-6-v2"
+  },
+  "baseline_validation": {
+    "run": ".taskforge/eval-runs/qasper-train-validation-200-graph-rerank-v6-20260811",
+    "recall_at_10": 0.7223055555555555,
+    "ndcg_at_10": 0.48559985915390613,
+    "candidate_recall_at_50": 0.9626666666666667
+  },
+  "validation": {
+    "run": ".taskforge/eval-runs/qasper-train-validation-200-graph-tuned-top30-20260811",
+    "base_stage": {
+      "recall_at_10": 0.7548611111111111,
+      "ndcg_at_10": 0.5020637199963268,
+      "candidate_recall_at_50": 0.9626666666666667,
+      "p95_ms": 951.8812
+    },
+    "graph_stage": {
+      "recall_at_10": 0.7609861111111111,
+      "ndcg_at_10": 0.5069308473996643,
+      "candidate_recall_at_50": 0.9626666666666667,
+      "p95_ms": 2.2485,
+      "candidate_set_preserved": true,
+      "acl_violation_count": 0
+    }
+  },
+  "deltas_vs_frozen_validation_baseline": {
+    "recall_at_10": 0.0386805555555556,
+    "ndcg_at_10": 0.0213309882457582,
+    "candidate_recall_at_50": 0.0
+  },
+  "decision": {
+    "qasper_quality_targets": "passed",
+    "latency_target_1200ms": "passed for the Top-30 base route; graph increment is 2.2485 ms p95",
+    "scope": "candidate-only general_text/QASPER opt-in; other routes unchanged",
+    "expansion": "not enabled; expansion audit did not preserve Candidate@50"
+  }
+}

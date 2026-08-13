@@ -31,6 +31,14 @@ def parser() -> argparse.ArgumentParser:
         default=ROOT / ".taskforge" / "eval-cache",
     )
     value.add_argument("--accept-noncommercial", action="store_true")
+    value.add_argument(
+        "--trust-environment-proxy",
+        action="store_true",
+        help=(
+            "Use explicitly configured HTTP(S) proxy environment variables. "
+            "Redirect hosts remain allowlisted and artifact hashes remain mandatory."
+        ),
+    )
     return value
 
 
@@ -63,6 +71,7 @@ def main() -> int:
                     source,
                     output_dir=args.output_dir,
                     accept_noncommercial=args.accept_noncommercial,
+                    trust_env=args.trust_environment_proxy,
                 )
             )
         except DatasetDownloadError as exc:

@@ -423,6 +423,34 @@ class SQLiteKnowledgeStore(_SQLiteStore):
         if top_k <= 0:
             return []
         instant_datetime = as_utc(now)
+        chunks = self.visible_chunks(
+            principal,
+            now=instant_datetime,
+            source_uris=source_uris,
+            knowledge_base_ids=knowledge_base_ids,
+            latest_only=latest_only,
+        )
+        return InMemoryKnowledgeStore(chunks).search(
+            query,
+            principal,
+            top_k=top_k,
+            now=instant_datetime,
+            latest_only=False,
+            semantic_scores=semantic_scores,
+            lexical_weight=lexical_weight,
+            semantic_weight=semantic_weight,
+        )
+
+    def visible_chunks(
+        self,
+        principal: AccessContext,
+        *,
+        now: datetime | None = None,
+        source_uris: Iterable[str] | None = None,
+        knowledge_base_ids: Iterable[str] | None = None,
+        latest_only: bool = True,
+    ) -> tuple[KnowledgeChunk, ...]:
+        instant_datetime = as_utc(now)
         instant = _timestamp_dump(instant_datetime)
         rows = self._rows(
             """
@@ -438,19 +466,14 @@ class SQLiteKnowledgeStore(_SQLiteStore):
             try:
                 chunks.append(_row_to_knowledge(row))
             except (KeyError, TypeError, ValueError, OverflowError):
-                # Corrupt persistence must not become model context.
+                # Corrupt persistence must not become model context or alter routing.
                 continue
-        return InMemoryKnowledgeStore(chunks).search(
-            query,
+        return InMemoryKnowledgeStore(chunks).visible_chunks(
             principal,
-            top_k=top_k,
             now=instant_datetime,
             source_uris=source_uris,
             knowledge_base_ids=knowledge_base_ids,
             latest_only=latest_only,
-            semantic_scores=semantic_scores,
-            lexical_weight=lexical_weight,
-            semantic_weight=semantic_weight,
         )
 
 

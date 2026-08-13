@@ -1,0 +1,22 @@
+[
+  {
+    "id": "method",
+    "query": "retrieval augmented generation method",
+    "gold_evidence_ids": ["paper-a:method"]
+  },
+  {
+    "id": "table",
+    "query": "what is the recall value in the table",
+    "gold_evidence_ids": ["paper-a:table"]
+  },
+  {
+    "id": "comparison",
+    "query": "compare recall across papers",
+    "gold_evidence_ids": ["paper-a:table", "paper-b:result"]
+  },
+  {
+    "id": "layout",
+    "query": "what is reported on page 7",
+    "gold_evidence_ids": ["paper-a:table"]
+  }
+]

@@ -197,6 +197,8 @@ class KnowledgeHit:
     lexical_score: float
     semantic_score: float = 0.0
     matched_terms: tuple[str, ...] = ()
+    retrieval_profile: str | None = None
+    retrieval_backend: str | None = None
 
 
 def _bounded_score(value: object) -> float:
@@ -224,6 +226,24 @@ class InMemoryKnowledgeStore:
 
     add = upsert
 
+    def replace_document_version(self, chunks: Iterable[KnowledgeChunk]) -> int:
+        materialised = list(chunks)
+        if not materialised:
+            raise ValueError("at least one chunk is required")
+        first = materialised[0]
+        identity = (first.tenant_id, first.logical_document_id, first.version)
+        if any(
+            (chunk.tenant_id, chunk.logical_document_id, chunk.version) != identity
+            for chunk in materialised
+        ):
+            raise ValueError("all chunks must belong to one tenant/document/version")
+        for key, chunk in tuple(self._chunks.items()):
+            if (chunk.tenant_id, chunk.logical_document_id, chunk.version) == identity:
+                del self._chunks[key]
+        for chunk in materialised:
+            self.upsert(chunk)
+        return len(materialised)
+
     def get(self, chunk_id: str, principal: AccessContext, *, now: datetime | None = None) -> KnowledgeChunk | None:
         chunk = self._chunks.get((principal.tenant_id, chunk_id))
         if chunk is None or not chunk.is_visible_to(principal, now):
@@ -246,26 +266,15 @@ class InMemoryKnowledgeStore:
     ) -> list[KnowledgeHit]:
         if top_k <= 0:
             return []
-        allowed_sources = None if source_uris is None else frozenset(str(value) for value in source_uris)
-        allowed_bases = None if knowledge_base_ids is None else frozenset(str(value) for value in knowledge_base_ids)
-        candidates = [
-            chunk
-            for chunk in self._chunks.values()
-            if chunk.is_visible_to(principal, now)
-            and (allowed_sources is None or chunk.source_uri in allowed_sources or chunk.logical_document_id in allowed_sources)
-            and (
-                allowed_bases is None
-                or str(chunk.metadata.get("knowledge_base_id", "")) in allowed_bases
+        candidates = list(
+            self.visible_chunks(
+                principal,
+                now=now,
+                source_uris=source_uris,
+                knowledge_base_ids=knowledge_base_ids,
+                latest_only=latest_only,
             )
-        ]
-
-        if latest_only:
-            latest: dict[str, tuple[int, tuple[tuple[int, object], ...]]] = {}
-            for chunk in candidates:
-                current = latest.get(chunk.logical_document_id)
-                if current is None or chunk.version_key > current:
-                    latest[chunk.logical_document_id] = chunk.version_key
-            candidates = [chunk for chunk in candidates if chunk.version_key == latest[chunk.logical_document_id]]
+        )
 
         semantic_scores = semantic_scores or {}
         lexical_weight = max(0.0, float(lexical_weight))
@@ -302,6 +311,69 @@ class InMemoryKnowledgeStore:
             )
         )
         return hits[:top_k]
+
+    def visible_chunks(
+        self,
+        principal: AccessContext,
+        *,
+        now: datetime | None = None,
+        source_uris: Iterable[str] | None = None,
+        knowledge_base_ids: Iterable[str] | None = None,
+        latest_only: bool = True,
+    ) -> tuple[KnowledgeChunk, ...]:
+        """Return the exact authorized corpus before any relevance ranking.
+
+        Profile routing consumes only this result, so an inaccessible source,
+        expired version, or out-of-scope knowledge base cannot influence the
+        selected retrieval strategy or BM25 corpus statistics.
+        """
+
+        allowed_sources = (
+            None
+            if source_uris is None
+            else frozenset(str(value) for value in source_uris)
+        )
+        allowed_bases = (
+            None
+            if knowledge_base_ids is None
+            else frozenset(str(value) for value in knowledge_base_ids)
+        )
+        candidates = [
+            chunk
+            for chunk in self._chunks.values()
+            if chunk.is_visible_to(principal, now)
+            and (
+                allowed_sources is None
+                or chunk.source_uri in allowed_sources
+                or chunk.logical_document_id in allowed_sources
+            )
+            and (
+                allowed_bases is None
+                or str(chunk.metadata.get("knowledge_base_id", ""))
+                in allowed_bases
+            )
+        ]
+        if latest_only:
+            latest: dict[str, tuple[int, tuple[tuple[int, object], ...]]] = {}
+            for chunk in candidates:
+                current = latest.get(chunk.logical_document_id)
+                if current is None or chunk.version_key > current:
+                    latest[chunk.logical_document_id] = chunk.version_key
+            candidates = [
+                chunk
+                for chunk in candidates
+                if chunk.version_key == latest[chunk.logical_document_id]
+            ]
+        return tuple(
+            sorted(
+                candidates,
+                key=lambda chunk: (
+                    chunk.logical_document_id,
+                    chunk.version_order,
+                    chunk.chunk_id,
+                ),
+            )
+        )
 
 
 KnowledgeStore = InMemoryKnowledgeStore

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "dataset": "QASPER",
+  "split": "qasper-train-tuning-200-v1",
+  "policy": {
+    "purpose": "ablation_report_not_promotion",
+    "candidate_k": 50,
+    "top_k": 10,
+    "semantic_model": "BAAI/bge-small-en-v1.5",
+    "context_mode": "provided_document_context",
+    "historical_audit_set_excluded": true
+  },
+  "scenarios": [
+    {
+      "name": "B0_to_B1_hierarchical_bm25",
+      "baseline": {"label": "B0 BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "B1 hierarchy BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b1-hierarchy-v3-20260811", "stage": "bm25_qasper_hierarchical"},
+      "policy": {"profile": "general_text", "min_candidate_recall_at_candidate_k": 0.5, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "B0_to_B2_dense",
+      "baseline": {"label": "B0 BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "B2 dense", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b2-dense-v6-20260811", "stage": "qdrant_qasper_dense"},
+      "policy": {"profile": "general_text", "min_candidate_recall_at_candidate_k": 0.5, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "B0_to_B3_candidate_union",
+      "baseline": {"label": "B0 BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "B3 BM25+dense union", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b3-union-v3-20260811", "stage": "bm25_dense_qasper_candidate_union"},
+      "policy": {"profile": "general_text", "min_candidate_recall_at_candidate_k": 0.5, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "B0_to_B4_section_parent",
+      "baseline": {"label": "B0 BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "B4 section parent", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b4-parent-v3-20260811", "stage": "bm25_dense_qasper_section_parent"},
+      "policy": {"profile": "general_text", "min_candidate_recall_at_candidate_k": 0.5, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "B0_to_B5_section_parent_rrf",
+      "baseline": {"label": "B0 BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "B5 section parent RRF", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b5-rrf-v3-20260811", "stage": "bm25_dense_qasper_section_parent_rrf"},
+      "policy": {"profile": "general_text", "min_candidate_recall_at_candidate_k": 0.5, "max_p95_ms": 250.0}
+    }
+  ]
+}

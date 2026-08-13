@@ -13,11 +13,12 @@ import math
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
 from .domain import StrictModel
+from .tatqa_table_cleaning import clean_tatqa_table
 
 
 class EvalCorpusDocument(StrictModel):
@@ -66,11 +67,25 @@ class RAGEvalDataset(StrictModel):
 class RetrievalPrediction(StrictModel):
     case_id: str = Field(min_length=1)
     retrieved_ids: list[str] = Field(default_factory=list)
+    retrieved_parent_ids: list[str] = Field(default_factory=list)
+    retrieved_row_ids: list[str] = Field(default_factory=list)
+    retrieved_cell_ids: list[str] = Field(default_factory=list)
+    retrieved_complete_table_ids: list[str] = Field(default_factory=list)
+    retrieved_table_units_by_hit: list[dict[str, Any]] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def retrieved_ids_are_unique(self) -> RetrievalPrediction:
         if len(self.retrieved_ids) != len(set(self.retrieved_ids)):
             raise ValueError("retrieved_ids must not contain duplicates")
+        for field_name in (
+            "retrieved_parent_ids",
+            "retrieved_row_ids",
+            "retrieved_cell_ids",
+            "retrieved_complete_table_ids",
+        ):
+            identifiers = getattr(self, field_name)
+            if len(identifiers) != len(set(identifiers)):
+                raise ValueError(f"{field_name} must not contain duplicates")
         return self
 
 
@@ -97,6 +112,76 @@ class RetrievalEvaluationReport(StrictModel):
     ks: list[int]
     cases: list[RetrievalCaseMetrics]
     summary: RetrievalEvaluationSummary
+
+
+class CitedAnswerPrediction(StrictModel):
+    """Host-observed answer, retrieval, presentation, and model citation IDs."""
+
+    case_id: str = Field(min_length=1)
+    answer: str = ""
+    retrieved_ids: list[str] = Field(default_factory=list)
+    presented_evidence_ids: list[str] = Field(default_factory=list)
+    citation_ids: list[str] = Field(default_factory=list)
+    parse_error: str | None = Field(default=None, min_length=1)
+
+    @model_validator(mode="after")
+    def evidence_identifiers_are_coherent(self) -> CitedAnswerPrediction:
+        for field_name in (
+            "retrieved_ids",
+            "presented_evidence_ids",
+            "citation_ids",
+        ):
+            identifiers = getattr(self, field_name)
+            if any(not identifier.strip() for identifier in identifiers):
+                raise ValueError(f"{field_name} must contain non-empty identifiers")
+            if len(identifiers) != len(set(identifiers)):
+                raise ValueError(f"{field_name} must not contain duplicates")
+        if not set(self.presented_evidence_ids).issubset(self.retrieved_ids):
+            raise ValueError("presented_evidence_ids must be a subset of retrieved_ids")
+        return self
+
+
+class AnswerGroundingCaseMetrics(StrictModel):
+    """Deterministic gold-evidence grounding metrics for one short answer."""
+
+    case_id: str = Field(min_length=1)
+    category: str = Field(min_length=1)
+    citation_precision: float = Field(ge=0.0, le=1.0)
+    citation_recall: float = Field(ge=0.0, le=1.0)
+    retrieval_to_citation_coverage: float | None = Field(default=None, ge=0.0, le=1.0)
+    exact_match: float = Field(ge=0.0, le=1.0)
+    strict_supported_claim: bool
+    unsupported_claim: bool
+    parse_failed: bool = False
+    missing_prediction: bool = False
+    valid_citation_ids: list[str] = Field(default_factory=list)
+    invalid_citation_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def support_flags_are_complements(self) -> AnswerGroundingCaseMetrics:
+        if self.strict_supported_claim == self.unsupported_claim:
+            raise ValueError("support flags must be complements")
+        return self
+
+
+class AnswerGroundingEvaluationSummary(StrictModel):
+    total_cases: int = Field(ge=0)
+    missing_predictions: int = Field(ge=0)
+    parse_failures: int = Field(ge=0)
+    parse_failure_rate: float = Field(ge=0.0, le=1.0)
+    citation_precision: float = Field(ge=0.0, le=1.0)
+    citation_recall: float = Field(ge=0.0, le=1.0)
+    retrieval_to_citation_coverage: float | None = Field(default=None, ge=0.0, le=1.0)
+    retrieval_to_citation_eligible_cases: int = Field(ge=0)
+    exact_match_accuracy: float = Field(ge=0.0, le=1.0)
+    strict_supported_claim_rate: float = Field(ge=0.0, le=1.0)
+    strict_unsupported_claim_rate: float = Field(ge=0.0, le=1.0)
+
+
+class AnswerGroundingEvaluationReport(StrictModel):
+    schema_version: Literal["1.0"] = "1.0"
+    cases: list[AnswerGroundingCaseMetrics]
+    summary: AnswerGroundingEvaluationSummary
 
 
 def _safe_ks(ks: Sequence[int]) -> tuple[int, ...]:
@@ -216,6 +301,440 @@ def evaluate_retrieval(
     )
 
 
+_WEAK_OPERAND_TOKEN = re.compile(
+    r"(?:[$€£¥]\s*)?-?\d[\d,]*(?:\.\d+)?%?|[A-Za-z]{2,}|[\u3400-\u9fff]"
+)
+_WEAK_OPERAND_STOPWORDS = frozenset(
+    {
+        "the",
+        "and",
+        "what",
+        "which",
+        "how",
+        "much",
+        "many",
+        "was",
+        "were",
+        "are",
+        "is",
+        "of",
+        "in",
+        "for",
+        "to",
+        "from",
+        "with",
+        "on",
+        "by",
+        "than",
+        "that",
+        "this",
+        "their",
+        "they",
+        "does",
+        "did",
+        "have",
+        "has",
+        "had",
+    }
+)
+
+
+def _normalise_weak_operand_token(token: str) -> str:
+    cleaned = token.casefold().replace(",", "").replace(" ", "")
+    if cleaned.startswith(("$", "€", "£", "¥")):
+        cleaned = cleaned[1:]
+    return cleaned
+
+
+def _weak_operand_terms(case: RAGEvalCase) -> set[str]:
+    """Extract answer/derivation terms for a diagnostic, not gold-cell score.
+
+    TAT-QA exposes evidence document IDs but not a canonical cell-coordinate
+    annotation.  Numeric operands and longer answer words provide a useful
+    weak signal for table/arithmetical failures while remaining explicitly
+    separate from strict evidence Recall.
+    """
+
+    answer = case.answer
+    answer_values = answer if isinstance(answer, list) else [answer]
+    raw = " ".join(
+        str(value)
+        for value in [*answer_values, case.metadata.get("derivation", "")]
+        if value is not None
+    )
+    terms: set[str] = set()
+    for token in _WEAK_OPERAND_TOKEN.findall(raw.casefold()):
+        cleaned = _normalise_weak_operand_token(token)
+        if cleaned.replace(".", "", 1).replace("-", "", 1).isdigit():
+            terms.add(cleaned)
+        elif len(cleaned) >= 3 and cleaned not in _WEAK_OPERAND_STOPWORDS:
+            terms.add(cleaned)
+    return terms
+
+
+def _table_unit_terms(value: object) -> set[str]:
+    return {
+        _normalise_weak_operand_token(token)
+        for token in _WEAK_OPERAND_TOKEN.findall(str(value).casefold())
+    }
+
+
+def _table_unit_gold(
+    case: RAGEvalCase,
+    document_map: Mapping[str, EvalCorpusDocument],
+) -> tuple[set[str], set[str], bool]:
+    """Derive weak row/cell labels from answer/derivation overlap.
+
+    The upstream TAT-QA JSON identifies table/paragraph evidence but does not
+    publish canonical cell coordinates.  A table unit is therefore eligible
+    only when answer/derivation terms match at least one cell; otherwise the
+    case is counted as ambiguous and excluded from row/cell macro averages.
+    """
+
+    terms = _weak_operand_terms(case)
+    if not terms:
+        return set(), set(), True
+    row_ids: set[str] = set()
+    cell_ids: set[str] = set()
+    has_table = False
+    for evidence_id in case.relevant_ids:
+        document = document_map.get(evidence_id)
+        if document is None or document.metadata.get("kind") != "table":
+            continue
+        has_table = True
+        raw_rows = document.metadata.get("table_rows")
+        if not isinstance(raw_rows, list):
+            continue
+        rows = [
+            list(row) if isinstance(row, (list, tuple)) else [row]
+            for row in raw_rows
+        ]
+        if not rows:
+            continue
+        width = max(len(row) for row in rows)
+        header = [
+            str(rows[0][index]).strip() if index < len(rows[0]) else ""
+            for index in range(width)
+        ]
+        for row_index, row in enumerate(rows[1:], start=1):
+            row_terms = _table_unit_terms(" ".join(str(value) for value in row))
+            matched_row = bool(terms.intersection(row_terms))
+            for column_index in range(width):
+                value = row[column_index] if column_index < len(row) else ""
+                cell_text = " | ".join(
+                    (
+                        header[column_index],
+                        str(value),
+                        str(row[0]) if row else "",
+                    )
+                )
+                cell_terms = _table_unit_terms(cell_text)
+                if terms.intersection(cell_terms):
+                    matched_row = True
+                    cell_ids.add(
+                        f"{document.document_id}::cell::{row_index}::{column_index}"
+                    )
+            if matched_row:
+                row_ids.add(f"{document.document_id}::row::{row_index}")
+    if not has_table:
+        return set(), set(), False
+    return row_ids, cell_ids, not row_ids and not cell_ids
+
+
+def _table_unit_catalog(document: EvalCorpusDocument) -> tuple[set[str], set[str]]:
+    raw_rows = document.metadata.get("table_rows")
+    if document.metadata.get("kind") != "table" or not isinstance(raw_rows, list):
+        return set(), set()
+    width = max(
+        (len(row) for row in raw_rows if isinstance(row, (list, tuple))),
+        default=0,
+    )
+    row_ids = {
+        f"{document.document_id}::row::{row_index}"
+        for row_index in range(1, len(raw_rows))
+    }
+    cell_ids = {
+        f"{document.document_id}::cell::{row_index}::{column_index}"
+        for row_index in range(1, len(raw_rows))
+        for column_index in range(width)
+    }
+    return row_ids, cell_ids
+
+
+def evaluate_hierarchical_retrieval(
+    cases: Sequence[RAGEvalCase],
+    predictions: Sequence[RetrievalPrediction],
+    documents: Sequence[EvalCorpusDocument],
+    *,
+    retrieved_texts_by_case: Mapping[str, Sequence[str]] | None = None,
+    ks: Sequence[int] = (10, 50),
+) -> dict[str, Any]:
+    """Return parent and weak operand diagnostics alongside strict Recall.
+
+    ``parent_recall_at_k`` is exact at the parent-document level.  The
+    ``weak_operand_recall_at_k`` field is intentionally diagnostic: it checks
+    whether answer/derivation terms occur in retrieved text and is *not* a
+    substitute for official TAT-QA cell-coordinate labels.
+    """
+
+    safe_ks = _safe_ks(ks)
+    case_ids = [case.case_id for case in cases]
+    known_case_ids = set(case_ids)
+    prediction_map: dict[str, RetrievalPrediction] = {}
+    for prediction in predictions:
+        if prediction.case_id not in known_case_ids:
+            raise ValueError(f"prediction references unknown case: {prediction.case_id}")
+        if prediction.case_id in prediction_map:
+            raise ValueError(f"duplicate prediction for case: {prediction.case_id}")
+        prediction_map[prediction.case_id] = prediction
+    document_map = {document.document_id: document for document in documents}
+    weak_texts = retrieved_texts_by_case or {}
+
+    def average(values: Iterable[float]) -> float:
+        materialized = list(values)
+        return sum(materialized) / len(materialized) if materialized else 0.0
+
+    parent_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    table_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    paragraph_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    row_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    cell_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    full_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    operand_values: dict[str, list[float]] = {str(k): [] for k in safe_ks}
+    category_candidate_values: dict[str, list[float]] = {}
+    operand_eligible = 0
+    row_eligible = 0
+    cell_eligible = 0
+    ambiguous_table_units = 0
+    for case in cases:
+        gold_parents = {
+            str(document_map[evidence_id].metadata.get("parent_document_id", evidence_id))
+            for evidence_id in case.relevant_ids
+            if evidence_id in document_map
+        }
+        prediction = prediction_map.get(case.case_id)
+        retrieved_parents = [] if prediction is None else prediction.retrieved_parent_ids
+        retrieved_ids = [] if prediction is None else prediction.retrieved_ids
+        retrieved_rows = [] if prediction is None else prediction.retrieved_row_ids
+        retrieved_cells = [] if prediction is None else prediction.retrieved_cell_ids
+        complete_tables = (
+            []
+            if prediction is None
+            else prediction.retrieved_complete_table_ids
+        )
+        for k in safe_ks:
+            parent_values[str(k)].append(_recall(gold_parents, retrieved_parents, k))
+            full_values[str(k)].append(_recall(set(case.relevant_ids), retrieved_ids, k))
+
+        table_gold = {
+            evidence_id
+            for evidence_id in case.relevant_ids
+            if document_map.get(evidence_id, None) is not None
+            and document_map[evidence_id].metadata.get("kind") == "table"
+        }
+        paragraph_gold = {
+            evidence_id
+            for evidence_id in case.relevant_ids
+            if document_map.get(evidence_id, None) is not None
+            and document_map[evidence_id].metadata.get("kind") == "paragraph"
+        }
+        for k in safe_ks:
+            if table_gold:
+                table_values[str(k)].append(_recall(table_gold, retrieved_ids, k))
+            if paragraph_gold:
+                paragraph_values[str(k)].append(
+                    _recall(paragraph_gold, retrieved_ids, k)
+                )
+
+        gold_rows, gold_cells, ambiguous = _table_unit_gold(case, document_map)
+        if ambiguous:
+            ambiguous_table_units += 1
+        if gold_rows:
+            row_eligible += 1
+        if gold_cells:
+            cell_eligible += 1
+        for k in safe_ks:
+            covered_rows = list(retrieved_rows[:k])
+            covered_cells = list(retrieved_cells[:k])
+            for table_id in complete_tables:
+                if table_id not in retrieved_ids[:k]:
+                    continue
+                table_document = document_map.get(table_id)
+                if table_document is None:
+                    continue
+                all_rows, all_cells = _table_unit_catalog(table_document)
+                covered_rows.extend(sorted(all_rows))
+                covered_cells.extend(sorted(all_cells))
+            if gold_rows:
+                row_values[str(k)].append(_recall(gold_rows, covered_rows, len(covered_rows)))
+            if gold_cells:
+                cell_values[str(k)].append(
+                    _recall(gold_cells, covered_cells, len(covered_cells))
+                )
+
+        terms = _weak_operand_terms(case)
+        if terms:
+            operand_eligible += 1
+        texts = list(weak_texts.get(case.case_id, ()))
+        for k in safe_ks:
+            if not terms:
+                operand_values[str(k)].append(0.0)
+            else:
+                normalized_text = " ".join(
+                    text.casefold() for text in texts[:k]
+                )
+                text_terms = set(_WEAK_OPERAND_TOKEN.findall(normalized_text))
+                text_terms = {
+                    _normalise_weak_operand_token(token) for token in text_terms
+                }
+                operand_values[str(k)].append(
+                    len(terms.intersection(text_terms)) / len(terms)
+                )
+        category_candidate_values.setdefault(case.category, []).append(
+            _recall(set(case.relevant_ids), retrieved_ids, max(safe_ks))
+        )
+
+    def averaged(values: Mapping[str, list[float]]) -> dict[str, float | None]:
+        return {
+            key: (average(items) if items else None)
+            for key, items in values.items()
+        }
+
+    return {
+        "schema_version": "1.0",
+        "parent_recall_at_k": averaged(parent_values),
+        "table_recall_at_k": averaged(table_values),
+        "paragraph_recall_at_k": averaged(paragraph_values),
+        "row_recall_at_k": averaged(row_values),
+        "cell_recall_at_k": averaged(cell_values),
+        "full_evidence_recall_at_k": averaged(full_values),
+        "candidate_recall_at_k_by_category": {
+            category: average(values)
+            for category, values in sorted(category_candidate_values.items())
+        },
+        "row_eligible_cases": row_eligible,
+        "cell_eligible_cases": cell_eligible,
+        "ambiguous_table_unit_cases": ambiguous_table_units,
+        "weak_operand_recall_at_k": {
+            key: average(values) for key, values in operand_values.items()
+        },
+        "weak_operand_eligible_cases": operand_eligible,
+        "weak_operand_definition": (
+            "answer/derivation numeric and content-term overlap in retrieved text; "
+            "diagnostic only, not official TAT-QA cell recall"
+        ),
+    }
+
+
+def evaluate_answer_grounding(
+    cases: Sequence[RAGEvalCase],
+    predictions: Sequence[CitedAnswerPrediction],
+) -> AnswerGroundingEvaluationReport:
+    """Score short answers with gold IDs and host-observed evidence only.
+
+    For each case, ``G`` is the dataset's gold evidence, ``R`` is host-observed
+    retrieval, ``P`` is the evidence actually presented to the model, and ``C``
+    is the model's citation list.  Only ``V = G & R & P & C`` is valid.  The
+    model never decides whether its own answer or citation is supported.
+    """
+
+    case_ids = [case.case_id for case in cases]
+    if len(case_ids) != len(set(case_ids)):
+        raise ValueError("case identifiers must be unique")
+    known_case_ids = set(case_ids)
+    prediction_map: dict[str, CitedAnswerPrediction] = {}
+    for prediction in predictions:
+        if prediction.case_id not in known_case_ids:
+            raise ValueError(f"prediction references unknown case: {prediction.case_id}")
+        if prediction.case_id in prediction_map:
+            raise ValueError(f"duplicate prediction for case: {prediction.case_id}")
+        prediction_map[prediction.case_id] = prediction
+
+    rows: list[AnswerGroundingCaseMetrics] = []
+    for case in cases:
+        prediction = prediction_map.get(case.case_id)
+        missing_prediction = prediction is None
+        answer = "" if prediction is None else prediction.answer
+        retrieved_ids = [] if prediction is None else prediction.retrieved_ids
+        presented_ids = (
+            [] if prediction is None else prediction.presented_evidence_ids
+        )
+        citation_ids = [] if prediction is None else prediction.citation_ids
+
+        gold = set(case.relevant_ids)
+        retrieved = set(retrieved_ids)
+        presented = set(presented_ids)
+        valid = gold.intersection(retrieved, presented, citation_ids)
+        valid_ids = [identifier for identifier in citation_ids if identifier in valid]
+        invalid_ids = [identifier for identifier in citation_ids if identifier not in valid]
+        citation_precision = (
+            len(valid_ids) / len(citation_ids) if citation_ids else 0.0
+        )
+        citation_recall = len(valid) / len(gold)
+        retrieved_relevant = gold.intersection(retrieved)
+        retrieval_to_citation = (
+            len(valid) / len(retrieved_relevant) if retrieved_relevant else None
+        )
+        exact_match = answer_exact_match(answer, case.answer)
+        parse_failed = prediction is not None and prediction.parse_error is not None
+        strict_supported = (
+            prediction is not None
+            and not parse_failed
+            and exact_match == 1.0
+            and bool(valid)
+        )
+        rows.append(
+            AnswerGroundingCaseMetrics(
+                case_id=case.case_id,
+                category=case.category,
+                citation_precision=citation_precision,
+                citation_recall=citation_recall,
+                retrieval_to_citation_coverage=retrieval_to_citation,
+                exact_match=exact_match,
+                strict_supported_claim=strict_supported,
+                unsupported_claim=not strict_supported,
+                parse_failed=parse_failed,
+                missing_prediction=missing_prediction,
+                valid_citation_ids=valid_ids,
+                invalid_citation_ids=invalid_ids,
+            )
+        )
+
+    total = len(rows)
+    retrieval_to_citation_values = [
+        row.retrieval_to_citation_coverage
+        for row in rows
+        if row.retrieval_to_citation_coverage is not None
+    ]
+
+    def average(values: Iterable[float]) -> float:
+        materialized = list(values)
+        return sum(materialized) / len(materialized) if materialized else 0.0
+
+    supported_count = sum(row.strict_supported_claim for row in rows)
+    parse_failures = sum(row.parse_failed for row in rows)
+    return AnswerGroundingEvaluationReport(
+        cases=rows,
+        summary=AnswerGroundingEvaluationSummary(
+            total_cases=total,
+            missing_predictions=sum(row.missing_prediction for row in rows),
+            parse_failures=parse_failures,
+            parse_failure_rate=parse_failures / total if total else 0.0,
+            citation_precision=average(row.citation_precision for row in rows),
+            citation_recall=average(row.citation_recall for row in rows),
+            retrieval_to_citation_coverage=(
+                average(retrieval_to_citation_values)
+                if retrieval_to_citation_values
+                else None
+            ),
+            retrieval_to_citation_eligible_cases=len(retrieval_to_citation_values),
+            exact_match_accuracy=average(row.exact_match for row in rows),
+            strict_supported_claim_rate=supported_count / total if total else 0.0,
+            strict_unsupported_claim_rate=(total - supported_count) / total if total else 0.0,
+        ),
+    )
+
+
 def _table_text(rows: Sequence[Sequence[object]]) -> str:
     return "\n".join(
         " | ".join(str(cell).strip() for cell in row)
@@ -223,7 +742,12 @@ def _table_text(rows: Sequence[Sequence[object]]) -> str:
     ).strip()
 
 
-def load_tatqa_dataset(path: str | Path, *, limit: int | None = None) -> RAGEvalDataset:
+def load_tatqa_dataset(
+    path: str | Path,
+    *,
+    limit: int | None = None,
+    table_cleaning: bool = False,
+) -> RAGEvalDataset:
     """Normalize the official TAT-QA raw JSON into retrievable evidence units."""
 
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -243,13 +767,40 @@ def load_tatqa_dataset(path: str | Path, *, limit: int | None = None) -> RAGEval
         table_rows = table.get("table")
         if not table_uid or not isinstance(table_rows, list):
             raise ValueError("TAT-QA table requires uid and rows")
+        table_metadata: dict[str, Any] = {
+            "kind": "table",
+            "table_uid": table_uid,
+            "parent_document_id": f"tatqa:{table_uid}:context",
+            "table_rows": table_rows,
+            "table_cleaning_enabled": table_cleaning,
+        }
+        table_text = _table_text(table_rows)
+        if table_cleaning:
+            paragraph_context = " ".join(
+                str(paragraph.get("text", ""))
+                for paragraph in paragraphs
+                if isinstance(paragraph, Mapping)
+            )
+            cleaned_table = clean_tatqa_table(
+                table_rows,
+                context_text=paragraph_context,
+            )
+            cleaned_rows = [list(row) for row in cleaned_table.rows]
+            table_text = _table_text(cleaned_rows)
+            table_metadata.update(
+                {
+                    "table_rows_cleaned": cleaned_rows,
+                    "table_cleaning": cleaned_table.metadata(),
+                }
+            )
+        parent_id = f"tatqa:{table_uid}:context"
         table_id = f"tatqa:{table_uid}:table"
         documents.append(
             EvalCorpusDocument(
                 document_id=table_id,
-                text=_table_text(table_rows),
+                text=table_text,
                 source_uri=f"tatqa://{table_uid}/table",
-                metadata={"kind": "table", "table_uid": table_uid},
+                metadata=table_metadata,
             )
         )
         paragraph_ids: dict[str, str] = {}
@@ -268,7 +819,13 @@ def load_tatqa_dataset(path: str | Path, *, limit: int | None = None) -> RAGEval
                     document_id=paragraph_id,
                     text=text,
                     source_uri=f"tatqa://{table_uid}/paragraph/{order}",
-                    metadata={"kind": "paragraph", "uid": uid, "order": order},
+                    metadata={
+                        "kind": "paragraph",
+                        "uid": uid,
+                        "order": order,
+                        "table_uid": table_uid,
+                        "parent_document_id": parent_id,
+                    },
                 )
             )
         for question in questions:
@@ -309,6 +866,9 @@ def load_tatqa_dataset(path: str | Path, *, limit: int | None = None) -> RAGEval
                         "answer_type": answer_type,
                         "derivation": question.get("derivation", ""),
                         "scale": question.get("scale", ""),
+                        "table_uid": table_uid,
+                        "table_id": table_id,
+                        "parent_document_id": parent_id,
                     },
                 )
             )
@@ -413,6 +973,227 @@ def load_multihop_rag_dataset(
         dataset="MultiHop-RAG",
         license="ODC-BY",
         attribution_url="https://huggingface.co/datasets/yixuantt/MultiHopRAG",
+        documents=documents,
+        cases=cases,
+    )
+
+
+def _qasper_sentence_spans(text: str) -> list[dict[str, int]]:
+    spans: list[dict[str, int]] = []
+    start = 0
+    for match in re.finditer(r"(?<=[.!?])\s+", text):
+        end = match.start()
+        if end > start:
+            spans.append({"start": start, "end": end})
+        start = match.end()
+    if start < len(text):
+        spans.append({"start": start, "end": len(text)})
+    return spans
+
+
+def _qasper_section_level(section_name: str) -> int:
+    match = re.match(r"^\s*(\d+(?:\.\d+)*)\.?\s+", section_name)
+    return match.group(1).count(".") + 1 if match else 1
+
+
+def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEvalDataset:
+    """Normalize QASPER into paragraph-level general-text evidence.
+
+    Only answerable questions with at least one exact evidence paragraph are
+    admitted. Evidence is matched against the paper's full text; no gold
+    evidence text is injected into the retrieval corpus.
+    """
+
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(raw, Mapping):
+        raise ValueError("QASPER payload must be an object keyed by paper ID")
+    documents: list[EvalCorpusDocument] = []
+    cases: list[RAGEvalCase] = []
+    for paper_id, paper in raw.items():
+        if not isinstance(paper_id, str) or not paper_id.strip():
+            raise ValueError("QASPER paper ID must be a non-empty string")
+        if not isinstance(paper, Mapping):
+            raise ValueError("QASPER paper must be an object")
+        stable_paper_id = paper_id.strip()
+        parent_id = f"qasper:{stable_paper_id}:paper"
+        evidence_to_ids: dict[str, list[str]] = {}
+        paper_title = str(paper.get("title", "")).strip()
+        abstract = str(paper.get("abstract", "")).strip()
+        if abstract:
+            documents.append(
+                EvalCorpusDocument(
+                    document_id=f"{parent_id}:abstract",
+                    text=abstract,
+                    source_uri=f"qasper://{stable_paper_id}/abstract",
+                    metadata={
+                        "kind": "paragraph",
+                        "node_type": "abstract",
+                        "section": "abstract",
+                        "section_title": "Abstract",
+                        "subsection_title": None,
+                        "section_id": f"{parent_id}:section:abstract",
+                        "parent_id": parent_id,
+                        "paper_title": paper_title,
+                        "paper_id": stable_paper_id,
+                        "source": "qasper",
+                        "parent_document_id": parent_id,
+                        "paragraph_index": 0,
+                        "previous_document_id": None,
+                        "next_document_id": None,
+                        "char_start": 0,
+                        "char_end": len(abstract),
+                        "sentence_spans": _qasper_sentence_spans(abstract),
+                    },
+                )
+            )
+        full_text = paper.get("full_text")
+        if not isinstance(full_text, list):
+            raise ValueError("QASPER paper full_text must be an array")
+        paragraph_records: list[dict[str, Any]] = []
+        char_cursor = 0
+        for section_index, section in enumerate(full_text):
+            if not isinstance(section, Mapping):
+                raise ValueError("QASPER section must be an object")
+            section_name = str(section.get("section_name", "")).strip()
+            paragraphs = section.get("paragraphs")
+            if not isinstance(paragraphs, list):
+                raise ValueError("QASPER section paragraphs must be an array")
+            for paragraph_index, raw_text in enumerate(paragraphs):
+                text = str(raw_text).strip()
+                if not text or not re.search(
+                    r"[A-Za-z0-9_]|[\u3400-\u4dbf\u4e00-\u9fff]", text
+                ):
+                    continue
+                document_id = (
+                    f"{parent_id}:section:{section_index}:paragraph:{paragraph_index}"
+                )
+                paragraph_records.append(
+                    {
+                        "document_id": document_id,
+                        "text": text,
+                        "section_name": section_name,
+                        "section_index": section_index,
+                        "paragraph_index": paragraph_index,
+                        "char_start": char_cursor,
+                        "char_end": char_cursor + len(text),
+                    }
+                )
+                char_cursor += len(text) + 2
+                evidence_to_ids.setdefault(text, []).append(document_id)
+        for record_index, record in enumerate(paragraph_records):
+            document_id = str(record["document_id"])
+            text = str(record["text"])
+            section_name = str(record["section_name"])
+            section_index = int(record["section_index"])
+            section_level = _qasper_section_level(section_name)
+            documents.append(
+                EvalCorpusDocument(
+                    document_id=document_id,
+                    text=text,
+                    source_uri=(
+                        f"qasper://{stable_paper_id}/section/"
+                        f"{section_index}/paragraph/{record['paragraph_index']}"
+                    ),
+                    metadata={
+                        "kind": "paragraph",
+                        "node_type": "paragraph",
+                        "section": section_name,
+                        "section_title": section_name,
+                        "subsection_title": (
+                            section_name if section_level > 1 else None
+                        ),
+                        "section_level": section_level,
+                        "section_id": f"{parent_id}:section:{section_index}",
+                        "parent_id": f"{parent_id}:section:{section_index}",
+                        "section_index": section_index,
+                        "paragraph_index": int(record["paragraph_index"]),
+                        "paper_title": paper_title,
+                        "paper_id": stable_paper_id,
+                        "source": "qasper",
+                        "parent_document_id": parent_id,
+                        "previous_document_id": (
+                            str(paragraph_records[record_index - 1]["document_id"])
+                            if record_index > 0
+                            else None
+                        ),
+                        "next_document_id": (
+                            str(paragraph_records[record_index + 1]["document_id"])
+                            if record_index + 1 < len(paragraph_records)
+                            else None
+                        ),
+                        "char_start": int(record["char_start"]),
+                        "char_end": int(record["char_end"]),
+                        "sentence_spans": _qasper_sentence_spans(text),
+                    },
+                )
+            )
+        qas = paper.get("qas")
+        if not isinstance(qas, list):
+            raise ValueError("QASPER paper qas must be an array")
+        for question in qas:
+            if limit is not None and len(cases) >= limit:
+                break
+            if not isinstance(question, Mapping):
+                raise ValueError("QASPER question must be an object")
+            query = str(question.get("question", "")).strip()
+            question_id = str(question.get("question_id", "")).strip()
+            answers = question.get("answers")
+            if not query or not question_id or not isinstance(answers, list):
+                raise ValueError(
+                    "QASPER question requires question, question_id, and answers"
+                )
+            annotation = next(
+                (
+                    item.get("answer")
+                    for item in answers
+                    if isinstance(item, Mapping)
+                    and isinstance(item.get("answer"), Mapping)
+                    and not item["answer"].get("unanswerable", False)
+                ),
+                None,
+            )
+            if not isinstance(annotation, Mapping):
+                continue
+            relevant: list[str] = []
+            evidence = annotation.get("evidence", [])
+            if isinstance(evidence, list):
+                for raw_evidence in evidence:
+                    evidence_text = str(raw_evidence).strip()
+                    for document_id in evidence_to_ids.get(evidence_text, []):
+                        if document_id not in relevant:
+                            relevant.append(document_id)
+            if not relevant:
+                continue
+            answer: object = annotation.get("free_form_answer", "")
+            if not answer:
+                spans = annotation.get("extractive_spans", [])
+                answer = (
+                    spans
+                    if isinstance(spans, list) and spans
+                    else annotation.get("yes_no")
+                )
+            cases.append(
+                RAGEvalCase(
+                    case_id=f"qasper:{stable_paper_id}:{question_id}",
+                    dataset="QASPER",
+                    query=query,
+                    relevant_ids=relevant,
+                    category="text",
+                    answer=answer,
+                    metadata={
+                        "paper_id": stable_paper_id,
+                        "parent_document_id": parent_id,
+                        "question_id": question_id,
+                        "evidence_count": len(relevant),
+                    },
+                )
+            )
+        if limit is not None and len(cases) >= limit:
+            break
+    return RAGEvalDataset(
+        dataset="QASPER",
+        license="CC BY 4.0",
+        attribution_url="https://huggingface.co/datasets/allenai/qasper",
         documents=documents,
         cases=cases,
     )
@@ -526,6 +1307,10 @@ def answer_token_f1(prediction: object, expected: object) -> float:
 
 
 __all__ = [
+    "AnswerGroundingCaseMetrics",
+    "AnswerGroundingEvaluationReport",
+    "AnswerGroundingEvaluationSummary",
+    "CitedAnswerPrediction",
     "EvalCorpusDocument",
     "RAGEvalCase",
     "RAGEvalDataset",
@@ -535,9 +1320,12 @@ __all__ = [
     "RetrievalPrediction",
     "answer_exact_match",
     "answer_token_f1",
+    "evaluate_answer_grounding",
+    "evaluate_hierarchical_retrieval",
     "evaluate_retrieval",
     "load_mmlongbench_cases",
     "load_multihop_rag_dataset",
+    "load_qasper_dataset",
     "load_tatqa_dataset",
     "normalize_answer",
 ]

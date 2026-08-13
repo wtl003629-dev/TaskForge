@@ -633,6 +633,41 @@ def test_decision_citation_of_unretrieved_submitted_evidence_still_fails() -> No
         )
 
 
+def test_research_terminal_role_can_bind_evaluator_retrieval_without_researching_again() -> None:
+    evidence_id = "evidence:scope-1:v1:chunk-7"
+    output = {
+        "retrieved_evidence_refs": [],
+        "role_result": {
+            "claims": [
+                {
+                    "fact_key": "survey.verdict",
+                    "value": "accept",
+                    "evidence_refs": [evidence_id],
+                    "confidence": 0.9,
+                }
+            ],
+            "summary": "The scoped survey is ready.",
+            "handoff_summary": "Human review remains authoritative.",
+        },
+    }
+    role_result = RoleResultSubmission.model_validate(output["role_result"])
+    upstream = frozenset({evidence_id})
+
+    ReviewCaseCoordinator._require_retrieved_recommendation_evidence(
+        output,
+        role_result,
+        frozenset(),
+        valid_source_ids=upstream,
+    )
+    bound = ReviewCaseCoordinator._bind_retrieved_evidence(
+        output,
+        role_result,
+        valid_source_ids=upstream,
+    )
+
+    assert [item.evidence_id for item in bound] == [evidence_id]
+
+
 @pytest.mark.asyncio
 async def test_research_survey_reaches_human_review_with_verified_verdict(
     tmp_path: Path,

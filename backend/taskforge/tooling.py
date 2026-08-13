@@ -16,6 +16,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
+from pydantic import ValidationError as PydanticValidationError
 from pydantic import Field, model_validator
 
 from .domain import (
@@ -113,6 +114,16 @@ class ToolRegistry:
             if name in self._tools
         ]
 
+    @staticmethod
+    def _tool_use_count(state: RunState, name: str) -> int:
+        return sum(
+            1
+            for step in state.steps
+            if step.model_turn is not None
+            for item in step.model_turn.tool_requests
+            if item.name == name and item.call_id in state.receipts
+        )
+
     async def execute(
         self,
         request: ToolRequest,
@@ -130,6 +141,19 @@ class ToolRegistry:
         spec, handler = registered
         if request.name not in profile.allowed_tools:
             return ToolResult(call_id=request.call_id, ok=False, error="tool_not_allowed")
+        raw_limits = profile.metadata.get("tool_call_limits", {})
+        limits = raw_limits if isinstance(raw_limits, Mapping) else {}
+        raw_limit = limits.get(request.name)
+        if isinstance(raw_limit, int) and raw_limit >= 0:
+            if self._tool_use_count(state, request.name) >= raw_limit:
+                result = ToolResult(
+                    call_id=request.call_id,
+                    ok=False,
+                    error="tool_call_limit_exceeded",
+                    metadata={"tool": request.name, "limit": raw_limit},
+                )
+                state.receipts[request.call_id] = result
+                return result.model_copy(deep=True)
         if spec.side_effecting and not request.idempotency_key:
             return ToolResult(call_id=request.call_id, ok=False, error="idempotency_key_required")
         if request.idempotency_key:
@@ -171,6 +195,16 @@ class ToolRegistry:
             )
         except TimeoutError:
             result = ToolResult(call_id=request.call_id, ok=False, error="tool_timeout")
+        except PydanticValidationError as exc:
+            issues = "; ".join(
+                f"{'.'.join(str(part) for part in issue['loc'])}: {issue['msg']}"
+                for issue in exc.errors(include_url=False)[:4]
+            )
+            result = ToolResult(
+                call_id=request.call_id,
+                ok=False,
+                error=f"tool_validation_error:{issues}",
+            )
         except Exception as exc:  # handlers are an untrusted integration boundary
             result = ToolResult(
                 call_id=request.call_id,

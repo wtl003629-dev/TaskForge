@@ -1,0 +1,527 @@
+{
+  "gate": "retrieval_promotion_matrix",
+  "passed": true,
+  "scenario_count": 4,
+  "scenarios": [
+    {
+      "baseline": {
+        "artifact_sha256": {
+          "metrics.json": "0105d84e4bc89b933df6dc0e28002b5821934de17250944ec4f24f14744fc435",
+          "predictions.jsonl": "cb57cb6f697afd3a0bba1859558883696ecd652e2be7a9e09d37bf89133fa67b"
+        },
+        "label": "tatqa-provided-bm25-control",
+        "run_id": "d3b38178b597fdd173a9",
+        "stage": "lexical_bm25"
+      },
+      "bootstrap": {
+        "confidence": 0.95,
+        "repetitions": 10000,
+        "seed": 20260809
+      },
+      "candidates": [
+        {
+          "artifact_sha256": {
+            "metrics.json": "0105d84e4bc89b933df6dc0e28002b5821934de17250944ec4f24f14744fc435",
+            "predictions.jsonl": "cb57cb6f697afd3a0bba1859558883696ecd652e2be7a9e09d37bf89133fa67b"
+          },
+          "category_failures": [],
+          "checks": {
+            "bootstrap_ci": true,
+            "candidate_candidate_recall_floor": true,
+            "candidate_recall_at_candidate_k": true,
+            "candidate_recall_floor": true,
+            "category_non_regression": true,
+            "latency": true,
+            "metadata": true,
+            "recall_at_10": true,
+            "security": true
+          },
+          "label": "tatqa-provided-structured-pair",
+          "metadata_errors": [],
+          "metrics": {
+            "baseline_candidate_recall": 0.9754901960784313,
+            "baseline_p95_ms": 20.2096,
+            "baseline_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 13,
+                "mean": 5.137254901960785,
+                "min": 1
+              }
+            },
+            "baseline_recall_at_10": 0.9754901960784313,
+            "candidate_candidate_recall": 0.9901960784313726,
+            "candidate_p95_ms": 72.3357,
+            "candidate_raw_candidate_counts": {
+              "fused": {
+                "max": 14,
+                "mean": 5.793103448275862,
+                "min": 3
+              },
+              "numeric_scan": {
+                "max": 1,
+                "mean": 1.0,
+                "min": 1
+              },
+              "parent_child": {
+                "max": 14,
+                "mean": 5.793103448275862,
+                "min": 3
+              },
+              "query_aware_lineage_closure": {
+                "max": 2,
+                "mean": 2.0,
+                "min": 2
+              },
+              "query_plan": {
+                "max": 10,
+                "mean": 4.017241379310345,
+                "min": 0
+              },
+              "query_plan_default": {
+                "max": 13,
+                "mean": 5.409090909090909,
+                "min": 1
+              },
+              "structured_lineage_candidate": {
+                "max": 1,
+                "mean": 0.02857142857142857,
+                "min": 0
+              },
+              "tatqa_structured_arithmetic": {
+                "max": 1,
+                "mean": 1.0,
+                "min": 1
+              },
+              "tatqa_structured_count": {
+                "max": 1,
+                "mean": 1.0,
+                "min": 1
+              },
+              "tatqa_structured_multi_span": {
+                "max": 1,
+                "mean": 1.0,
+                "min": 1
+              }
+            },
+            "candidate_recall_at_10": 0.9901960784313726,
+            "candidate_recall_ci_95": [
+              0.0,
+              0.03431372549019608
+            ],
+            "candidate_recall_delta": 0.014705882352941176,
+            "categories": {
+              "arithmetic": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 39,
+                "delta": 0.0
+              },
+              "count": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 8,
+                "delta": 0.0
+              },
+              "multi-span": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 13,
+                "delta": 0.0
+              },
+              "table": {
+                "baseline_recall_at_10": 0.925,
+                "candidate_recall_at_10": 1.0,
+                "cases": 20,
+                "delta": 0.07499999999999996
+              },
+              "text": {
+                "baseline_recall_at_10": 0.9545454545454546,
+                "candidate_recall_at_10": 0.9545454545454546,
+                "cases": 22,
+                "delta": 0.0
+              }
+            },
+            "ndcg_delta": 0.05315569516584872,
+            "p95_ratio": 3.57927420631779,
+            "recall_ci_95": [
+              0.0,
+              0.03431372549019608
+            ],
+            "recall_delta": 0.014705882352941176
+          },
+          "passed": true,
+          "run_id": "d3b38178b597fdd173a9",
+          "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+        }
+      ],
+      "gate": "retrieval_promotion",
+      "name": "table_numeric_provided_context",
+      "passed": true,
+      "require_identical_retrieval": false,
+      "schema_version": "1.0",
+      "thresholds": {
+        "max_candidate_drop": 0.01,
+        "max_category_degradation": 0.03,
+        "max_p95_ms": 200.0,
+        "max_p95_ratio": 4.0,
+        "max_recall_drop": 0.01,
+        "min_candidate_recall_at_10": 0.98,
+        "min_candidate_recall_at_candidate_k": 0.98,
+        "min_category_cases": 10,
+        "min_recall_delta": 0.01,
+        "require_nonnegative_ci_lower": true
+      }
+    },
+    {
+      "baseline": {
+        "artifact_sha256": {
+          "metrics.json": "8fcb0275a3e16bc6b73c39719f37e84b0dc866506d1c2789704e855ae4b77c6c",
+          "predictions.jsonl": "afdb7d51220b00787fafd940c02a4be6607ed1461b0170c5bb9e77d15a6c3c5b"
+        },
+        "label": "qasper-bm25-floor",
+        "run_id": "1ba66a8d54ecbf3c5e9c",
+        "stage": "lexical_bm25"
+      },
+      "bootstrap": {
+        "confidence": 0.95,
+        "repetitions": 10000,
+        "seed": 20260809
+      },
+      "candidates": [
+        {
+          "artifact_sha256": {
+            "metrics.json": "8fcb0275a3e16bc6b73c39719f37e84b0dc866506d1c2789704e855ae4b77c6c",
+            "predictions.jsonl": "afdb7d51220b00787fafd940c02a4be6607ed1461b0170c5bb9e77d15a6c3c5b"
+          },
+          "category_failures": [],
+          "checks": {
+            "bootstrap_ci": true,
+            "candidate_candidate_recall_floor": true,
+            "candidate_recall_at_candidate_k": true,
+            "candidate_recall_floor": true,
+            "category_non_regression": true,
+            "identical_retrieval": true,
+            "latency": true,
+            "metadata": true,
+            "recall_at_10": true,
+            "security": true
+          },
+          "label": "qasper-bm25-current-control",
+          "metadata_errors": [],
+          "metrics": {
+            "baseline_candidate_recall": 0.3620535714285715,
+            "baseline_p95_ms": 88.3995,
+            "baseline_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 50,
+                "mean": 50.0,
+                "min": 50
+              }
+            },
+            "baseline_recall_at_10": 0.2205952380952381,
+            "candidate_candidate_recall": 0.3620535714285715,
+            "candidate_p95_ms": 88.3995,
+            "candidate_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 50,
+                "mean": 50.0,
+                "min": 50
+              }
+            },
+            "candidate_recall_at_10": 0.2205952380952381,
+            "candidate_recall_ci_95": [
+              0.0,
+              0.0
+            ],
+            "candidate_recall_delta": 0.0,
+            "categories": {
+              "text": {
+                "baseline_recall_at_10": 0.2205952380952381,
+                "candidate_recall_at_10": 0.2205952380952381,
+                "cases": 100,
+                "delta": 0.0
+              }
+            },
+            "ndcg_delta": 0.0,
+            "p95_ratio": 1.0,
+            "recall_ci_95": [
+              0.0,
+              0.0
+            ],
+            "recall_delta": 0.0
+          },
+          "passed": true,
+          "run_id": "1ba66a8d54ecbf3c5e9c",
+          "stage": "lexical_bm25"
+        }
+      ],
+      "gate": "retrieval_promotion",
+      "name": "general_long_document_floor",
+      "passed": true,
+      "require_identical_retrieval": true,
+      "schema_version": "1.0",
+      "thresholds": {
+        "max_candidate_drop": 0.01,
+        "max_category_degradation": 0.03,
+        "max_p95_ms": 150.0,
+        "max_p95_ratio": 1.2,
+        "max_recall_drop": 0.01,
+        "min_candidate_recall_at_10": 0.2,
+        "min_candidate_recall_at_candidate_k": 0.35,
+        "min_category_cases": 10,
+        "min_recall_delta": 0.0,
+        "require_nonnegative_ci_lower": true
+      }
+    },
+    {
+      "baseline": {
+        "artifact_sha256": {
+          "metrics.json": "caecc24c43ba3d638d9fd833ad6a03d3192515949ef5b23aac5c190932a002d4",
+          "predictions.jsonl": "dc6ad6f85d6d846d176068cae31cab90d642999746b5bfd370bab8f3e179ef6e"
+        },
+        "label": "multihop-bm25-control",
+        "run_id": "9fb06411ae88a3de3b40",
+        "stage": "lexical_bm25"
+      },
+      "bootstrap": {
+        "confidence": 0.95,
+        "repetitions": 10000,
+        "seed": 20260809
+      },
+      "candidates": [
+        {
+          "artifact_sha256": {
+            "metrics.json": "caecc24c43ba3d638d9fd833ad6a03d3192515949ef5b23aac5c190932a002d4",
+            "predictions.jsonl": "dc6ad6f85d6d846d176068cae31cab90d642999746b5bfd370bab8f3e179ef6e"
+          },
+          "category_failures": [],
+          "checks": {
+            "bootstrap_ci": true,
+            "candidate_candidate_recall_floor": true,
+            "candidate_recall_at_candidate_k": true,
+            "candidate_recall_floor": true,
+            "category_non_regression": true,
+            "latency": true,
+            "metadata": true,
+            "recall_at_10": true,
+            "security": true
+          },
+          "label": "multihop-source-coverage-anchor",
+          "metadata_errors": [],
+          "metrics": {
+            "baseline_candidate_recall": 0.9743589743589743,
+            "baseline_p95_ms": 59.3822,
+            "baseline_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 50,
+                "mean": 50.0,
+                "min": 50
+              }
+            },
+            "baseline_recall_at_10": 0.8408119658119657,
+            "candidate_candidate_recall": 0.9893162393162394,
+            "candidate_p95_ms": 163.6702,
+            "candidate_raw_candidate_counts": {
+              "fused": {
+                "max": 131,
+                "mean": 89.47435897435898,
+                "min": 53
+              },
+              "source_0": {
+                "max": 50,
+                "mean": 50.0,
+                "min": 50
+              },
+              "source_1": {
+                "max": 50,
+                "mean": 31.846153846153847,
+                "min": 1
+              },
+              "source_2": {
+                "max": 50,
+                "mean": 32.044117647058826,
+                "min": 1
+              },
+              "source_3": {
+                "max": 50,
+                "mean": 24.416666666666668,
+                "min": 2
+              },
+              "source_4": {
+                "max": 44,
+                "mean": 44.0,
+                "min": 44
+              }
+            },
+            "candidate_recall_at_10": 0.9198717948717948,
+            "candidate_recall_ci_95": [
+              0.0,
+              0.03418803418803419
+            ],
+            "candidate_recall_delta": 0.014957264957264958,
+            "categories": {
+              "comparison_query": {
+                "baseline_recall_at_10": 0.9135802469135803,
+                "candidate_recall_at_10": 0.9814814814814815,
+                "cases": 27,
+                "delta": 0.0679012345679012
+              },
+              "inference_query": {
+                "baseline_recall_at_10": 0.7651515151515151,
+                "candidate_recall_at_10": 0.8358585858585859,
+                "cases": 33,
+                "delta": 0.07070707070707072
+              },
+              "temporal_query": {
+                "baseline_recall_at_10": 0.8703703703703703,
+                "candidate_recall_at_10": 0.9814814814814815,
+                "cases": 18,
+                "delta": 0.11111111111111116
+              }
+            },
+            "ndcg_delta": 0.03933600841364509,
+            "p95_ratio": 2.756216509324343,
+            "recall_ci_95": [
+              0.0405982905982906,
+              0.12179487179487179
+            ],
+            "recall_delta": 0.07905982905982907
+          },
+          "passed": true,
+          "run_id": "9fb06411ae88a3de3b40",
+          "stage": "bm25_source_coverage_anchor_rrf"
+        }
+      ],
+      "gate": "retrieval_promotion",
+      "name": "identifiable_cross_document_coverage",
+      "passed": true,
+      "require_identical_retrieval": false,
+      "schema_version": "1.0",
+      "thresholds": {
+        "max_candidate_drop": 0.01,
+        "max_category_degradation": 0.03,
+        "max_p95_ms": 250.0,
+        "max_p95_ratio": 3.0,
+        "max_recall_drop": 0.01,
+        "min_candidate_recall_at_10": 0.9,
+        "min_candidate_recall_at_candidate_k": 0.98,
+        "min_category_cases": 10,
+        "min_recall_delta": 0.05,
+        "require_nonnegative_ci_lower": true
+      }
+    },
+    {
+      "baseline": {
+        "artifact_sha256": {
+          "metrics.json": "f293bd065ce7421a7d89cd9892ed2dff7506cd3e554ad7bb160ebb5158bb7bbe",
+          "predictions.jsonl": "2fbcbc82a59c72bffc0de566235c7197fbe98606ad6209d1cd1b357004438890"
+        },
+        "label": "synthetic-pdf-bm25",
+        "run_id": "26e38dbe36ab10fdc133",
+        "stage": "lexical_bm25"
+      },
+      "bootstrap": {
+        "confidence": 0.95,
+        "repetitions": 10000,
+        "seed": 20260809
+      },
+      "candidates": [
+        {
+          "artifact_sha256": {
+            "metrics.json": "f293bd065ce7421a7d89cd9892ed2dff7506cd3e554ad7bb160ebb5158bb7bbe",
+            "predictions.jsonl": "2fbcbc82a59c72bffc0de566235c7197fbe98606ad6209d1cd1b357004438890"
+          },
+          "category_failures": [],
+          "checks": {
+            "bootstrap_ci": true,
+            "candidate_candidate_recall_floor": true,
+            "candidate_recall_at_candidate_k": true,
+            "candidate_recall_floor": true,
+            "category_non_regression": true,
+            "latency": true,
+            "metadata": true,
+            "recall_at_10": true,
+            "security": true
+          },
+          "label": "synthetic-pdf-table-router",
+          "metadata_errors": [],
+          "metrics": {
+            "baseline_candidate_recall": 1.0,
+            "baseline_p95_ms": 1.0699,
+            "baseline_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 6,
+                "mean": 5.333333333333333,
+                "min": 3
+              }
+            },
+            "baseline_recall_at_10": 1.0,
+            "candidate_candidate_recall": 1.0,
+            "candidate_p95_ms": 0.5605,
+            "candidate_raw_candidate_counts": {
+              "python_bm25": {
+                "max": 6,
+                "mean": 5.333333333333333,
+                "min": 3
+              }
+            },
+            "candidate_recall_at_10": 1.0,
+            "candidate_recall_ci_95": [
+              0.0,
+              0.0
+            ],
+            "candidate_recall_delta": 0.0,
+            "categories": {
+              "cross-page": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 3,
+                "delta": 0.0
+              },
+              "table": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 6,
+                "delta": 0.0
+              },
+              "text": {
+                "baseline_recall_at_10": 1.0,
+                "candidate_recall_at_10": 1.0,
+                "cases": 3,
+                "delta": 0.0
+              }
+            },
+            "ndcg_delta": 0.0,
+            "p95_ratio": 0.5238807365174315,
+            "recall_ci_95": [
+              0.0,
+              0.0
+            ],
+            "recall_delta": 0.0
+          },
+          "passed": true,
+          "run_id": "26e38dbe36ab10fdc133",
+          "stage": "bm25_table_router"
+        }
+      ],
+      "gate": "retrieval_promotion",
+      "name": "pdf_ingestion_and_table_route_smoke",
+      "passed": true,
+      "require_identical_retrieval": false,
+      "schema_version": "1.0",
+      "thresholds": {
+        "max_candidate_drop": 0.01,
+        "max_category_degradation": 0.03,
+        "max_p95_ms": 10.0,
+        "max_p95_ratio": 1.2,
+        "max_recall_drop": 0.01,
+        "min_candidate_recall_at_10": 1.0,
+        "min_candidate_recall_at_candidate_k": 1.0,
+        "min_category_cases": 10,
+        "min_recall_delta": 0.0,
+        "require_nonnegative_ci_lower": true
+      }
+    }
+  ],
+  "schema_version": "1.0"
+}

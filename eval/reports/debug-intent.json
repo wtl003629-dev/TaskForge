@@ -1,0 +1,656 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "qasper_direct_pdf_upload_retrieval",
+  "created_at": "2026-08-12T23:23:11.615620+00:00",
+  "dataset": "QASPER v0.3 official dev locked split",
+  "license": "CC BY 4.0",
+  "source_dataset": ".taskforge\\eval-cache\\qasper-validation-v0.3.json",
+  "split": "eval\\splits\\qasper-validation-upload-50.json",
+  "papers": 1,
+  "cases": 1,
+  "case_offset": 6,
+  "pipeline": [
+    "render_pdf",
+    "direct_upload",
+    "parse",
+    "chunk",
+    "index",
+    "search"
+  ],
+  "retrieval": {
+    "backend": "fastembed",
+    "graph_enabled": false,
+    "reranker_backend": "transformers",
+    "reranker_model": ".taskforge/models/minilm-qasper-pdf-calibrated",
+    "rewrite_enabled": false,
+    "candidate_k": 100
+  },
+  "metrics": {
+    "recall_at_1": 0.0,
+    "recall_at_5": 0.0,
+    "recall_at_10": 0.0,
+    "recall_at_50": 1.0,
+    "ndcg_at_10": 0.0,
+    "p50_ms": 2076.8383000031463,
+    "p95_ms": 2076.8383000031463
+  },
+  "passed": false,
+  "thresholds": {
+    "recall_at_10": 0.8
+  },
+  "ingestion": [
+    {
+      "paper_id": "1601.02403",
+      "pages": 194,
+      "gold_evidence_units": 194,
+      "indexed_chunks": 199
+    }
+  ],
+  "rows": [
+    {
+      "case_id": "qasper:1601.02403:7697baf8d8d582c1f664a614f6332121061f87db",
+      "paper_id": "1601.02403",
+      "query": "Which machine learning methods are used in experiments?",
+      "gold_evidence_units": 1,
+      "recall_at_k": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "50": 1.0
+      },
+      "ndcg_at_10": 0.0,
+      "latency_ms": 2076.8383000031463,
+      "retrieved_count": 50,
+      "retrieval_rounds": 1,
+      "retrieved_evidence": [
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:7a91518ebea4363a2d0ec03a",
+          "page": "148",
+          "score": 1.1,
+          "text": "Identification of argument components In the following experiment, we focus on automatic identification of arguments in the discourse.\n\nOur approach is based on supervised and semi-supervised machine learning methods on the gold data Toulmin dataset introduced in section SECREF51 .\n\npage 148",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:7443f4571a5188b63661049d",
+          "page": "11",
+          "score": 1.0544969755269886,
+          "text": "Our contributions From the computational perspective, we experiment on the annotated data using various machine learning methods in order to extract argument structure from documents. We propose several novel feature sets and identify configurations that run best in in-domain and cross-domain scenarios.\n\nTo foster research in the community, we provide the annotated data as well as all the experimental software under free license.\n\npage 11",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:1363965dbf6d2b94f73bd5db",
+          "page": "146",
+          "score": 1.0163911894232318,
+          "text": "Experiments This section presents experiments conducted on the annotated corpora introduced in section SECREF4 . We put the main focus on identifying argument components in the discourse. To comply with the machine learning terminology, in this section we will use the term domain as an equivalent to a topic (remember that our dataset includes six different topics; see section SECREF38 ).\n\npage 146",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:862e9a7d0fcc071c9ee1e55c",
+          "page": "46",
+          "score": 0.8069519534527543,
+          "text": "Argumentation Mining Llewellyn2014 experimented with classifying tweets into several argumentative categories, namely claims and counter-claims (with and without evidence) and verification inquiries previously annotated by Procter.et.al.2013. They used unigrams, punctuations, and POS as features in three classifiers.\n\npage 46",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:e0a304fd15cf52b224296df8",
+          "page": "32",
+          "score": 0.6590562048317985,
+          "text": "Argumentation Mining Reed.Rowe.2004 presented Araucaria, a tool for argumentation diagramming which supports both convergent and linked arguments, missing premises (enthymemes), and refutations. They also released the AracuariaDB corpus which has later been used for experiments in the argumentation mining field. However, the creation of the dataset in terms of annotation guidelines and reliability is not reported - these limitations as well as its rather small size have been identified BIBREF10 ",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:2fd19d19452d4a86a2c3de16",
+          "page": "147",
+          "score": 0.577487712806993,
+          "text": "Experiments We evaluate three different scenarios. First, we report ten-fold cross validation over a random ordering of the entire data set. Second, we deal with in-domain ten-fold cross validation for each of the six domains. Third, in order to evaluate the domain portability of our approach, we train the system on five domains and test on the remaining one for all six domains (which we report as cross-domain validation).\n\npage 147",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:3eb2bacdc2e797e8991a02e9",
+          "page": "43",
+          "score": 0.5657715965605702,
+          "text": "Argumentation Mining Arguments in the legal domain were targeted in BIBREF11 . Using argumentation formalism inspired by Walton.2012, they employed multinomial Naive Bayes classifier and maximum entropy model for classifying argumentative sentences on the AraucariaDB corpus BIBREF45 . The same test dataset was used by Feng.Hirst.2011, who utilized the C4.5 decision classifier. Rooney.et.al.2012 investigated the use of convolution kernel methods for classifying whether a sentence belongs to an ar",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:036509346ecc5944b6d426c6",
+          "page": "49",
+          "score": 0.5623110023466161,
+          "text": "Argumentation Mining In the first step of their two-phase approach, Goudas.et.al.2014 sampled the dataset to be balanced and identified argumentative sentences with INLINEFORM0 0.77 using the maximum entropy classifier. For identifying premises, they used BIO encoding of tokens and achieved INLINEFORM1 score 0.42 using CRFs.\n\npage 49",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:df78a864f507c6e8c4fe1f7b",
+          "page": "54",
+          "score": 0.5404046203435398,
+          "text": "Stance detection Somasundaran.Wiebe.2009 built a computational model for recognizing stances in dual-topic debates about named entities in the electronic products domain by combining preferences learned from the Web data and discourse markers from PDTB BIBREF48 . Hasan.Ng.2013 determined stance in on-line ideological debates on four topics using data from createdebate.com, employing supervised machine learning and features ranging from n-grams to semantic frames. Predicting stance of posts in De",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:fb6bb9a9fef20457011fd0d8",
+          "page": "175",
+          "score": 0.5300134634485977,
+          "text": "Identification of argument components In our experiments, the feature sets were combined in the bottom-up manner, starting with the simple lexical features (FS0), adding structural and syntactic features (FS1), then adding topic and sentiment features (FS2), then features reflecting the discourse structure (FS3), and finally enriched with completely unsupervised latent vector space representation (FS4). In addition, we were gradually removing the simple features (e.g., without lexical features, ",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:31160a1215d9fa18104d243f",
+          "page": "40",
+          "score": 0.5280910994230334,
+          "text": "Argumentation Mining Faulkner2014 used Amazon Mechanical Turk to annotate 8,179 sentences from student essays. Three annotators decided whether the given sentence offered reasons for or against the main prompt of the essay (or no reason at all; 66% of the sentences were found to be neutral and easy to identify). The achieved Cohen's INLINEFORM0 was 0.70.\n\npage 40",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:553105a801c962c911ab9851",
+          "page": "55",
+          "score": 0.5262292338056094,
+          "text": "Stance detection Recent research has involved joint modeling, taking into account information about the users, the dialog sequences, and others. Hasan.Ng.2012 proposed machine learning approach to debate stance classification by leveraging contextual information and author's stances towards the topic. Qiu.et.al.2013 introduced a computational debate side model to cluster posts or users by sides for general threaded discussions using a generative graphical model employing words from various subje",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:7a1ef41942c13dff883729eb",
+          "page": "47",
+          "score": 0.5080368298139355,
+          "text": "Argumentation Mining Park.Cardie.2014 classified propositions into three classes (unverifiable, verifiable non-experimental, and verifiable experimental) and ignored non-argumentative texts. Using multi-class SVM and a wide range of features (n-grams, POS, sentiment clue words, tense, person) they achieved Macro INLINEFORM0 0.69.\n\npage 47",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:2be1ade8e15d5752801dd5a9",
+          "page": "184",
+          "score": 0.4618061296035491,
+          "text": "Identification of argument components SVMhmm offers many hyper-parameters with suggested default values, from which three are of importance. Parameter INLINEFORM0 sets the order of dependencies of transitions in HMM, parameter INLINEFORM1 sets the order of dependencies of emissions in HMM, and parameter INLINEFORM2 represents a trading-off slack versus magnitude of the weight-vector. For all experiments, we set all the hyper-parameters to their default values ( INLINEFORM3 , INLINEFORM4 , INLINE",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:9c540982417b88dabb4e70e3",
+          "page": "77",
+          "score": 0.45782115093615944,
+          "text": "Annotation study 2: Annotating micro-structure of arguments A number of studies (outside the field of computational linguistics) used Toulmin's model as their backbone argumentation framework. Chambliss1995 experimented with analyzing 20 written documents in a classroom setting in order to find the argument patterns and parts. Simosi2003 examined employees' argumentation to resolve conflicts. Voss2006 analyzed experts' protocols dealing with problem-solving.\n\npage 77",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:7975ae82fe8b80232ddb4429",
+          "page": "78",
+          "score": 0.4559361260185947,
+          "text": "Annotation study 2: Annotating micro-structure of arguments The model has also been used in research on computer-supported collaborative learning.\n\nErduran2004 adapt Toulmin's model for coding classroom argumentative discourse among teachers and students. Stegmann2011 builds on a simplified Toulmin's model for scripted construction of argument in computer-supported collaborative learning. Garcia-Mila2013 coded utterances into categories from Toulmin's model in persuasion and consensus-reaching a",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:fb7765e0961fa506097052e5",
+          "page": "165",
+          "score": 0.4506116608023634,
+          "text": "30 features taken from a vector representation of the sentence obtained by using Gibbs sampling\n\non LDA model BIBREF114 , BIBREF115 with 30 topics trained on unlabeled data from the raw corpus.\n\nMotivation: Topic representation of a sentence might be valuable for detecting off-topic sentences, namely non-argument components.\n\npage 165",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:b016d468ad3af4784e774910",
+          "page": "153",
+          "score": 0.42890644890187285,
+          "text": "Identification of argument components As instances for the sequence labeling model, we chose sentences rather than tokens. During our initial experiments, we observed that building a sequence labeling model for recognizing argument components as sequences of tokens is too fine-grained, as a single token does not convey enough information that could be encoded as features for a machine learner. However, as discussed in section UID73 , the annotations were performed on data pre-segmented to senten",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:adafe188fafbbd1fa9ca6b3d",
+          "page": "193",
+          "score": 0.4007982168602126,
+          "text": "Conclusions Third, there are aspects of online argumentation that lack their established theoretical counterparts, such as rhetorical questions, figurative language, narratives, and fallacies in general. We tried to model some of them in the pathos dimension of argument (section UID103 ), but no satisfying agreement was reached. Furthermore, we dealt with a step that precedes argument analysis by filtering documents given their persuasiveness with respect to the controversy. Finally, we proposed",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:3ffcf48a57324e3d46f173b0",
+          "page": "34",
+          "score": 0.36516858101967975,
+          "text": "Argumentation Mining [p. 1078]Schneider.et.al.2013b annotated Wikipedia talk pages about deletion using 17 Walton's schemes BIBREF43 , reaching a moderate agreement (Cohen's INLINEFORM0 0.48) and concluded that their analysis technique can be reused, although \"it is intensive and difficult to apply.\" page 34",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:f6031db4ebb60edf588007b6",
+          "page": "41",
+          "score": 0.35237296242240385,
+          "text": "Argumentation Mining The research has also been active on non-English datasets. Goudas.et.al.2014 focused on user-generated Greek texts. They selected 204 documents and manually annotated sentences that contained an argument (760 out of 16,000). They distinguished claims and premises, but the claims were always implicit. However, the annotation agreement was not reported, neither was the number of annotators or the guidelines. A study on annotation of arguments was conducted by Peldszus.Stede.20",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:ba0b5cb8cb082560d36ab8d0",
+          "page": "1",
+          "score": 0.34258594745249543,
+          "text": "Argumentation Mining in User-Generated Web Discourse Abstract The goal of argumentation mining, an evolving research field in computational linguistics, is to design methods capable of analyzing people's argumentation. In this article, we go beyond the state of the art in several ways. (i) We deal with actual Web data and take up the challenges given by the variety of registers, multiple domains, and unrestricted noisy user-generated Web discourse. (ii) We bridge the gap between normative argume",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:49824bccb77089062ee68033",
+          "page": "48",
+          "score": 0.3329571894547074,
+          "text": "Argumentation Mining Peldszus.2014 experimented with a rather complex labeling schema of argument segments, but their data were artificially created for their task and manually cleaned, such as removing segments that did not meet the criteria or non-argumentative segments.\n\npage 48",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:782a3596b1f15fdcd38914d5",
+          "page": "91",
+          "score": 0.2898651007611146,
+          "text": "Annotation study 2: Annotating micro-structure of arguments The annotation experiment was split into three phases. All documents were annotated by three independent annotators, who participated in two training sessions. During the first phase, 50 random comments and forum posts were annotated. Problematic cases were resolved after discussion and the guidelines were refined. In the second phase, we wanted to extend the range of annotated registers, so we selected 148 comments and forum posts as w",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:4b45da0f1a0df1515aec4be5",
+          "page": "172",
+          "score": 0.2767470046998115,
+          "text": "300 features from word embedding vectors using word embeddings trained on part of the Google\n\nNews dataset BIBREF121 . In particular, we sum up embedding vectors (dimensionality 300) of each word, resulting into a single vector for the entire sentence. This vector is then directly used as a feature vector. Motivation: Embeddings helped to achieve state-of-the-art results in various NLP tasks BIBREF116 , BIBREF122 .\n\npage 172",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:53437a3103b91c2bb4ae3871",
+          "page": "50",
+          "score": 0.24585386681623364,
+          "text": "Argumentation Mining Saint-Dizier.2012 developed a Prolog engine using a lexicon of 1300 words and a set of 78 hand-crafted rules with the focus on a particular argument structure \"reasons supporting conclusions\" in French.\n\npage 50",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:68168cdbf9fc1f165bc80653",
+          "page": "178",
+          "score": 0.2305537120226296,
+          "text": "Identification of argument components The cross-domain experiments yield rather poor results for most of the feature combinations (Table TABREF141 ). However, using only feature set 4 (embeddings), the system performance increases rapidly, so it is even comparable to numbers achieved in the in-domain scenario. These results indicate that embedding features generalize well across domains in our task of argument component identification. We leave investigating better performing vector representati",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:0e35aafdcff823bb9d108128",
+          "page": "29",
+          "score": 0.2276553940352275,
+          "text": "Related work in computational linguistics We structure the related work into three sub-categories, namely argumentation mining, stance detection, and persuasion and on-line dialogs, as these areas are closest to this article's focus. For a recent overview of general discourse analysis see BIBREF39 . Apart from these, research on computer-supported argumentation has been also very active; see, e.g., BIBREF40 for a survey of various models and argumentation formalisms from the educational perspect",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:359efba3c92b2790769d2538",
+          "page": "156",
+          "score": 0.22200515641817634,
+          "text": "Identification of argument components We chose SVMhmm BIBREF111 implementation of Structural Support Vector Machines for sequence labeling. Each sentence ( INLINEFORM0 ) is represented as a vector of real-valued features.\n\npage 156",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:493287e14acaf1fcc18a1c6b",
+          "page": "177",
+          "score": 0.21321746524933854,
+          "text": "Identification of argument components The results for the in-domain cross validation scenario are shown in Table TABREF140 . Similarly to the cross-validation scenario, the overall best results were achieved using the largest feature set (01234). For mainstreaming and red-shirting, the best results were achieved using only the feature set 4 (embeddings). These two domains contain also fewer documents, compared to other domains (refer to Table TABREF71 ). We suspect that embeddings-based features",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:1ee67e4d917ab808bf62a214",
+          "page": "51",
+          "score": 0.20715615005479016,
+          "text": "Argumentation Mining Taking the dialogical perspective, Cabrio.Villata.2012 built upon an argumentation framework proposed by Dung.1995 which models arguments within a graph structure and provides a reasoning mechanism for resolving accepted arguments. For identifying support and attack, they relied on existing research on textual entailment BIBREF46 , namely using the off-the-shelf EDITS system.\n\nThe test data were taken from a debate portal Debatepedia and covered 19 topics. Evaluation was per",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:c896a87b11f60f69a09cab52",
+          "page": "186",
+          "score": 0.20636547049407789,
+          "text": "Identification of argument components Krippendorff's INLINEFORM0 - It was also used for evaluating inter-annotator agreement (see section UID75 ).\n\npage 186",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:2199f49f05872e3dce7ade69",
+          "page": "20",
+          "score": 0.20603685581551345,
+          "text": "Original Toulmin's model We conclude the theoretical section by presenting one (micro-level) argumentation model in detail - a widely used conceptual model of argumentation introduced by Toulmin.1958, which we will henceforth denote as the Toulmin's original model. This model will play an important role later in the annotation studies (section SECREF51 ) and experimental work (section SECREF108 ).\n\nThe model consists of six parts, referred as argument components, where each component plays a dis",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:46444842e402d12706c877ad",
+          "page": "96",
+          "score": 0.20376341785372554,
+          "text": "Annotation study 2: Annotating micro-structure of arguments Based on pre-studies, we set the minimal unit for annotation as token. The documents were pre-segmented using the Stanford Core NLP sentence splitter BIBREF69 embedded in the DKPro Core framework BIBREF70 . Annotators were asked to stick to the sentence level by default and label entire pre-segmented sentences. They should switch to annotations on the token level only if (a) a particular sentence contained more than one argument compone",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:0e92bad1f3b1e36d7b8ecb87",
+          "page": "45",
+          "score": 0.19710922457557556,
+          "text": "Argumentation Mining Biran.Rambow.2011 identified justifications on the sentence level using a naive Bayes classifier over a feature set based on statistics from the RST Treebank, namely n-grams which were manually processed by deleting n-grams that \"seemed irrelevant, ambiguous or domain-specific.\" page 45",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:d8106c87f5df31a72aeb9baa",
+          "page": "107",
+          "score": 0.15498435247149472,
+          "text": "Annotation study 2: Annotating micro-structure of arguments Readability measures. We tested four standard readability measures, namely Ari BIBREF73 , Coleman-Liau BIBREF74 , Flesch BIBREF75 , and Lix BIBREF76 to find out whether readability of the documents plays any role in annotation agreement.\n\npage 107",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:e1d6cba944d35e8d79621182",
+          "page": "189",
+          "score": 0.13364063619229105,
+          "text": "Identification of argument components The overall performance of the system is also affected by the accuracy of individual NPL tools used for extracting features. One particular problem is that the preprocessing models we rely on (POS, syntax, semantic roles, coreference, discourse; see section UID115 ) were trained on newswire corpora, so one has to expect performance drop when applied on user-generated content.\n\nThis is however a well-known issue in NLP BIBREF126 , BIBREF127 , BIBREF128 .\n\npag",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:00352f0ccc9f5d40671ed690",
+          "page": "30",
+          "score": 0.11124075055712591,
+          "text": "Argumentation Mining The argumentation mining field has been evolving very rapidly in the recent years, resulting into several workshops co-located with major NLP conferences. We first present related works with a focus on annotations and then review experiments with classifying argument components, schemes, or relations.\n\npage 30",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:a780a4d5fd6abae5926f21f3",
+          "page": "5",
+          "score": 0.09989385145319608,
+          "text": "Introduction Satisfying the above-mentioned information needs cannot be directly tackled by current methods for, e.g., opinion mining, questions answering, or summarization and requires novel approaches within the argumentation mining field. Although user-generated Web content has already been considered in argumentation mining, many limitations and research gaps can be identified in the existing works. First, the scope of the current approaches is restricted to a particular domain or register, ",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:19cfa98d31148c8297243833",
+          "page": "80",
+          "score": 0.09422245465738,
+          "text": "Annotation study 2: Annotating micro-structure of arguments In order to prove the suitability of the Toulmin's model, we analyzed 40 random documents from the gold data persuasive dataset using the original Toulmin's model as presented in section SECREF21 . We took into account sever criteria for assessment, such as frequency of occurrence of the components or their importance for the task. We proposed some modifications of the model based on the following observations.\n\npage 80",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:022cdba35488465222344c0d",
+          "page": "100",
+          "score": 0.06837088587533759,
+          "text": "Annotation study 2: Annotating micro-structure of arguments Although the measure has been used in related annotation works BIBREF61 , BIBREF7 , BIBREF72 , there is one important detail that has not been properly communicated. The INLINEFORM0 is computed over a continuum of the smallest units, such as tokens. This continuum corresponds to a single document in the original Krippendorff's work. However, there are two possible extensions to multiple documents (a corpus), namely (a) to compute INLINE",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:68726c39026d1d7ea21d1264",
+          "page": "73",
+          "score": 0.06206166089973776,
+          "text": "Annotation study 2: Annotating micro-structure of arguments Given the theoretical background briefly introduced in section SECREF2 , we motivate our selection of the argumentation model by the following requirements. First, the scope of this work is to capture argumentation within a single document, thus focusing on micro-level models.\n\nSecond, there should exist empirical evidence that such a model has been used for analyzing argumentation in previous works, so it is likely to be suitable for o",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:47de03bb04749ae5522448c0",
+          "page": "154",
+          "score": 0.05476974471135011,
+          "text": "Identification of argument components The approximation with sentence-level units is explained in the example in Figure FIGREF112 . In order to evaluate the expected performance loss using this approximation, we used an oracle that always predicts the correct label for the unit (sentence) and evaluated it against the true labels (recall that the evaluation against the true gold labels is done always on token level).\n\nWe lose only about 10% of macro INLINEFORM0 score (0.906) and only about 2% of ",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:e54495ddac3dfa20f0fba1df",
+          "page": "75",
+          "score": 0.05283520626278005,
+          "text": "Annotation study 2: Annotating micro-structure of arguments Although Macagno.Konstantinidou.2012 show several examples of two argumentation schemes applied to few selected arguments in classroom experiments, empirical evidence presented by Anthony.Kim.2014 reveals many practical and theoretical difficulties of annotating dialogues with schemes in classroom deliberation, providing many details on the arbitrary selection of the sub-set of the schemes, the ambiguity of the scheme definitions, concl",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:2470f0fe259284f70fafdba9",
+          "page": "42",
+          "score": 0.039689145346557084,
+          "text": "Argumentation Mining Table TABREF33 gives an overview of annotation studies with their respective argumentation model, domain, size, and agreement. It also contains other studies outside of computational linguistics and few proposals and position papers.\n\npage 42",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:848efc13b7add6a686240adc",
+          "page": "151",
+          "score": 0.0269615308760579,
+          "text": "Identification of argument components Since the smallest annotation unit is a token and the argument components do not overlap, we approach identification of argument components as a sequence labeling problem. We use the BIO encoding, so each token belongs to one of the following 11 classes: O (not a part of any argument component), Backing-B, Backing-I, Claim-B, Claim-I, Premise-B, Premise-I, Rebuttal-B, Rebuttal-I, Refutation-B, Refutation-I. This is the minimal encoding that is able to distin",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:4eb5b230e2a1f86bbb95f5cc",
+          "page": "188",
+          "score": 0.02632643970447259,
+          "text": "Identification of argument components As shown in Table TABREF157 (the Macro- INLINEFORM0 scores are repeated from Table TABREF139 ), the best-performing system achieves 0.30 score using Krippendorf's INLINEFORM1 , which is in the middle between the baseline and the human performance (0.48) but is considered as poor from the inter-annotator agreement point of view BIBREF54 . The boundary similarity metrics is not directly suitable for evaluating argument component classification, but reveals a s",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:588fa45c61c9a4d1f1a42217",
+          "page": "79",
+          "score": 0.011240682131920953,
+          "text": "Annotation study 2: Annotating micro-structure of arguments In this annotation task, a sequence of tokens (e.g. a phrase, a sentence, or any arbitrary text span) is labeled with a corresponding argument component (such as the claim, the grounds, and others). There are no explicit relations between these annotation spans as the relations are implicitly encoded in the pragmatic function of the components in the Toulmin's model.\n\npage 79",
+          "metadata": {},
+          "retrieval_sources": [
+            "bm25",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:f292c02ad60ebf7ded4ba855",
+          "page": "92",
+          "score": 0.0032254588923212022,
+          "text": "Annotation study 2: Annotating micro-structure of arguments In the final phase, we extended the range of annotated registers and added newswire articles from the raw corpus in order to test whether the annotation guidelines (and inherently the model) is general enough. Therefore we selected 96 comments/forum posts, 8 blog posts, and 8 articles for this phase. A detailed inter-annotator agreement study on documents from this final phase will be reported in section UID75 .\n\npage 92",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        },
+        {
+          "evidence_id": "evidence:scope-ad5788a4-f502-4b5e-9514-edc0302641cd:v1:d6e37110c748dd261fa8c868",
+          "page": "98",
+          "score": 0.0,
+          "text": "Annotation study 2: Annotating micro-structure of arguments For the actual annotations, we developed a custom-made web-based application that allowed users to switch between different granularity of argument components (tokens or sentences), to annotate the same document in different argument \"dimensions\" (logos and pathos), and to write summary for each annotated argument component.\n\npage 98",
+          "metadata": {},
+          "retrieval_sources": [
+            "dense",
+            "intent_section_fusion"
+          ]
+        }
+      ]
+    }
+  ],
+  "elapsed_ms": 6518.240800003696,
+  "limitations": [
+    "QASPER text and labels are real; the PDF layout is generated locally.",
+    "The run uses the fastembed product retrieval path with graph_enabled=False."
+  ]
+}

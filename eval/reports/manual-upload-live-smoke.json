@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "manual_upload_live_smoke",
+  "created_at": "2026-08-12T14:05:16.714748+00:00",
+  "passed": true,
+  "live_external_requests": true,
+  "simulated_user_download": "https://arxiv.org/pdf/2410.05162v1",
+  "discovery": {
+    "recommendation_count": 20,
+    "selected_title": "Deciphering the Interplay of Parametric and Non-parametric Memory in Retrieval-augmented Language Models",
+    "selected_source_urls": [
+      "http://arxiv.org/abs/2410.05162v1",
+      "https://doi.org/10.18653/v1/2024.emnlp-main.943"
+    ],
+    "short_description": "Generative language models often struggle with specialized or less-discussed knowledge.",
+    "full_abstract_returned": false,
+    "selection_policy": "highest-ranked recommendation with a user-downloadable arXiv link",
+    "query_rewrite_applied": true,
+    "provider_reports": [
+      {
+        "provider": "semantic_scholar",
+        "query_count": 2,
+        "result_count": 0,
+        "request_count": 2,
+        "cache_hits": 0,
+        "elapsed_ms": 16696.64069999999,
+        "failure": "query-dc7a57a2-e076-4fd1-81fd-6cd3cc3194ca: ProviderUnavailableError: semantic_scholar rate-limit budget exhausted; retry after 30.0s; query-b8244887-54c4-4fcf-b721-d3f6c303abf1: ProviderUnavailableError: semantic_scholar circuit open for 120.0s after rate limiting"
+      },
+      {
+        "provider": "openalex",
+        "query_count": 2,
+        "result_count": 0,
+        "request_count": 1,
+        "cache_hits": 0,
+        "elapsed_ms": 885.9409999986383,
+        "failure": "query-4aa6076e-8308-47b7-960f-8b0071f208c9: ProviderUnavailableError: openalex rate-limit budget exhausted; retry after 35712.0s; query-dc7a57a2-e076-4fd1-81fd-6cd3cc3194ca: ProviderUnavailableError: openalex circuit open for 35712.0s after rate limiting"
+      },
+      {
+        "provider": "arxiv",
+        "query_count": 2,
+        "result_count": 100,
+        "request_count": 2,
+        "cache_hits": 0,
+        "elapsed_ms": 3352.1301000000676,
+        "failure": null
+      },
+      {
+        "provider": "crossref",
+        "query_count": 2,
+        "result_count": 99,
+        "request_count": 2,
+        "cache_hits": 0,
+        "elapsed_ms": 7295.860399999583,
+        "failure": null
+      }
+    ]
+  },
+  "upload": {
+    "bytes": 924128,
+    "status": "uploaded",
+    "pre_upload_ingestion": [
+      {
+        "protocol": "research.ingestion_status.v1",
+        "job_id": "paper-ingestion-edc64b29-f5ac-448e-89a2-4cc846f50dc1",
+        "scope_id": "scope-557785e9-b497-4691-906c-97b9b7ae6746",
+        "paper_id": "paper-0868a5308cc1486f63028eec3580c4b4",
+        "status": "failed",
+        "evidence_count": 0,
+        "error": "user-uploaded PDF is required before ingestion",
+        "updated_at": "2026-08-12T14:05:07.641674Z"
+      }
+    ]
+  },
+  "ingestion": [
+    {
+      "protocol": "research.ingestion_status.v1",
+      "job_id": "paper-ingestion-1f86fbd6-f3c1-457d-af23-bf369efef1b2",
+      "scope_id": "scope-557785e9-b497-4691-906c-97b9b7ae6746",
+      "paper_id": "paper-0868a5308cc1486f63028eec3580c4b4",
+      "status": "indexed",
+      "evidence_count": 108,
+      "error": null,
+      "updated_at": "2026-08-12T14:05:16.626357Z"
+    }
+  ],
+  "scope_status": "ready",
+  "bounded_retrieval": {
+    "evidence_count": 5,
+    "retrieval_rounds": 1,
+    "sufficient": true,
+    "top_evidence": [
+      {
+        "section": "2.4 The RAG System under Investigation:",
+        "page": "4",
+        "snippet": "2.4 The RAG System under Investigation:\n\nThe ATLAS Model Our investigation examines ATLAS (Izacard et al., 2023) as an example of a RAG model that inte- grates parametric and non-parametric components to utilize external data effectively. This integration, and the fact that ATLAS is pre-trained jointly with a retriever, makes it well suited to studying how information is synthesized in response to a prompt.",
+        "score": 0.8262777777777779
+      },
+      {
+        "section": "1634. Stockholm 0.67",
+        "page": "1",
+        "snippet": "1634. Stockholm 0.67\n\nIn 1634, Milan became the official capital of Italy. Stockholm 0.64 Table 1: Model behavior with different contexts for the question What is the capital of Sweden? The table shows the predicted outputs (O) and the corresponding probability PO assigned by ATLAS . The first row rep- resents the baseline context. When the counterfactual “Milan” is added, if the model answers “Milan,” this shows that the model relies on its non-parametric mech- anism rather than its parametric ",
+        "score": 0.6316944444444444
+      },
+      {
+        "section": null,
+        "page": "1",
+        "snippet": "Deciphering the Interplay of Parametric and Non-parametric Memory in Retrieval-augmented Language Models Mehrdad Farahani Richard Johansson Chalmers University of Technology and University of Gothenburg {mehrdad.farahani, richajo}@chalmers.se Abstract Generative language models often struggle with specialized or less-discussed knowledge.\n\nContext Output (O) PO In 1634, Stockholm became the official capital of Sweden. Stockholm 0.84 In 1634, Milan became the official capital of Sweden. Milan 0.95",
+        "score": 0.4816944444444444
+      }
+    ]
+  },
+  "elapsed_ms": 30567.02899999982
+}

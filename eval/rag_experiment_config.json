@@ -4,18 +4,29 @@
     "kind": "synthetic_pdf",
     "synthetic_suite_path": "eval/synthetic_pdf_suite.json",
     "tatqa_input_path": ".taskforge/eval-cache/tatqa_dataset_dev.json",
-    "tatqa_locked_split_path": "eval/splits/tatqa-dev-m0-100-v1.json"
+    "tatqa_locked_split_path": "eval/splits/tatqa-dev-m0-100-v1.json",
+    "tatqa_table_cleaning": false,
+    "qasper_input_path": ".taskforge/eval-cache/qasper-dev-v0.3.json",
+    "qasper_locked_split_path": "eval/splits/qasper-dev-general-100-v1.json"
   },
   "retrieval": {
     "stages": [
       "lexical_bm25",
+      "bm25_source_coverage_rrf",
+      "qdrant_dense",
+      "bm25_dense_rrf",
+      "bm25_dense_rrf_rerank",
       "qdrant_rrf",
       "qdrant_rrf_rerank"
     ],
     "top_k": [1, 5, 10],
-    "candidate_k": 25,
+    "candidate_k": 50,
     "bm25_k1": 1.5,
     "bm25_b": 0.75,
+    "rrf_k": 60,
+    "rrf_bm25_weight": 1.0,
+    "rrf_dense_weight": 1.0,
+    "tatqa_numeric_cell_weight": 0.25,
     "hash_dimension": 64
   },
   "filters": {

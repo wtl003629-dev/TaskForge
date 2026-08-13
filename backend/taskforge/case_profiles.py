@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 
 from .domain import AgentProfile
 from .orchestration import SpeakerSlot
@@ -31,7 +32,14 @@ class ResearchSurveyDepth(str, Enum):
 def enterprise_review_profiles(*, model: str) -> list[AgentProfile]:
     """Return role-bound profiles; callers may not substitute role metadata."""
 
-    common_tools = ["knowledge_search", "calculator", "memory_recall"]
+    common_tools = [
+        "knowledge_search",
+        "paper_search",
+        "paper_read",
+        "citation_verify",
+        "calculator",
+        "memory_recall",
+    ]
     common_scopes = ["tenant", "user", "task"]
     definitions = [
         (
@@ -135,7 +143,10 @@ RESEARCH_SURVEY_ROLES = (
 
 
 def research_survey_profiles(
-    *, model: str, depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
+    *,
+    model: str,
+    depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS,
+    protocol: Literal["legacy", "paper"] = "legacy",
 ) -> list[AgentProfile]:
     """Return role-bound research profiles; callers may not substitute metadata.
 
@@ -144,7 +155,68 @@ def research_survey_profiles(
     chain (including the critical reviewer that owns the verdict).
     """
 
-    common_tools = ["knowledge_search", "calculator", "memory_recall"]
+    if protocol not in {"legacy", "paper"}:
+        raise ValueError("research protocol must be legacy or paper")
+    # The legacy ``knowledge_search`` capability stays available for the
+    # existing review-case adapter.  The production paper protocol is split
+    # by role: only the evaluator discovers sources; downstream roles resolve
+    # IDs and verify claims instead of launching duplicate searches.
+    role_tools = (
+        {
+            "retrieval_planner": [],
+            "source_evaluator": [
+                "paper_search",
+                "scope_expansion_request",
+            ],
+            "synthesis_writer": [
+                "paper_read",
+                "citation_verify",
+            ],
+            "critical_reviewer": [
+                "paper_read",
+                "citation_verify",
+                "scope_expansion_request",
+            ],
+        }
+        if protocol == "paper"
+        else {
+            "retrieval_planner": ["knowledge_search", "calculator", "memory_recall"],
+            "source_evaluator": [
+                "knowledge_search",
+                "calculator",
+                "memory_recall",
+            ],
+            "synthesis_writer": ["knowledge_search", "calculator", "memory_recall"],
+            "critical_reviewer": ["knowledge_search", "calculator", "memory_recall"],
+        }
+    )
+    if protocol == "paper" and depth == ResearchSurveyDepth.MINIMAL:
+        # Without an evaluator, the writer is the bounded fallback discovery
+        # role. Standard and rigorous keep discovery exclusive to evaluator.
+        role_tools["synthesis_writer"].insert(0, "paper_search")
+    role_steps = {
+        "retrieval_planner": 1,
+        "source_evaluator": 2,
+        "synthesis_writer": 2,
+        "critical_reviewer": 3,
+    }
+    research_tool_limits = {
+        "retrieval_planner": {},
+        "source_evaluator": {
+            "paper_search": 1,
+            "scope_expansion_request": 1,
+        },
+        "synthesis_writer": {
+            "paper_search": 1,
+            "paper_read": 1,
+            "citation_verify": 1,
+        },
+        "critical_reviewer": {
+            "paper_read": 1,
+            "citation_verify": 1,
+            "scope_expansion_request": 1,
+        },
+    }
     common_scopes = ["tenant", "user", "task"]
     include_roles = {
         ResearchSurveyDepth.MINIMAL: {"retrieval_planner", "synthesis_writer"},
@@ -160,32 +232,35 @@ def research_survey_profiles(
             "case-research-planner-agent",
             "检索规划员",
             "retrieval_planner",
-            "把研究问题拆成可检索的子问题，规划检索策略并执行检索，登记检索到的来源清单；"
-            "每个结论必须给出证据引用，不得编造来源。",
+            "把研究问题压缩成最多 3 个子问题、4 项证据要求和 5 个短纲要条目；"
+            "使用 Host 已绑定的 Scope 元数据立即提交结构化计划，不执行检索，不输出长篇解释。",
             "产出检索计划与来源清单，不直接给出综述结论。",
         ),
         (
             "case-research-evaluator-agent",
             "来源甄别员",
             "source_evaluator",
-            "对检索到的来源评估可信度、相关性与时效性，标注权威来源与存疑来源，识别证据缺口；"
-            "所有判断必须基于本次真实检索到的来源。",
+            "只执行一次覆盖研究问题的 paper_search，并直接筛选其有界证据片段；"
+            "随后只提交 Evidence ID 账本并将 evidence_cards 设为空列表；Host 会从工具回执拼接证据卡，"
+            "不要为每个子问题重复搜索。",
             "形成可信度评估与证据缺口清单。",
         ),
         (
             "case-research-writer-agent",
             "综合综述员",
             "synthesis_writer",
-            "综合检索到的来源撰写分章节综述；每条结论必须引用真实检索到的来源（evidence_id 或 source），"
-            "不得编造引用、作者或文献。区分已验证事实与模型推断。",
+            "只消费上游 EvidenceCard，最多读取 1 条最高价值证据并核验 1 条核心论断，"
+            "生成不超过 6 条 ClaimRecord；"
+            "每条结论引用真实 evidence_id，不重复检索，不输出完整论文原文。",
             "产出带引用的综述初稿。",
         ),
         (
             "case-research-critic-agent",
             "批判审查员",
             "critical_reviewer",
-            "反向审查综述稿：检查每条结论是否超出现有引用能支撑的范围、是否忽略相反证据、章节是否有缺口；"
-            "给出 survey.verdict（accept / needs_revision / more_evidence）建议，最终由人复核。",
+            "只审查高风险或未验证 ClaimRecord，最多读取 1 条证据并核验 1 条核心论断，"
+            "输出不超过 6 个差异补丁；"
+            "不得重写全文。给出 survey.verdict，最终由人复核。",
             "反向质疑综述并给出人工复核建议。",
         ),
     ]
@@ -198,15 +273,42 @@ def research_survey_profiles(
             name=name,
             instructions=instructions,
             model=model,
-            allowed_tools=list(common_tools),
+            allowed_tools=list(role_tools[role_id]),
             knowledge_base_ids=["enterprise-review"],
             memory_scopes=list(common_scopes),
-            max_steps=7,
+            max_steps=role_steps[role_id] if protocol == "paper" else 7,
             metadata={
                 "role_id": role_id,
                 "description": description,
                 "domain": "research_survey",
                 "human_decision_required": True,
+                "compact_tool_trajectory": True,
+                "communication_protocol": "research.blackboard.delta.v1",
+                "research_protocol": protocol,
+                "tool_call_limits": (
+                    research_tool_limits[role_id] if protocol == "paper" else {}
+                ),
+                **(
+                    {
+                        "thinking_mode": (
+                            "disabled"
+                            if role_id
+                            in {
+                                "retrieval_planner",
+                                "source_evaluator",
+                                "synthesis_writer",
+                            }
+                            else "enabled"
+                        )
+                    }
+                    if protocol == "paper"
+                    else {}
+                ),
+                **(
+                    {"terminal_tools": ["submit_role_result"]}
+                    if protocol == "paper"
+                    else {}
+                ),
             },
         )
         for profile_id, name, role_id, instructions, description in selected
@@ -228,9 +330,11 @@ def research_survey_slots(
         role_id="retrieval_planner",
         agent_profile_id="case-research-planner-agent",
         instruction=(
-            "Decompose the research question into searchable sub-questions, "
-            "plan the retrieval strategy, and record the retrieved source "
-            "inventory with exact evidence references."
+            "Decompose the research question into at most 3 short sub-questions, "
+            "4 short evidence requirements, and 5 short outline items. Do not run "
+            "paper_search in this role; source discovery belongs to the "
+            "source_evaluator role. Submit research_payload using "
+            "research.planner_handoff.v1 with a structured ResearchPlan."
         ),
         order=10,
     )
@@ -250,8 +354,13 @@ def research_survey_slots(
         role_id="synthesis_writer",
         agent_profile_id="case-research-writer-agent",
         instruction=(
-            "Write the survey in sections; every claim must cite a real "
-            "retrieved source (evidence_id or source). Never invent citations."
+            "Write the survey from the upstream evidence-card blackboard; every "
+            "claim must cite a real retrieved source (evidence_id or source). "
+            "Use at most one paper_read and one citation_verify call for the "
+            "highest-value cited claim, and never start "
+            "a duplicate paper_search in this role. Emit no more than 6 claims. "
+            "Submit research_payload "
+            "using research.writer_handoff.v1 with DraftArtifact and ClaimManifest."
             + writer_verdict
         ),
         depends_on=writer_depends,
@@ -264,8 +373,17 @@ def research_survey_slots(
         role_id="source_evaluator",
         agent_profile_id="case-research-evaluator-agent",
         instruction=(
-            "Assess credibility, relevance, and recency of the retrieved "
-            "sources; flag authoritative vs questionable sources and evidence gaps."
+            "Run the bounded unified paper retrieval loop, assess credibility, "
+            "relevance, and recency, and publish evidence IDs, coverage gaps, "
+            "and verification receipts for downstream roles. Use exactly one "
+            "broad paper_search with top_k at most 8 and intent matching the user "
+            "request; its evidence cards already contain the bounded "
+            "snippets needed for screening, so do not read full passages. Do not issue "
+            "one search per sub-question and never call undeclared tools such as "
+            "paper_info. Set evidence_cards to an empty list "
+            "because the Host joins cards from receipts. Then immediately submit "
+            "research.evaluator_handoff.v1 with EvidenceLedger and bounded "
+            "EvidenceCards; never include full paper text."
         ),
         depends_on=["planner"],
         order=20,
@@ -277,8 +395,16 @@ def research_survey_slots(
         role_id="critical_reviewer",
         agent_profile_id="case-research-critic-agent",
         instruction=(
-            "Critically review the survey: do claims exceed what the cited "
-            "sources support? Are counter-evidence and section gaps missed? "
+            "Critically review the claim manifest: do claims exceed what the "
+            "cited sources support? Are counter-evidence and section gaps missed? "
+            "Use at most one paper_read and one citation_verify call for the highest-"
+            "risk cited claim; do not search "
+            "for new papers or rewrite the draft, and emit no more than 6 patches. "
+            "Use scope_expansion_request only for genuinely new paper IDs not already "
+            "listed in the bound Scope. Missing evidence for an already selected paper "
+            "is an ingestion/retrieval gap: report it in a patch and do not request "
+            "Scope expansion. Never mutate Scope. Submit "
+            "research.critic_handoff.v1 with ReviewPatch entries and a verdict. "
             "Submit one survey.verdict claim (accept / needs_revision / "
             "more_evidence); final authority is human."
         ),

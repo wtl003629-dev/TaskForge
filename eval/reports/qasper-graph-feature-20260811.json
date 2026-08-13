@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "purpose": "candidate_preserving_graph_feature_rerank_audit",
+  "dataset": "QASPER",
+  "model": {
+    "semantic": "BAAI/bge-small-en-v1.5",
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "graph": "LocalEvidenceGraph"
+  },
+  "provenance": {
+    "code_sha256": "9d21c5e87d7b00a52ad54b9e4ce4effed1613445b7b404421f42f8b0c7d78e5c",
+    "tuning_dataset_normalized_sha256": "529b87698b0d72a0cf53e8eb1cafc526e5f9a868155b2438cfc0ef301265c882",
+    "tuning_config_sha256": "e447f9cc12b1de1c52c16a373a4712039c3c12c90145383acd2630a00fb380b9",
+    "validation_dataset_normalized_sha256": "a93b87831c4c48924e7210eb767eda0700825d67c5ac80d918ba828beffc6d29",
+    "validation_config_sha256": "e3a546d8dcdd3d6e336be71ea7dc72b826f2ca7bfbb84c91d3ba53b9bfa40ea7"
+  },
+  "invariants": {
+    "context_mode": "provided_document_context",
+    "candidate_k": 50,
+    "rerank_top_k": 20,
+    "graph_seed_k": 10,
+    "case_ids_and_filters_identical": true,
+    "candidate_set_preserved": true,
+    "other_routes_enabled": false
+  },
+  "weights": {
+    "graph": 0.15,
+    "entity": 0.08,
+    "section": 0.02,
+    "adjacency": 0.0
+  },
+  "runs": {
+    "tuning": {
+      "path": ".taskforge/eval-runs/qasper-train-tuning-200-graph-rerank-v6-20260811",
+      "base": {
+        "recall_at_10": 0.7340616883116883,
+        "candidate_recall_at_50": 0.9737554112554112,
+        "ndcg_at_10": 0.5108429626548255
+      },
+      "graph": {
+        "recall_at_10": 0.7526071428571428,
+        "candidate_recall_at_50": 0.9737554112554112,
+        "ndcg_at_10": 0.5181845126150061,
+        "graph_nodes": 3935,
+        "graph_edges": 96033,
+        "p95_ms": 1.0323,
+        "base_p95_ms": 651.5117
+      },
+      "note": "The graph stage is materialized by the same config and runner as the dense+rerank base."
+    },
+    "validation": {
+      "path": ".taskforge/eval-runs/qasper-train-validation-200-graph-rerank-v6-20260811",
+      "base": {
+        "recall_at_10": 0.7223055555555555,
+        "candidate_recall_at_50": 0.9626666666666667,
+        "ndcg_at_10": 0.48559985915390613
+      },
+      "graph": {
+        "recall_at_10": 0.7319583333333334,
+        "candidate_recall_at_50": 0.9626666666666667,
+        "ndcg_at_10": 0.4911334824062569,
+        "graph_nodes": 4447,
+        "graph_edges": 109425,
+        "p95_ms": 1.1691,
+        "base_p95_ms": 639.5515
+      }
+    },
+    "validation_expansion": {
+      "path": ".taskforge/eval-runs/qasper-train-validation-200-graph-expansion-v2-20260811",
+      "config": {
+        "hops": 1,
+        "slots": 10,
+        "scope": "same_parent_document"
+      },
+      "graph": {
+        "recall_at_10": 0.7319583333333334,
+        "candidate_recall_at_50": 0.9609305555555555,
+        "ndcg_at_10": 0.4911334824062569,
+        "p95_ms": 1.9371,
+        "cases_with_expansion": 105,
+        "mean_added_candidates": 4.695
+      },
+      "decision": "not_promoted",
+      "reason": "Recall@10 is unchanged, Candidate@50 is not preserved and expansion adds no quality gain"
+    }
+  },
+  "promotion": {
+    "qasper_validation_recall_at_10_target": 0.75,
+    "passed": false,
+    "decision": "opt_in_candidate_only",
+    "reason": "validation improves over the dense+rerank base but remains below the aspirational 0.75 target"
+  }
+}

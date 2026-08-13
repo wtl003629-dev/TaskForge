@@ -57,3 +57,10 @@ def test_calculator_allows_math_but_not_python_execution() -> None:
     with pytest.raises(ToolInputError):
         evaluate_arithmetic("2 ** 999")
 
+
+def test_calculator_supports_bounded_numeric_comparisons() -> None:
+    assert evaluate_arithmetic("372849 > 100000") is True
+    assert evaluate_arithmetic("0 < 1 < 2") is True
+    assert evaluate_arithmetic("4 == 5") is False
+    with pytest.raises(ToolInputError):
+        evaluate_arithmetic("True == 1")

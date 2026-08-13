@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "name": "table_numeric",
+      "baseline": {
+        "label": "tatqa-bm25",
+        "path": "../.taskforge/eval-runs/tatqa-opt-query-plan-cell05-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-query-plan-cell05",
+        "path": "../.taskforge/eval-runs/tatqa-opt-query-plan-cell05-20260809",
+        "stage": "bm25_tatqa_query_plan_rrf"
+      },
+      "policy": {
+        "max_p95_ms": 1200.0
+      }
+    },
+    {
+      "name": "table_numeric_shape_aware_locked",
+      "baseline": {
+        "label": "tatqa-locked-bm25-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-locked-shape-aware",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0
+      }
+    },
+    {
+      "name": "cross_document",
+      "baseline": {
+        "label": "multihop-bm25",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-profile-routed-source-coverage",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-20260809",
+        "stage": "bm25_source_coverage_rrf"
+      },
+      "policy": {
+        "profile": "cross_document",
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "cross_document_anchor_experiment",
+      "baseline": {
+        "label": "multihop-heldout-bm25-control",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-heldout-source-coverage-anchor3",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "bm25_source_coverage_anchor_rrf"
+      },
+      "policy": {
+        "profile": "cross_document",
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "general_text_anchor_control",
+      "baseline": {
+        "label": "multihop-heldout-general-bm25-control",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-heldout-general-anchor3",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "bm25_source_coverage_anchor_rrf"
+      },
+      "policy": {
+        "profile": "general_text",
+        "require_identical_retrieval": true,
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "general_text",
+      "baseline": {
+        "label": "multihop-general-bm25",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-general-profile-routed",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-20260809",
+        "stage": "bm25_source_coverage_rrf"
+      },
+      "policy": {
+        "profile": "general_text",
+        "require_identical_retrieval": true,
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "pdf_layout",
+      "baseline": {
+        "label": "synthetic-pdf-bm25",
+        "path": "../.taskforge/eval-runs/synthetic-pdf-profile-20260809-rerun",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "synthetic-pdf-table-router",
+        "path": "../.taskforge/eval-runs/synthetic-pdf-profile-20260809-rerun",
+        "stage": "bm25_table_router"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "qasper_general_text",
+      "baseline": {
+        "label": "qasper-bm25",
+        "path": "../.taskforge/eval-runs/qasper-general-100-bm25-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "qasper-general-baseline-control",
+        "path": "../.taskforge/eval-runs/qasper-general-100-bm25-20260809",
+        "stage": "lexical_bm25"
+      },
+      "policy": {
+        "profile": "general_text",
+        "require_identical_retrieval": true,
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "table_numeric_bge_base_rejected",
+      "baseline": {
+        "label": "tatqa-bm25-bge-control",
+        "path": "../.taskforge/eval-runs/tatqa-opt-bge-base-profile-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-bge-base-table-profile",
+        "path": "../.taskforge/eval-runs/tatqa-opt-bge-base-profile-20260809",
+        "stage": "bm25_dense_table_profile_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ms": 1200.0
+      }
+    },
+    {
+      "name": "table_numeric_parent_scan_strict_rejected",
+      "baseline": {
+        "label": "tatqa-bm25-parent-control",
+        "path": "../.taskforge/eval-runs/tatqa-opt-query-plan-parent-scan-cache-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-parent-scan-context",
+        "path": "../.taskforge/eval-runs/tatqa-opt-query-plan-parent-scan-cache-20260809",
+        "stage": "bm25_tatqa_query_plan_parent_scan_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0
+      }
+    }
+  ]
+}

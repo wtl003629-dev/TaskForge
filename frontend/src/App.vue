@@ -2,12 +2,15 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   createClientCommandKey,
+  createResearchAgentRun,
+  createResearchScope,
   createReviewCase,
   createRun,
   decideReviewCase,
   decideReviewRoleApproval,
   decideApproval,
   getMetrics,
+  getResearchScope,
   getReviewCase,
   getRun,
   getRunAudit,
@@ -15,17 +18,26 @@ import {
   listAgents,
   listMcpServers,
   listReviewCases,
+  expandLiterature,
+  ingestResearchScope,
   runReviewCaseUntilReview,
+  searchLiterature,
+  searchResearchEvidence,
   submitAndStartReviewCase,
+  uploadResearchPdfDirect,
+  uploadResearchPaperPdf,
 } from './api'
 import type {
   AgentProfile,
   AuditEvent,
   CreateReviewCaseInput,
   ExecutionMode,
+  IngestionStatus,
+  LiteratureDiscoveryResult,
   McpServerSummary,
   MetricsSnapshot,
   OperationJob,
+  PaperCard,
   ReviewCase,
   ReviewCaseDetail,
   ReviewCaseKind,
@@ -33,13 +45,15 @@ import type {
   ReviewHandoff,
   ReviewPlanSlot,
   ReviewRoleRun,
+  ResearchScope,
   RunRecord,
+  ScopeEvidenceResult,
   SkillPack,
 } from './types'
 
-type WorkbenchMode = 'agent' | 'review'
+type WorkbenchMode = 'research' | 'agent' | 'review'
 
-const activeMode = ref<WorkbenchMode>('agent')
+const activeMode = ref<WorkbenchMode>('research')
 
 const agents = ref<AgentProfile[]>([])
 const selectedAgentId = ref('')
@@ -63,6 +77,28 @@ const demoMode = ref(false)
 const demoWarning = ref('')
 let pollTimer: number | undefined
 
+const literatureQuery = ref('agentic retrieval augmented generation for evidence-grounded research')
+const researchQuestionsText = ref('How does the system keep evidence retrieval auditable?')
+const yearFrom = ref<number | undefined>(2020)
+const yearTo = ref<number | undefined>(new Date().getFullYear())
+const requiredTermsText = ref('retrieval, evidence')
+const excludedTermsText = ref('')
+const literatureResult = ref<LiteratureDiscoveryResult | null>(null)
+const selectedPaperIds = ref<string[]>([])
+const researchScope = ref<ResearchScope | null>(null)
+const ingestionStatuses = ref<IngestionStatus[]>([])
+const uploadedPaperIds = ref<string[]>([])
+const researchIntent = ref('Summarize the selected papers and compare their evidence retrieval methods.')
+const allowExpansion = ref(true)
+const evidenceQuery = ref('What evidence supports the main retrieval design choices?')
+const evidenceIntent = ref('general_fact')
+const scopeEvidence = ref<ScopeEvidenceResult | null>(null)
+const researchAgentDetail = ref<ReviewCaseDetail | null>(null)
+const researchLoading = ref(false)
+const researchError = ref('')
+const researchMessage = ref('')
+const directUploadTitle = ref('')
+
 const reviewCases = ref<ReviewCase[]>([])
 const selectedCaseId = ref('')
 const reviewDetail = ref<ReviewCaseDetail | null>(null)
@@ -85,6 +121,22 @@ const pendingCommandKeys = new Map<string, string>()
 
 const selectedAgent = computed(() =>
   agents.value.find((agent) => agent.id === selectedAgentId.value),
+)
+const selectedPapers = computed<PaperCard[]>(() => {
+  const selected = new Set(selectedPaperIds.value)
+  return (literatureResult.value?.papers ?? []).filter((paper) => selected.has(paper.paperId))
+})
+const researchPhase = computed(() => {
+  if (researchAgentDetail.value) return 5
+  if (scopeEvidence.value) return 4
+  if (researchScope.value?.status === 'ready') return 3
+  if (researchScope.value) return 2
+  if (literatureResult.value) return 1
+  return 0
+})
+const allSelectedPapersUploaded = computed(() =>
+  selectedPaperIds.value.length > 0
+  && selectedPaperIds.value.every((paperId) => uploadedPaperIds.value.includes(paperId)),
 )
 const skillPacks = computed<SkillPack[]>(() => selectedAgent.value?.skillPacks ?? [])
 const selectedSkillPack = computed(() =>
@@ -419,6 +471,235 @@ async function handleReviewDecision(outcome: 'approved' | 'rejected'): Promise<v
   }
 }
 
+function splitResearchTerms(value: string): string[] {
+  return [...new Set(value.split(/[,，;；\n]/).map((item) => item.trim()).filter(Boolean))]
+}
+
+function togglePaper(paperId: string): void {
+  if (researchScope.value) return
+  selectedPaperIds.value = selectedPaperIds.value.includes(paperId)
+    ? selectedPaperIds.value.filter((item) => item !== paperId)
+    : [...selectedPaperIds.value, paperId]
+}
+
+function paperTitle(paperId?: string): string {
+  if (!paperId) return 'Unknown paper'
+  return literatureResult.value?.papers.find((paper) => paper.paperId === paperId)?.title
+    ?? paperId
+}
+
+function researchProtocol(item: ReviewRoleRun): string {
+  const payload = item.roleResult?.research_payload
+  return payload && typeof payload === 'object' && 'protocol' in payload
+    ? String(payload.protocol)
+    : 'no structured payload'
+}
+
+async function handleLiteratureSearch(): Promise<void> {
+  const query = literatureQuery.value.trim()
+  if (!query) return
+  researchLoading.value = true
+  researchError.value = ''
+  researchMessage.value = '正在同时查询 Semantic Scholar、OpenAlex 与 arXiv…'
+  try {
+    const result = await searchLiterature({
+      requestId: createClientCommandKey('literature'),
+      conversationId: createClientCommandKey('research-conversation'),
+      query,
+      researchQuestions: splitResearchTerms(researchQuestionsText.value),
+      yearFrom: yearFrom.value,
+      yearTo: yearTo.value,
+      requiredTerms: splitResearchTerms(requiredTermsText.value),
+      excludedTerms: splitResearchTerms(excludedTermsText.value),
+      resultLimit: 30,
+    })
+    literatureResult.value = result
+    selectedPaperIds.value = []
+    researchScope.value = null
+    ingestionStatuses.value = []
+    uploadedPaperIds.value = []
+    scopeEvidence.value = null
+    researchAgentDetail.value = null
+    researchMessage.value = `已从开放文献源汇总 ${result.totalRawCandidates} 条候选，去重后返回 ${result.papers.length} 篇。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '开放文献检索失败。'
+    researchMessage.value = ''
+  } finally {
+    researchLoading.value = false
+  }
+}
+
+async function handleCitationExpansion(): Promise<void> {
+  if (!literatureResult.value || !selectedPaperIds.value.length) return
+  researchLoading.value = true
+  researchError.value = ''
+  researchMessage.value = '正在沿已选论文的引用与被引关系扩展候选集…'
+  try {
+    const expanded = await expandLiterature(
+      literatureResult.value.requestId,
+      selectedPaperIds.value.slice(0, 20),
+    )
+    const merged = new Map(literatureResult.value.papers.map((paper) => [paper.paperId, paper]))
+    expanded.papers.forEach((paper) => merged.set(paper.paperId, paper))
+    literatureResult.value = {
+      ...literatureResult.value,
+      papers: [...merged.values()],
+      providers: expanded.providers,
+      totalRawCandidates: literatureResult.value.totalRawCandidates + expanded.totalRawCandidates,
+    }
+    researchMessage.value = `引用图扩展新增 ${expanded.papers.length} 篇候选；ResearchScope 尚未改变。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '引用扩展失败。'
+    researchMessage.value = ''
+  } finally {
+    researchLoading.value = false
+  }
+}
+
+async function handleConfirmScope(): Promise<void> {
+  if (!literatureResult.value || !selectedPaperIds.value.length || !researchIntent.value.trim()) return
+  researchLoading.value = true
+  researchError.value = ''
+  try {
+    const selected = new Set(selectedPaperIds.value)
+    researchScope.value = await createResearchScope({
+      requestId: literatureResult.value.requestId,
+      conversationId: createClientCommandKey('scope-conversation'),
+      selectedPaperIds: [...selectedPaperIds.value],
+      excludedPaperIds: literatureResult.value.papers
+        .map((paper) => paper.paperId)
+        .filter((paperId) => !selected.has(paperId)),
+      userIntent: researchIntent.value.trim(),
+      allowedExpansion: allowExpansion.value,
+    })
+    scopeEvidence.value = null
+    researchAgentDetail.value = null
+    researchMessage.value = `Scope v${researchScope.value.scopeVersion} 已由 Host 确认，边界包含 ${selected.size} 篇论文。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '确认研究边界失败。'
+  } finally {
+    researchLoading.value = false
+  }
+}
+
+async function handleScopeIngestion(): Promise<void> {
+  if (!researchScope.value) return
+  researchLoading.value = true
+  researchError.value = ''
+  try {
+    ingestionStatuses.value = await ingestResearchScope(researchScope.value.scopeId)
+    researchScope.value = await getResearchScope(researchScope.value.scopeId)
+    const indexed = ingestionStatuses.value.filter((item) => item.status === 'indexed').length
+    researchMessage.value = `已将 ${indexed} 篇用户上传的 PDF 写入 Scope v${researchScope.value.scopeVersion} 的有界索引。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '论文获取或索引失败。'
+  } finally {
+    researchLoading.value = false
+  }
+}
+
+async function handlePaperUpload(paperId: string, event: Event): Promise<void> {
+  if (!researchScope.value) return
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  researchLoading.value = true
+  researchError.value = ''
+  try {
+    const status = await uploadResearchPaperPdf(
+      researchScope.value.scopeId,
+      paperId,
+      file,
+    )
+    ingestionStatuses.value = [
+      ...ingestionStatuses.value.filter((item) => item.paperId !== paperId),
+      status,
+    ]
+    uploadedPaperIds.value = [...new Set([...uploadedPaperIds.value, paperId])]
+    researchMessage.value = `已接收用户上传的 PDF：${paperTitle(paperId)}。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : 'PDF 上传失败。'
+  } finally {
+    researchLoading.value = false
+    input.value = ''
+  }
+}
+
+async function handleDirectResearchUpload(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file || !researchIntent.value.trim()) return
+  researchLoading.value = true
+  researchError.value = ''
+  try {
+    const result = await uploadResearchPdfDirect({
+      conversationId: createClientCommandKey('direct-upload-conversation'),
+      userIntent: researchIntent.value.trim(),
+      title: directUploadTitle.value.trim() || undefined,
+      file,
+    })
+    literatureResult.value = {
+      requestId: result.scope.requestId,
+      papers: [result.paper],
+      providers: [],
+      totalRawCandidates: 0,
+      queryRewriteApplied: false,
+    }
+    selectedPaperIds.value = [result.paper.paperId]
+    researchScope.value = result.scope
+    ingestionStatuses.value = [result.upload]
+    uploadedPaperIds.value = [result.paper.paperId]
+    scopeEvidence.value = null
+    researchAgentDetail.value = null
+    researchMessage.value = 'PDF 已直接上传并建立研究边界，可以开始解析和索引。'
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : 'PDF 直接上传失败。'
+  } finally {
+    researchLoading.value = false
+    input.value = ''
+  }
+}
+
+async function handleEvidenceSearch(): Promise<void> {
+  if (!researchScope.value || researchScope.value.status !== 'ready' || !evidenceQuery.value.trim()) return
+  researchLoading.value = true
+  researchError.value = ''
+  try {
+    scopeEvidence.value = await searchResearchEvidence({
+      scopeId: researchScope.value.scopeId,
+      scopeVersion: researchScope.value.scopeVersion,
+      query: evidenceQuery.value.trim(),
+      intent: evidenceIntent.value,
+    })
+    researchMessage.value = `已完成 ${scopeEvidence.value.retrievalRounds} 轮有界检索，返回 ${scopeEvidence.value.evidence.length} 条可追溯证据。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : 'Scope 内证据检索失败。'
+  } finally {
+    researchLoading.value = false
+  }
+}
+
+async function handleResearchAgents(): Promise<void> {
+  if (!researchScope.value || researchScope.value.status !== 'ready') return
+  researchLoading.value = true
+  researchError.value = ''
+  researchMessage.value = '四个角色正在按结构化协议协作…'
+  try {
+    const created = await createResearchAgentRun(
+      researchScope.value.scopeId,
+      `Research survey: ${literatureQuery.value.slice(0, 120)}`,
+      'Use the Host-confirmed ResearchScope and exchange only structured evidence IDs.',
+    )
+    researchAgentDetail.value = await runReviewCaseUntilReview(created.case.caseId)
+    researchMessage.value = `四 Agent 已运行至 ${researchAgentDetail.value.case.status}，所有角色轨迹均已持久化。`
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '四 Agent 研究流程失败。'
+    researchMessage.value = ''
+  } finally {
+    researchLoading.value = false
+  }
+}
+
 function stopPolling(): void {
   if (pollTimer !== undefined) {
     window.clearTimeout(pollTimer)
@@ -613,11 +894,20 @@ onBeforeUnmount(stopPolling)
       <button
         type="button"
         role="tab"
+        :aria-selected="activeMode === 'research'"
+        :class="{ active: activeMode === 'research' }"
+        @click="activeMode = 'research'"
+      >
+        <span>01</span> 论文研究 Agent
+      </button>
+      <button
+        type="button"
+        role="tab"
         :aria-selected="activeMode === 'agent'"
         :class="{ active: activeMode === 'agent' }"
         @click="activeMode = 'agent'"
       >
-        <span>01</span> 通用运行
+        <span>02</span> 通用运行
       </button>
       <button
         type="button"
@@ -626,9 +916,201 @@ onBeforeUnmount(stopPolling)
         :class="{ active: activeMode === 'review' }"
         @click="activeMode = 'review'"
       >
-        <span>02</span> 企业审查
+        <span>03</span> 企业审查
       </button>
     </nav>
+
+    <template v-if="activeMode === 'research'">
+      <div v-if="researchError" class="notice notice-error" role="alert">
+        <strong>研究流程失败</strong><span>{{ researchError }}</span>
+      </div>
+      <div v-if="researchMessage" class="notice research-notice" role="status">
+        <strong>HOST STATUS</strong><span>{{ researchMessage }}</span>
+      </div>
+
+      <ol class="research-steps" aria-label="论文研究流程">
+        <li
+          v-for="(label, index) in ['提出需求', '选择论文', '确认边界', '有界检索', '四 Agent', '人工复核']"
+          :key="label"
+          :class="{ active: researchPhase === index, done: researchPhase > index }"
+        >
+          <span>{{ String(index + 1).padStart(2, '0') }}</span><strong>{{ label }}</strong>
+        </li>
+      </ol>
+
+      <section class="research-workspace">
+        <aside class="research-query-panel panel">
+          <div class="section-heading">
+            <span>DISCOVERY</span>
+            <div><p>开放文献发现</p><h2>先找论文，再锁定边界</h2></div>
+          </div>
+          <section class="direct-upload-card">
+            <strong>已有论文？直接上传 PDF</strong>
+            <p>无需联网发现，上传后直接进入有界 RAG。</p>
+            <label class="field">
+              <span>论文标题（可选）</span>
+              <input v-model="directUploadTitle" maxlength="2000" :disabled="researchLoading" placeholder="默认使用文件名" />
+            </label>
+            <label class="secondary-button direct-upload-button">
+              选择 PDF
+              <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || !researchIntent.trim()" @change="handleDirectResearchUpload" />
+            </label>
+          </section>
+          <label class="field">
+            <span>研究需求</span>
+            <textarea v-model="literatureQuery" rows="4" maxlength="4000" :disabled="researchLoading" />
+          </label>
+          <label class="field">
+            <span>研究问题（逗号分隔）</span>
+            <textarea v-model="researchQuestionsText" rows="3" maxlength="2000" :disabled="researchLoading" />
+          </label>
+          <div class="research-inline-fields">
+            <label class="field"><span>起始年份</span><input v-model.number="yearFrom" type="number" min="1000" max="3000" /></label>
+            <label class="field"><span>结束年份</span><input v-model.number="yearTo" type="number" min="1000" max="3000" /></label>
+          </div>
+          <label class="field"><span>必须包含</span><input v-model="requiredTermsText" placeholder="retrieval, evidence" /></label>
+          <label class="field"><span>排除词</span><input v-model="excludedTermsText" placeholder="可选" /></label>
+          <button class="primary-button" :disabled="researchLoading || !literatureQuery.trim()" @click="handleLiteratureSearch">
+            {{ researchLoading ? '执行中…' : '跨源检索论文' }} <span aria-hidden="true">→</span>
+          </button>
+
+          <section v-if="literatureResult" class="provider-health">
+            <p>PROVIDER HEALTH</p>
+            <article v-for="provider in literatureResult.providers" :key="provider.provider" :data-failed="Boolean(provider.failure)">
+              <div><strong>{{ provider.provider }}</strong><span>{{ provider.failure ? 'DEGRADED' : 'OK' }}</span></div>
+              <small>{{ provider.resultCount }} results · {{ Math.round(provider.elapsedMs) }} ms · {{ provider.cacheHits }} cache</small>
+              <small v-if="provider.failure">{{ provider.failure }}</small>
+            </article>
+          </section>
+        </aside>
+
+        <section class="research-results panel">
+          <div class="section-heading research-results-heading">
+            <span>PAPERS</span>
+            <div><p>去重、核验、可解释排序</p><h2>候选论文 {{ literatureResult?.papers.length ?? 0 }}</h2></div>
+            <button class="secondary-button" :disabled="researchLoading || !selectedPaperIds.length || Boolean(researchScope)" @click="handleCitationExpansion">沿引用图扩展</button>
+          </div>
+
+          <div v-if="!literatureResult" class="research-empty">
+            <strong>输入研究需求开始</strong>
+            <p>系统会并行查询三个真实学术数据源。开放发现阶段只负责推荐 PaperCard，不会混入后续段落召回率。</p>
+          </div>
+          <div v-else-if="!literatureResult.papers.length" class="research-empty">
+            <strong>没有满足条件的论文</strong><p>请放宽年份、必含词或调整研究问题。</p>
+          </div>
+          <div v-else class="paper-list">
+            <article
+              v-for="paper in literatureResult.papers"
+              :key="paper.paperId"
+              class="paper-card"
+              :class="{ selected: selectedPaperIds.includes(paper.paperId) }"
+            >
+              <button class="paper-select" :disabled="Boolean(researchScope)" :aria-pressed="selectedPaperIds.includes(paper.paperId)" @click="togglePaper(paper.paperId)">
+                {{ selectedPaperIds.includes(paper.paperId) ? '✓ 已选择' : '+ 选择' }}
+              </button>
+              <div class="paper-score"><strong>{{ Math.round(paper.relevanceScore * 100) }}</strong><span>RELEVANCE</span></div>
+              <div class="paper-copy">
+                <div class="paper-badges">
+                  <span :data-verification="paper.verificationStatus">{{ paper.verificationStatus }}</span>
+                  <span>{{ paper.fullTextStatus }}</span><span v-if="paper.year">{{ paper.year }}</span>
+                </div>
+                <h3>{{ paper.title }}</h3>
+                <p class="paper-authors">{{ paper.authors.slice(0, 5).join(', ') }}<template v-if="paper.venue"> · {{ paper.venue }}</template></p>
+                <p class="paper-abstract">{{ paper.shortDescription || '暂无可验证的简短介绍。' }}</p>
+                <div class="paper-links">
+                  <a v-for="source in paper.sourceUrls.slice(0, 3)" :key="source" :href="source" target="_blank" rel="noreferrer">来源 ↗</a>
+                  <span v-if="paper.doi">DOI {{ paper.doi }}</span><span v-if="paper.citationCount !== undefined">被引 {{ paper.citationCount }}</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="scope-panel panel">
+          <div class="section-heading">
+            <span>SCOPE</span><div><p>Host 权威边界</p><h2>ResearchScope</h2></div>
+          </div>
+          <template v-if="!researchScope">
+            <p class="scope-summary">已选择 <strong>{{ selectedPaperIds.length }}</strong> 篇论文。确认后生成不可静默扩张、可版本审计的检索边界。</p>
+            <ol class="selected-paper-list"><li v-for="paper in selectedPapers" :key="paper.paperId">{{ paper.title }}</li></ol>
+            <label class="field"><span>研究意图</span><textarea v-model="researchIntent" rows="5" maxlength="4000" /></label>
+            <label class="scope-checkbox"><input v-model="allowExpansion" type="checkbox" /><span>允许 Agent 提出扩界请求（仍需用户批准）</span></label>
+            <button class="primary-button" :disabled="researchLoading || !selectedPaperIds.length || !researchIntent.trim()" @click="handleConfirmScope">确认研究边界</button>
+          </template>
+          <template v-else>
+            <div class="scope-seal"><span>HOST CONFIRMED</span><strong>v{{ researchScope.scopeVersion }}</strong><small>{{ researchScope.status }}</small></div>
+            <dl class="scope-facts">
+              <div><dt>Scope ID</dt><dd><code>{{ researchScope.scopeId }}</code></dd></div>
+              <div><dt>论文</dt><dd>{{ researchScope.selectedPaperIds.length }}</dd></div>
+              <div><dt>扩界</dt><dd>{{ researchScope.allowedExpansion ? '仅请求 + 人工批准' : '禁止' }}</dd></div>
+            </dl>
+            <p class="scope-intent">{{ researchScope.userIntent }}</p>
+            <section v-if="researchScope.status !== 'ready'" class="paper-upload-list">
+              <p>请从候选链接自行下载 PDF，再逐篇上传。未上传的论文不会进入 RAG。</p>
+              <label v-for="paper in selectedPapers" :key="paper.paperId" class="paper-upload-row">
+                <span>{{ uploadedPaperIds.includes(paper.paperId) ? '✓ 已上传' : '选择 PDF' }}</span>
+                <strong>{{ paper.title }}</strong>
+                <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || uploadedPaperIds.includes(paper.paperId)" @change="handlePaperUpload(paper.paperId, $event)" />
+              </label>
+            </section>
+            <button v-if="researchScope.status !== 'ready'" class="primary-button" :disabled="researchLoading || !allSelectedPapersUploaded" @click="handleScopeIngestion">解析已上传 PDF 并建立索引</button>
+            <div v-if="ingestionStatuses.length" class="ingestion-list">
+              <article v-for="item in ingestionStatuses" :key="item.jobId">
+                <span :data-status="item.status">{{ item.status }}</span><strong>{{ paperTitle(item.paperId) }}</strong><small>{{ item.evidenceCount }} evidence</small>
+              </article>
+            </div>
+          </template>
+        </aside>
+      </section>
+
+      <section v-if="researchScope?.status === 'ready'" class="bounded-stage panel">
+        <div class="bounded-stage-heading">
+          <div><p>BOUND RETRIEVAL</p><h2>所有证据检索强制绑定 Scope v{{ researchScope.scopeVersion }}</h2></div>
+          <code>{{ researchScope.scopeId }}</code>
+        </div>
+        <div class="bounded-controls">
+          <label class="field"><span>在已选论文内提问</span><textarea v-model="evidenceQuery" rows="3" maxlength="4000" /></label>
+          <label class="field"><span>检索意图</span>
+            <select v-model="evidenceIntent">
+              <option value="general_fact">一般事实</option><option value="method_definition">方法定义</option>
+              <option value="experimental_setup">实验设置</option><option value="numeric_table">数值/表格</option>
+              <option value="cross_paper_comparison">跨论文比较</option><option value="claim_verification">论断核验</option>
+              <option value="related_work">相关工作</option>
+            </select>
+          </label>
+          <button class="primary-button" :disabled="researchLoading || !evidenceQuery.trim()" @click="handleEvidenceSearch">运行有界检索</button>
+        </div>
+
+        <div v-if="scopeEvidence" class="evidence-stage">
+          <section class="confidence-card" :data-sufficient="scopeEvidence.confidence.sufficient">
+            <div><p>CONFIDENCE</p><strong>{{ scopeEvidence.confidence.sufficient ? 'SUFFICIENT' : 'NEEDS REVIEW' }}</strong></div>
+            <dl><div><dt>轮次</dt><dd>{{ scopeEvidence.retrievalRounds }} / 2</dd></div><div><dt>Query 覆盖</dt><dd>{{ formatPercent(scopeEvidence.confidence.queryTermCoverage) }}</dd></div><div><dt>Scope 覆盖</dt><dd>{{ formatPercent(scopeEvidence.confidence.scopePaperCoverage) }}</dd></div><div><dt>可引用证据</dt><dd>{{ scopeEvidence.confidence.citationReadyCount }}</dd></div></dl>
+            <p v-if="scopeEvidence.rewrittenQuery">低置信度触发针对性改写：{{ scopeEvidence.rewrittenQuery }}</p>
+            <ul v-if="scopeEvidence.confidence.reasons.length"><li v-for="reason in scopeEvidence.confidence.reasons" :key="reason">{{ reason }}</li></ul>
+          </section>
+          <div class="research-evidence-list">
+            <article v-for="item in scopeEvidence.evidence" :key="item.evidenceId">
+              <header><span>{{ item.section || item.evidenceType }}</span><strong>{{ item.score.toFixed(4) }}</strong></header>
+              <h3>{{ item.title || paperTitle(item.paperId) }}</h3><p>{{ item.snippet }}</p>
+              <footer><code>{{ item.evidenceId }}</code><span>{{ item.page ? `page ${item.page}` : 'page n/a' }}</span><span>{{ item.retrievalSources.join(' + ') }}</span></footer>
+            </article>
+          </div>
+        </div>
+
+        <div class="agent-launch">
+          <div><p>STRUCTURED MULTI-AGENT</p><h2>Planner → Evaluator → Writer → Critic</h2><span>角色之间只传计划、Evidence ID、ClaimManifest 和 ReviewPatch，不传完整聊天记录。</span></div>
+          <button class="approve-button" :disabled="researchLoading" @click="handleResearchAgents">运行四 Agent</button>
+        </div>
+        <div v-if="researchAgentDetail" class="research-agent-grid">
+          <article v-for="(item, index) in researchAgentDetail.roleRuns" :key="item.roleRunId">
+            <span>{{ String(index + 1).padStart(2, '0') }}</span><h3>{{ readableRole(item.roleId) }}</h3>
+            <strong :data-status="item.status">{{ readableStatus(item.status) }}</strong><p>{{ item.summary }}</p>
+            <code>{{ researchProtocol(item) }}</code>
+            <dl v-if="item.runtimeMetrics"><div><dt>Tool</dt><dd>{{ item.runtimeMetrics.toolSuccessCount }}/{{ item.runtimeMetrics.toolResultCount }}</dd></div><div><dt>耗时</dt><dd>{{ formatDuration(item.runtimeMetrics.elapsedMs) }}</dd></div><div><dt>证据</dt><dd>{{ item.retrievedEvidenceRefs.length }}</dd></div></dl>
+          </article>
+        </div>
+      </section>
+    </template>
 
     <div v-if="activeMode === 'agent' && demoMode" class="notice notice-demo" role="status">
       <strong>演示回退模式</strong>

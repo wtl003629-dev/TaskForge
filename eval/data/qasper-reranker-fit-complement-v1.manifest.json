@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "format": "flagembedding_reranker_grouped_json",
+  "dataset": "QASPER",
+  "source_report": "eval\\reports\\qasper-reranker-fit-complement-v1.json",
+  "source_report_sha256": "afc698a2dabe2aa593d15e8a44a036554eb5f75c81de2a20f5db2127de87d235",
+  "source_dataset": ".taskforge\\eval-cache\\qasper-train-v0.3.json",
+  "source_dataset_sha256": "c99b487807d246bdd0aeee187b354ada9b2d097fd8582ee66c877022c3e05c47",
+  "split_id": "qasper-train-fit-complement-v1",
+  "examples": 1688,
+  "dropped": [
+    {
+      "case_id": "qasper:1911.13087:3f3c09c1fd542c1d9acf197957c66b79ea1baf6e",
+      "missing_positive": false,
+      "missing_negative": true
+    },
+    {
+      "case_id": "qasper:2001.11381:327e06e2ce09cf4c6cc521101d0aecfc745b1738",
+      "missing_positive": false,
+      "missing_negative": true
+    },
+    {
+      "case_id": "qasper:2001.11381:40b9f502f15e955ba8615822e6fa08cb5fd29c81",
+      "missing_positive": false,
+      "missing_negative": true
+    }
+  ]
+}

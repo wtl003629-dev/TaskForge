@@ -96,6 +96,33 @@ async def test_first_request_posts_chat_completions_and_marks_context_untrusted(
 
 
 @pytest.mark.asyncio
+async def test_deepseek_thinking_mode_is_explicitly_pinned_when_requested() -> None:
+    captured: dict[str, Any] = {}
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        captured["payload"] = json.loads(request.content)
+        return httpx.Response(200, json=chat_completion())
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = OpenAIChatCompletionsProvider(
+        api_key="secret",
+        enabled=True,
+        client=client,
+        thinking_mode="disabled",
+        json_mode=True,
+    )
+    await provider.complete(
+        task=make_task(),
+        profile=make_profile(),
+        context={"assembled": {}, "trajectory": []},
+        tools=[],
+    )
+    assert captured["payload"]["thinking"] == {"type": "disabled"}
+    assert captured["payload"]["response_format"] == {"type": "json_object"}
+    await client.aclose()
+
+
+@pytest.mark.asyncio
 async def test_continuation_replays_full_message_history() -> None:
     captured: dict[str, Any] = {}
 

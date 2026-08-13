@@ -99,6 +99,45 @@ def test_download_fails_closed_for_host_checksum_size_and_noncommercial(tmp_path
     client.close()
 
 
+def test_download_validates_each_redirect_host_before_following(tmp_path) -> None:
+    body = b'{"ok":true}'
+    requests: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(str(request.url))
+        if request.url.host == "data.example.test":
+            return httpx.Response(
+                302,
+                headers={"location": "https://cdn.example.test/fixture.json"},
+            )
+        return httpx.Response(200, content=body)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    receipt = download_dataset_source(
+        source_for(body),
+        output_dir=tmp_path,
+        allowed_hosts=frozenset({"data.example.test", "cdn.example.test"}),
+        client=client,
+    )[0]
+    assert receipt.sha256 == hashlib.sha256(body).hexdigest()
+    assert [httpx.URL(url).host for url in requests] == [
+        "data.example.test",
+        "cdn.example.test",
+    ]
+
+    blocked = source_for(body)
+    blocked.artifacts[0].filename = "blocked.json"
+    with pytest.raises(DatasetDownloadError, match="allowlisted"):
+        download_dataset_source(
+            blocked,
+            output_dir=tmp_path,
+            allowed_hosts=frozenset({"data.example.test"}),
+            client=client,
+        )
+    assert [httpx.URL(url).host for url in requests].count("cdn.example.test") == 1
+    client.close()
+
+
 def test_catalog_loads_and_rejects_duplicate_ids(tmp_path) -> None:
     body = b"{}"
     source = source_for(body)

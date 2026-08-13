@@ -112,7 +112,13 @@ def audit_usage_from_state(
             if not isinstance(raw, Mapping):
                 continue
             for field in fields:
-                value = raw.get(field)
+                aliases = {
+                    "input_tokens": ("input_tokens", "prompt_tokens"),
+                    "output_tokens": ("output_tokens", "completion_tokens"),
+                    "total_tokens": ("total_tokens",),
+                    "cost_usd": ("cost_usd",),
+                }[field]
+                value = next((raw.get(alias) for alias in aliases if raw.get(alias) is not None), None)
                 if isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0:
                     values[field] += float(value)
                     seen.add(field)

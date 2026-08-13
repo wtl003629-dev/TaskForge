@@ -216,9 +216,17 @@ _BIN_OPS = {
     ast.Pow: operator.pow,
 }
 _UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+_COMPARE_OPS = {
+    ast.Eq: operator.eq,
+    ast.NotEq: operator.ne,
+    ast.Lt: operator.lt,
+    ast.LtE: operator.le,
+    ast.Gt: operator.gt,
+    ast.GtE: operator.ge,
+}
 
 
-def evaluate_arithmetic(expression: str) -> int | float:
+def evaluate_arithmetic(expression: str) -> int | float | bool:
     """Evaluate a bounded arithmetic expression using an AST allowlist."""
 
     if not isinstance(expression, str) or not expression.strip():
@@ -230,7 +238,7 @@ def evaluate_arithmetic(expression: str) -> int | float:
     except SyntaxError as exc:
         raise ToolInputError("invalid arithmetic expression") from exc
 
-    def visit(current: ast.AST, depth: int = 0) -> int | float:
+    def visit(current: ast.AST, depth: int = 0) -> int | float | bool:
         if depth > 20:
             raise ToolInputError("expression is too deeply nested")
         if isinstance(current, ast.Expression):
@@ -250,7 +258,21 @@ def evaluate_arithmetic(expression: str) -> int | float:
             return result
         if isinstance(current, ast.UnaryOp) and type(current.op) in _UNARY_OPS:
             return _UNARY_OPS[type(current.op)](visit(current.operand, depth + 1))
+        if isinstance(current, ast.Compare) and len(current.ops) == len(
+            current.comparators
+        ):
+            left = visit(current.left, depth + 1)
+            for raw_operator, comparator in zip(
+                current.ops, current.comparators, strict=True
+            ):
+                operation = _COMPARE_OPS.get(type(raw_operator))
+                if operation is None:
+                    raise ToolInputError("comparison operator is not allowed")
+                right = visit(comparator, depth + 1)
+                if not operation(left, right):
+                    return False
+                left = right
+            return True
         raise ToolInputError("only arithmetic operators and numeric literals are allowed")
 
     return visit(node)
-

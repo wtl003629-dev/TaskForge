@@ -77,10 +77,16 @@ def _tool_result(
 
 
 def _case_evidence_refs(trajectory: Sequence[Mapping[str, Any]]) -> list[str]:
-    result = _tool_result(trajectory, "knowledge_search")
+    result = _tool_result(trajectory, "knowledge_search") or _tool_result(
+        trajectory, "paper_search"
+    )
     if isinstance(result, Mapping) and result.get("ok") is True:
         output = result.get("output")
-        hits = output.get("hits") if isinstance(output, Mapping) else None
+        hits = (
+            output.get("hits", output.get("evidence"))
+            if isinstance(output, Mapping)
+            else None
+        )
         if isinstance(hits, Sequence) and not isinstance(hits, (str, bytes)):
             refs: list[str] = []
             for hit in hits:
@@ -102,6 +108,237 @@ def _case_evidence_refs(trajectory: Sequence[Mapping[str, Any]]) -> list[str]:
     # This label is deliberately explicit: it satisfies only the demo schema
     # and is never a host verification receipt.
     return ["demo:offline-unverified-evidence"]
+
+
+def _research_context_evidence(task: Task) -> list[str]:
+    raw = task.metadata.get("case_context")
+    if not isinstance(raw, Mapping):
+        return []
+    refs: list[str] = []
+    dependencies = raw.get("dependency_results", [])
+    if not isinstance(dependencies, Sequence) or isinstance(dependencies, (str, bytes)):
+        return []
+    for dependency in dependencies:
+        delta = dependency.get("blackboard_delta") if isinstance(dependency, Mapping) else None
+        if not isinstance(delta, Mapping):
+            continue
+        candidates: list[Any] = []
+        candidates.extend(delta.get("evidence_ids", []))
+        for card in delta.get("evidence_cards", []):
+            if isinstance(card, Mapping):
+                candidates.append(card.get("evidence_id"))
+        for claim in delta.get("claim_manifest", []):
+            if isinstance(claim, Mapping):
+                candidates.extend(claim.get("evidence_ids", []))
+        for value in candidates:
+            if isinstance(value, str) and value and value not in refs:
+                refs.append(value)
+    return refs[:10]
+
+
+def _research_receipt_refs(history: Sequence[Mapping[str, Any]]) -> list[str]:
+    refs: list[str] = []
+    for tool_name in ("paper_search", "paper_read"):
+        result = _tool_result(history, tool_name)
+        if not isinstance(result, Mapping) or result.get("ok") is not True:
+            continue
+        output = result.get("output")
+        if not isinstance(output, Mapping):
+            continue
+        values = output.get("evidence") if tool_name == "paper_search" else [output]
+        if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
+            continue
+        for value in values:
+            evidence_id = value.get("evidence_id") if isinstance(value, Mapping) else None
+            if isinstance(evidence_id, str) and evidence_id and evidence_id not in refs:
+                refs.append(evidence_id)
+    return refs[:10]
+
+
+def _scoped_research_turn(
+    task: Task,
+    profile: AgentProfile,
+    history: list[Mapping[str, Any]],
+) -> ModelTurn:
+    role_id = str(profile.metadata.get("role_id", ""))
+    scope_id = str(task.metadata["research_scope_id"])
+    scope_version = int(task.metadata["research_scope_version"])
+    context_refs = _research_context_evidence(task)[:4]
+    if not history:
+        if role_id == "retrieval_planner":
+            return ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(
+                        call_id=f"case-submit-{task.id}",
+                        name="submit_role_result",
+                        arguments={
+                            "claims": [],
+                            "summary": f"{_DEMO_LABEL} completed the bounded plan.",
+                            "handoff_summary": "Pass only the typed research plan.",
+                            "research_payload": {
+                                "protocol": "research.planner_handoff.v1",
+                                "plan": {
+                                    "research_questions": [
+                                        "What does the selected evidence support?"
+                                    ],
+                                    "evidence_requirements": [
+                                        "Citation-ready evidence from the bound Scope"
+                                    ],
+                                    "output_outline": [
+                                        "Methods",
+                                        "Evidence",
+                                        "Limitations",
+                                    ],
+                                },
+                            },
+                        },
+                    )
+                ],
+                assistant_text=f"{_DEMO_LABEL}: submit the bounded plan.",
+                metadata={"provider": "demo", "deterministic": True, "case_mode": True},
+            )
+        if role_id == "source_evaluator":
+            request = ToolRequest(
+                call_id=f"research-search-{task.id}",
+                name="paper_search",
+                arguments={
+                    "scope_id": scope_id,
+                    "scope_version": scope_version,
+                    "query": str(task.metadata.get("plan_objective", task.goal))[:1_000],
+                    "top_k": 8,
+                    "candidate_k": 50,
+                },
+            )
+        elif role_id in {"synthesis_writer", "critical_reviewer"} and context_refs:
+            request = ToolRequest(
+                call_id=f"research-read-{task.id}",
+                name="paper_read",
+                arguments={
+                    "scope_id": scope_id,
+                    "scope_version": scope_version,
+                    "evidence_id": context_refs[0],
+                },
+            )
+        else:
+            request = ToolRequest(
+                call_id=f"research-scope-{task.id}",
+                name="scope_get",
+                arguments={"scope_id": scope_id, "scope_version": scope_version},
+            )
+        return ModelTurn(
+            kind="tool",
+            tool_requests=[request],
+            assistant_text=f"{_DEMO_LABEL}: execute one Scope-bound research operation.",
+            metadata={"provider": "demo", "deterministic": True, "case_mode": True},
+        )
+
+    if _tool_result(history, "submit_role_result") is None:
+        refs = (_research_receipt_refs(history) or context_refs)[:4]
+        claims: list[dict[str, Any]] = []
+        if role_id == "retrieval_planner":
+            payload: dict[str, Any] = {
+                "protocol": "research.planner_handoff.v1",
+                "plan": {
+                    "research_questions": ["What does the selected evidence support?"],
+                    "evidence_requirements": ["Citation-ready evidence from the bound Scope"],
+                    "output_outline": ["Methods", "Evidence", "Limitations"],
+                },
+            }
+        elif role_id == "source_evaluator":
+            result = _tool_result(history, "paper_search")
+            output = result.get("output") if isinstance(result, Mapping) else None
+            cards = output.get("evidence", []) if isinstance(output, Mapping) else []
+            confidence = output.get("confidence", {}) if isinstance(output, Mapping) else {}
+            payload = {
+                "protocol": "research.evaluator_handoff.v1",
+                "ledger": {
+                    "evidence_ids": refs,
+                    "coverage_delta": ["bound_scope_evidence"],
+                    "gaps": confidence.get("reasons", []) if isinstance(confidence, Mapping) else [],
+                    "receipt_ids": [f"research-search-{task.id}"],
+                },
+                "evidence_cards": [],
+            }
+            if refs:
+                claims.append(
+                    {
+                        "fact_key": "evaluator.coverage",
+                        "value": {"evidence_count": len(refs)},
+                        "evidence_refs": refs,
+                        "confidence": 0.7,
+                    }
+                )
+        elif role_id == "synthesis_writer":
+            claim_id = "writer.bound_scope_summary"
+            payload = {
+                "protocol": "research.writer_handoff.v1",
+                "draft": {"draft_id": f"draft:{task.id}", "claim_ids": [claim_id], "section_count": 1},
+                "claim_manifest": [
+                    {
+                        "claim_id": claim_id,
+                        "claim_text": "The draft is limited to evidence from the selected papers.",
+                        "scope_id": scope_id,
+                        "scope_version": scope_version,
+                        "evidence_ids": refs,
+                        "verification_status": "needs_review",
+                    }
+                ],
+            }
+            if refs:
+                claims.append(
+                    {
+                        "fact_key": "writer.bound_scope_summary",
+                        "value": "Draft grounded in the selected-paper evidence ledger.",
+                        "evidence_refs": refs,
+                        "confidence": 0.7,
+                    }
+                )
+        else:
+            payload = {
+                "protocol": "research.critic_handoff.v1",
+                "patches": [
+                    {
+                        "claim_id": "writer.bound_scope_summary",
+                        "action": "keep" if refs else "request_evidence",
+                        "reason": "Deterministic demo checks only the bound Evidence IDs.",
+                    }
+                ],
+                "verdict": "accept" if refs else "more_evidence",
+            }
+            if refs:
+                claims.append(
+                    {
+                        "fact_key": "survey.verdict",
+                        "value": "accept",
+                        "evidence_refs": refs,
+                        "confidence": 0.6,
+                    }
+                )
+        return ModelTurn(
+            kind="tool",
+            tool_requests=[
+                ToolRequest(
+                    call_id=f"case-submit-{task.id}",
+                    name="submit_role_result",
+                    arguments={
+                        "claims": claims,
+                        "summary": f"{_DEMO_LABEL} completed {role_id} with a bounded payload.",
+                        "handoff_summary": "Only structured IDs and bounded deltas are handed downstream.",
+                        "research_payload": payload,
+                    },
+                )
+            ],
+            assistant_text=f"{_DEMO_LABEL}: submit the role-specific research handoff.",
+            metadata={"provider": "demo", "deterministic": True, "case_mode": True},
+        )
+    answer = f"{_DEMO_LABEL} completed the Scope-bound {role_id} role."
+    return ModelTurn(
+        kind="final",
+        final_answer=answer,
+        assistant_text=answer,
+        metadata={"provider": "demo", "deterministic": True, "case_mode": True},
+    )
 
 
 def _submitted_case_evidence_refs(task: Task) -> list[str]:
@@ -154,6 +391,8 @@ def _case_evidence_refs_for_task(
 
 
 def _case_turn(task: Task, profile: AgentProfile, history: list[Mapping[str, Any]]) -> ModelTurn:
+    if "research_scope_id" in task.metadata:
+        return _scoped_research_turn(task, profile, history)
     if not history:
         return ModelTurn(
             kind="tool",

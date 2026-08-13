@@ -2,7 +2,30 @@
 
 ## One-sentence category
 
-TaskForge is a provider-neutral, permission-governed task execution Agent runtime; it is not a chat wrapper and does not make models an authorization authority.
+TaskForge is an interactive paper-research Agent built on a provider-neutral,
+permission-governed Harness; it is not a chat wrapper and never makes a model
+the authority for identity, Scope changes, tools, or final approval.
+
+## Paper-research product path
+
+```mermaid
+flowchart LR
+    U["Research need"] --> D["Multi-source paper discovery"]
+    D --> P["Verified, deduplicated PaperCards"]
+    P --> S["User selection and external download"]
+    S --> RS["Host-owned ResearchScope vN"]
+    RS --> I["User PDF upload and verified ingestion"]
+    I --> E["Scope-bound evidence retrieval"]
+    E --> B["Shared evidence ledger"]
+    B --> A["Planner -> Evaluator -> Writer -> Critic"]
+    A --> H["Human review"]
+```
+
+The open phase returns only titles, source links, and short descriptions. It
+does not download or index papers. The bounded phase retrieves passages only
+from user-selected, user-uploaded PDFs. Agents can request, but cannot apply, Scope
+expansion. The Host stores full text and passes IDs plus bounded deltas between
+roles.
 
 ## What is reused from the reference project
 
@@ -21,7 +44,12 @@ Provider adapters normalize provider-native function calls or the offline JSON p
 
 ```mermaid
 flowchart LR
-    UI["Vue task and review workbench"] --> API["FastAPI"]
+    UI["Vue paper-research workbench"] --> API["FastAPI"]
+    API --> DISCOVERY["Semantic Scholar / OpenAlex / arXiv / Crossref"]
+    API --> LIT["Paper / Scope / Evidence repository"]
+    LIT --> INGEST["User-uploaded PDF validation / ingestion"]
+    LIT --> EVIDENCE["Scope-bound retrieval"]
+    EVIDENCE --> MCP_SERVER["Paper MCP Server: stdio + HTTP"]
     API --> RUNTIME["Agent runtime"]
     API --> CASES["Review case state machine"]
     CASES --> ORCH["Fixed multi-role DAG"]
@@ -55,6 +83,10 @@ flowchart LR
 - `RoleRun`: one role attempt with versioned state and an exclusive execution lease.
 - `SharedFact`: model-proposed or host-verified, versioned conversation fact.
 - `ReviewCase`: business lifecycle whose model recommendation is untrusted and whose final decision is human-owned.
+- `LiteratureRequest` / `PaperCard`: open-discovery need and canonical, explainable paper candidate.
+- `ResearchScope`: immutable-version Host boundary containing the selected/excluded paper set and user intent.
+- `EvidenceCard` / `ClaimRecord`: citation-ready passage and claim-to-evidence mapping inside one Scope version.
+- `ResearchPlan`, `EvidenceLedger`, `DraftArtifact`, `ReviewPatch`: compact four-role handoff protocols; no chat transcript or repeated full text.
 
 ## Generality test
 
@@ -111,12 +143,95 @@ real external service was exercised.
 |---|---|---|---|---|
 | Generic runtime and tools | implemented | Demo Provider regression suite | FastAPI inline/queued runs | OpenAI not yet run successfully here |
 | Fixed enterprise review DAG | implemented | Demo Provider API/recovery tests | Review case API and host state machine | No real-model review run |
-| SQLite lexical Knowledge/Memory | implemented | local integration tests | default application path | no external service required |
-| Qdrant hybrid retrieval | implemented | local in-memory Qdrant experiment with non-semantic hash vectors | experiment script only | no remote Qdrant or production embeddings |
-| FastEmbed/OpenAI semantic adapters | implemented | injected/mock tests only | not selected by the application | not live verified |
+| SQLite Knowledge/Memory + profile router | implemented | local integration and four-profile routing tests | default application path; BM25 is the default general-text backend | no external service required |
+| Qdrant hybrid retrieval | implemented | local in-memory Qdrant experiment; generic path remains an evaluation adapter | not selected by default online routing | no remote Qdrant verification |
+| FastEmbed/OpenAI semantic adapters | implemented | local BGE semantic QASPER evaluation plus injected provider tests | FastEmbed is explicit host opt-in; OpenAI embedding is not selected | no paid/live model verification |
 | PostgreSQL context adapter | implemented with migrations | fake DB-API tests only | not selectable by current app settings | no psycopg/PostgreSQL/RLS run |
 | Neo4j graph retriever | implemented | fake-driver tests only | not wired; quality gate is disabled | no Neo4j service or graph-quality result |
 | Remote MCP | governed client implemented | simulated HTTP tests | only when an operator explicitly configures and mounts it | no live remote server test |
+
+The product context path and retrieval experiment share the same dataset-neutral
+profile selector. `rag_profiles.py` selects `general_text`, `table_numeric`,
+`cross_document` or `pdf_layout` from query features and corpus metadata only;
+it never branches on a dataset name. Online, `RoutedKnowledgeStore` first asks
+the authoritative store for the tenant/ACL/validity/version/source/knowledge-
+base filtered corpus; only that visible corpus can affect routing or BM25
+statistics. The selected profile/backend is returned on each `KnowledgeHit`
+and summarized by `AssembledContext`. Cross-document selection uses explicit
+query language or at least two source labels found in corpus metadata. The
+experiment's source-coverage stage uses a profile-conditional router:
+cross-document queries use source coverage, while general-text queries stay on
+the lexical default. TAT-QA QueryPlan is similarly limited to the table-numeric
+profile; the locked table-profile lookup variant additionally routes generic
+components/value/amount/year/period lookup signals while keeping narrative
+queries on the lexical branch. Its structured candidate extension stores
+multi-row header, row, numeric/year/unit/sign and parent-paragraph lineage,
+then routes count, arithmetic and multi-span queries to separate lookup
+branches. That extension can only repair the Candidate@50 tail for a table
+already present in the stable Top-10; it cannot change the Top-10 head or
+introduce an unrelated table. The isolated lineage-pair reranker may then move
+one existing, high-confidence same-parent closure hit to rank 10 for explicit
+temporal/count relationship queries. It only reorders the frozen candidate
+set, so Candidate@50 membership and the pre-ranking authorization boundary do
+not change. The full TAT-QA lineage closure/pair-rerank pipeline remains an
+opt-in evaluation path. The online table profile uses its production-safe
+generic subset (structured-field BM25 plus deterministic numeric/table feature
+reranking) rather than benchmark-owned QueryPlan objects. Retrieval candidates
+are compared through the paired gate in
+`rag_retrieval_gate.py`, which can compare a selected profile slice and
+enforces both relative p95 non-regression and any profile-local absolute cap
+when both are supplied.
+
+The cross-document anchor route adds a bounded lexical head before source
+coverage fusion (`bm25_source_coverage_anchor_rrf`). It is isolated to the
+`cross_document` profile; the general-text branch must remain retrieval-
+identical. This generic source-coverage component is now used by the online
+profile router after authorization filtering.
+
+### QASPER long-document evaluation branch
+
+QASPER is an explicit `general_text` branch, not a global replacement for the
+table or cross-document routes. In `provided_document_context` mode the host
+resolves the paper scope before ranking and indexes only papers represented in
+the locked cases. Paragraphs retain raw evidence text and receive a separate
+search representation consisting of paper title, section/subsection title and
+the paragraph body. The title prefix is never returned as the evidence text.
+
+The B2 evaluation path embeds that search representation with the local
+`BAAI/bge-small-en-v1.5` model and performs exact cosine search in an explicit
+in-memory index. This is an evaluation performance backend: it uses the same
+tenant, ACL, version, knowledge-base and paper-scope predicate as the Qdrant
+adapter, while avoiding local Qdrant client overhead. The generic Qdrant path
+and product retrieval contract are unchanged. B0--B5 artifacts, including the
+negative parent/RRF results, are recorded in
+`eval/qasper-hierarchical-ablation-20260811.json`.
+
+The learned Cross-Encoder is a second-stage opt-in only. It receives the
+already frozen Candidate@50 set and cannot add candidates. The current
+training-selected QASPER candidate sends a Top-30 prefix, preserving the
+candidate tail and measuring 951.9 ms p95 on the locked validation split. The
+graph feature increment is 2.25 ms p95. This optimization is scoped to the
+QASPER/general-text branch; table, cross-document and PDF routes are unchanged.
+An auditable two-step budget can score Top-20 first and only score ranks 21--30
+when the Top-1/Top-2 cross-encoder margin is below a configured threshold. It
+records the applied budget and decision per query and performs genuine separate
+inference batches. The locked validation audit saved 19.83% of scored pairs but
+lost 0.0142 Recall@10 versus fixed Top-30, so this budget remains opt-in and the
+fixed Top-30 path remains the quality default.
+
+The optional `LocalEvidenceGraph` stage is a lightweight in-process graph
+feature layer over the same chunks. It records document/parent, section,
+explicit adjacent-chunk and bounded shared-entity links, then reranks only the
+already retrieved candidates. It uses candidate rank as the calibrated base
+signal because dense and cross-encoder scores are not comparable across
+backends. Each row records seed IDs, graph features, node/edge counts and a
+candidate-set equality check. A separate 1--2 hop expansion API is available
+behind an explicit slot and scope budget; it is disabled in the promoted
+QASPER run because expansion changes Candidate@50 and must pass its own gate.
+The graph feature route is opt-in and scoped to `general_text`; the
+training-selected Top-30 QASPER artifact reaches Recall@10 `0.7610` and
+nDCG@10 `0.5069` while preserving Candidate@50. TAT-QA, MultiHop and PDF
+routes do not inherit it.
 
 PostgreSQL migrations are ordered, not interchangeable. On an empty test
 database, apply `migrations/postgres/001_context.sql` first to create the
@@ -129,7 +244,7 @@ selector nor proves live RLS isolation.
 ## Deployment boundaries still not claimed
 
 - The built-in demo provider is deterministic. The OpenAI Responses provider and native function-call continuation are tested with mocked HTTP responses. `scripts/run_live_openai_smoke.py` exists, but no live success is claimed until a user supplies credentials and explicitly runs it.
-- PDF ingestion, BM25, local Qdrant named dense/sparse vectors, server-side RRF and fallback reranking are exercised by the evaluation path, not the product retrieval path. The no-key dense channel is a deterministic hash embedder and is explicitly `degraded_nonsemantic`; its locked Recall@10 is worse than BM25. FastEmbed/OpenAI semantic adapters have only injected/mock tests.
+- PDF ingestion, structure-aware BM25, adjacent-chunk expansion, table/numeric feature reranking and cross-document source-coverage RRF are wired into the product profile router. Local Qdrant named dense/sparse vectors, server-side RRF, Cross-Encoder and graph reranking remain evaluation or explicit opt-in paths. The no-key hash embedder is `degraded_nonsemantic` and excluded from semantic claims. QASPER's local BGE model can be selected online only with explicit FastEmbed host configuration; this does not claim remote Qdrant or paid/live model availability.
 - `postgres_context.py`, `migrations/postgres/001_context.sql` and the ordered hardening migration `migrations/0002_context_postgres.sql` provide a PostgreSQL runtime contract, indexes and forced default-deny RLS. Tests use a fake DB-API connection; the application does not select this adapter, and psycopg, a PostgreSQL service and live RLS have not been verified here.
 - The MCP client pins the handshake-era `2025-11-25` revision and implements JSON responses only; if a server selects SSE it fails closed. DNS/IP preflight is not connection-level IP pinning, so egress controls remain required. The official current revision changed to stateless, per-request metadata in `2026-07-28`; that newer revision is not implemented. Tests use simulated HTTP, not a live remote server.
 - Workspace inspection tools are read-only. Report artifact and long-term Agent memory writes require idempotency and human approval; containerized code execution remains a later gate.

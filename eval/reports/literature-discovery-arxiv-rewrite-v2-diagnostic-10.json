@@ -1,0 +1,2345 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "open_literature_discovery",
+  "metric_boundary": "Paper-level known-item discovery over open providers; these metrics are not bounded passage Recall@10 or Candidate@50.",
+  "live_external_requests": true,
+  "created_at": "2026-08-12T13:11:10.953706+00:00",
+  "dataset": "eval\\literature-discovery-benchmark-100.json",
+  "dataset_sha256": "afd16815da7cc606da874cfeeeea6f33950309495b481f3eae43dc25d19dac31",
+  "configuration": {
+    "providers": [
+      "arxiv"
+    ],
+    "results_per_query": 50,
+    "provider_query_limits": {
+      "semantic_scholar": 2,
+      "openalex": 2,
+      "arxiv": 1,
+      "crossref": 2
+    },
+    "dense_model": "BAAI/bge-small-en-v1.5",
+    "query_rewrite_model": "deepseek-v4-flash",
+    "semantic_scholar_key_configured": false,
+    "openalex_key_configured": false,
+    "qrel_used_for_candidate_generation": false
+  },
+  "case_count": 10,
+  "target_paper_count": 252,
+  "summary": {
+    "evaluation_valid": false,
+    "paper_recall_at_20": 0.0658321204232682,
+    "paper_recall_at_50": 0.07276163057858481,
+    "paper_recall_at_20_micro": 0.06349206349206349,
+    "paper_recall_at_50_micro": 0.07142857142857142,
+    "precision_at_10": 0.08,
+    "ndcg_at_10": 0.07068398169654513,
+    "known_item_hit_at_5": 0.5,
+    "known_item_hit_at_10": 0.5,
+    "mrr_at_20": 0.1490909090909091,
+    "provider_failure_count": 0,
+    "raw_candidate_count": 500,
+    "deduplicated_result_count": 366,
+    "deduplication_reduction": 0.268,
+    "duplicate_paper_rate": 0.0,
+    "unverifiable_paper_rate": 0.0,
+    "arxiv_target_resolution_rate": 1.0,
+    "provider_failure_case_success_rate": 1.0,
+    "provider_status": {
+      "arxiv": {
+        "case_count": 10,
+        "successful_case_count": 10,
+        "success_rate": 1.0,
+        "request_count": 13,
+        "result_count": 500
+      }
+    },
+    "semantic_provider_success_rate": 0.0,
+    "arxiv_provider_success_rate": 1.0,
+    "query_rewrite_success_rate": 1.0,
+    "query_rewrite_request_count": 10,
+    "query_rewrite_prompt_tokens": 1786,
+    "query_rewrite_completion_tokens": 427
+  },
+  "by_query_type": {
+    "real_scholar": {
+      "case_count": 10,
+      "paper_recall_at_20": 0.0658321204232682,
+      "paper_recall_at_50": 0.07276163057858481,
+      "precision_at_10": 0.08,
+      "ndcg_at_10": 0.07068398169654513
+    }
+  },
+  "rows": [
+    {
+      "id": "RealScholarQuery_0",
+      "query": "Give me papers which show that using a smaller dataset in large language model pre-training can result in better models than using bigger datasets.",
+      "query_type": "real_scholar",
+      "target_count": 9,
+      "target_ranks": {
+        "2309.04564": null,
+        "2402.09668": null,
+        "2107.06499": null,
+        "2307.08701": null,
+        "2305.02301": null,
+        "2402.04333": null,
+        "2210.10951": null,
+        "2305.12816": null,
+        "2409.17312": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 36,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-81f073e5-988a-459c-a6a5-50bc77711f51",
+          "text": "Give me papers which show that using a smaller dataset in large language model pre-training can result in better models than using bigger datasets.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-79e0a668-612e-4435-a960-e69ed44bc1d5",
+          "text": "large language model pre-training smaller dataset better performance than larger dataset",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-51eb4466-a78c-4aba-9454-63d6fe524385",
+          "text": "data scaling laws diminishing returns overfitting small data LLM pre-training",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-b39372f8-6f42-4e8b-b11c-09645a7bc5a4",
+          "text": "smaller dataset large language model pre-training better models bigger datasets",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-28a3f208-fb31-40ad-9779-27e418d6a9b2",
+          "text": "smaller dataset large language model pre-training better models review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-795356c8-d456-4d47-8f70-2485237eb289",
+          "text": "smaller dataset large language model pre-training better models recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 3,
+          "cache_hits": 0,
+          "elapsed_ms": 10419.177699999636,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Neural Scaling Laws Rooted in the Data Distribution",
+          "arxiv_id": "2412.07942",
+          "resolved_arxiv_id": "2412.07942",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6560578220949441
+        },
+        {
+          "rank": 2,
+          "title": "Scaling Laws for Downstream Task Performance of Large Language Models",
+          "arxiv_id": "2402.04177",
+          "resolved_arxiv_id": "2402.04177",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5507202939297858
+        },
+        {
+          "rank": 3,
+          "title": "Scaling Law with Learning Rate Annealing",
+          "arxiv_id": "2408.11029",
+          "resolved_arxiv_id": "2408.11029",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5430597274565271
+        },
+        {
+          "rank": 4,
+          "title": "Scaling Law for Quantization-Aware Training",
+          "arxiv_id": "2505.14302",
+          "resolved_arxiv_id": "2505.14302",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4983658499853706
+        },
+        {
+          "rank": 5,
+          "title": "Scaling Laws for Optimal Data Mixtures",
+          "arxiv_id": "2507.09404",
+          "resolved_arxiv_id": "2507.09404",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4941496331652262
+        },
+        {
+          "rank": 6,
+          "title": "Spatial interactions in urban scaling laws",
+          "arxiv_id": "2006.14140",
+          "resolved_arxiv_id": "2006.14140",
+          "doi": "10.1371/journal.pone.0243390",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49325313044546165
+        },
+        {
+          "rank": 7,
+          "title": "Scaling Laws for the Value of Individual Data Points in Machine Learning",
+          "arxiv_id": "2405.20456",
+          "resolved_arxiv_id": "2405.20456",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4682670760805021
+        },
+        {
+          "rank": 8,
+          "title": "Scaling Laws Revisited: Modeling the Role of Data Quality in Language Model Pretraining",
+          "arxiv_id": "2510.03313",
+          "resolved_arxiv_id": "2510.03313",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46595119621334424
+        },
+        {
+          "rank": 9,
+          "title": "LLMs on the Line: Data Determines Loss-to-Loss Scaling Laws",
+          "arxiv_id": "2502.12120",
+          "resolved_arxiv_id": "2502.12120",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46465231569789245
+        },
+        {
+          "rank": 10,
+          "title": "Scaling Laws of Synthetic Data for Language Models",
+          "arxiv_id": "2503.19551",
+          "resolved_arxiv_id": "2503.19551",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4619481465007811
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_1",
+      "query": "Give me papers that share some insights about how large language models gain in-context learning capability in the process of pre-training.\n",
+      "query_type": "real_scholar",
+      "target_count": 27,
+      "target_ranks": {
+        "2306.15063": null,
+        "2310.10616": null,
+        "2205.05055": null,
+        "2310.17086": null,
+        "2212.10559": null,
+        "2310.10638": null,
+        "2305.09137": null,
+        "2212.07677": null,
+        "2310.08540": null,
+        "2312.03002": null,
+        "2305.12766": null,
+        "2402.15607": null,
+        "2405.11751": 11,
+        "2305.17040": null,
+        "2402.01258": null,
+        "2111.02080": null,
+        "2305.19420": null,
+        "2409.09281": null,
+        "2306.04637": 27,
+        "2306.15091": null,
+        "2210.05675": null,
+        "2005.14165": null,
+        "2406.14022": null,
+        "2311.08360": null,
+        "2303.07895": null,
+        "2303.07971": null,
+        "2402.12530": null
+      },
+      "paper_recall_at_20": 0.037037037037037035,
+      "paper_recall_at_50": 0.07407407407407407,
+      "relevant_at_20_count": 1,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.09090909090909091,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 43,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-48962f31-f53d-473e-81d4-9c1fa29d301b",
+          "text": "Give me papers that share some insights about how large language models gain in-context learning capability in the process of pre-training.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-34f16f07-04cd-4f79-a58d-c61a34854606",
+          "text": "large language models in-context learning emergence pre-training",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-076c6c8e-f1ea-4944-8fec-731dc1f9c50a",
+          "text": "in-context learning ability acquisition pretraining mechanism",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-6b31ac2d-241c-40fd-a779-a0df58d9b3e7",
+          "text": "large language models gain in-context learning capability process pre-training",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-3129c367-81ea-4fa4-bd93-b0b5b93a9be8",
+          "text": "large language models gain in-context learning capability process review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-f75d3f57-cc6e-48f7-b2f9-a2e9bb3140d3",
+          "text": "large language models gain in-context learning capability process recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2018,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 3698.7933999989764,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Toward Understanding In-context vs. In-weight Learning",
+          "arxiv_id": "2410.23042",
+          "resolved_arxiv_id": "2410.23042",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5523285671037549
+        },
+        {
+          "rank": 2,
+          "title": "The Cost of Down-Scaling Language Models: Fact Recall Deteriorates before In-Context Learning",
+          "arxiv_id": "2310.04680",
+          "resolved_arxiv_id": "2310.04680",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5264191162282297
+        },
+        {
+          "rank": 3,
+          "title": "ICLR: In-Context Learning of Representations",
+          "arxiv_id": "2501.00070",
+          "resolved_arxiv_id": "2501.00070",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5231408529186095
+        },
+        {
+          "rank": 4,
+          "title": "ICLEval: Evaluating In-Context Learning Ability of Large Language Models",
+          "arxiv_id": "2406.14955",
+          "resolved_arxiv_id": "2406.14955",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5124584662548434
+        },
+        {
+          "rank": 5,
+          "title": "Context parroting: A simple but tough-to-beat baseline for foundation models in scientific machine learning",
+          "arxiv_id": "2505.11349",
+          "resolved_arxiv_id": "2505.11349",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5109338480296073
+        },
+        {
+          "rank": 6,
+          "title": "MetaVL: Transferring In-Context Learning Ability From Language Models to Vision-Language Models",
+          "arxiv_id": "2306.01311",
+          "resolved_arxiv_id": "2306.01311",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49044977704734166
+        },
+        {
+          "rank": 7,
+          "title": "Are Emergent Abilities in Large Language Models just In-Context Learning?",
+          "arxiv_id": "2309.01809",
+          "resolved_arxiv_id": "2309.01809",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48003336489283777
+        },
+        {
+          "rank": 8,
+          "title": "MGPATH: Vision-Language Model with Multi-Granular Prompt Learning for Few-Shot WSI Classification",
+          "arxiv_id": "2502.07409",
+          "resolved_arxiv_id": "2502.07409",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47952440545142017
+        },
+        {
+          "rank": 9,
+          "title": "Towards Better Understanding of In-Context Learning Ability from In-Context Uncertainty Quantification",
+          "arxiv_id": "2405.15115",
+          "resolved_arxiv_id": "2405.15115",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4792622448887336
+        },
+        {
+          "rank": 10,
+          "title": "In-context Learning Distillation: Transferring Few-shot Learning Ability of Pre-trained Language Models",
+          "arxiv_id": "2212.10670",
+          "resolved_arxiv_id": "2212.10670",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4776445451388434
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_2",
+      "query": "List all papers that use autoregressive transformer to generate videos.",
+      "query_type": "real_scholar",
+      "target_count": 20,
+      "target_ranks": {
+        "2312.14125": null,
+        "2206.04003": 15,
+        "2406.10981": 3,
+        "2402.15391": null,
+        "2107.09240": null,
+        "2006.10704": 17,
+        "2209.07143": 13,
+        "2405.15223": null,
+        "1912.12180": null,
+        "2104.14806": null,
+        "2212.06026": 20,
+        "2210.02396": null,
+        "2203.09457": null,
+        "2203.15836": 18,
+        "2205.15868": null,
+        "2207.09814": null,
+        "2104.10157": null,
+        "2402.14797": null,
+        "2406.09455": null,
+        "1906.02634": null
+      },
+      "paper_recall_at_20": 0.3,
+      "paper_recall_at_50": 0.3,
+      "relevant_at_20_count": 6,
+      "relevant_at_50_count": 6,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 0.11004588314904008,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 33,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-8ad536ab-14ab-4a1c-b175-20546d888ae8",
+          "text": "List all papers that use autoregressive transformer to generate videos.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-5c463eb3-1ff2-4f52-8fab-92408fcd701d",
+          "text": "autoregressive transformer video generation",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-6f85ad1c-12b8-4900-a14e-b515a567602d",
+          "text": "autoregressive transformer video synthesis methods",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-9bc309fc-5b13-44f1-a970-b20373455dba",
+          "text": "autoregressive transformer generate videos",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-6cc70e6f-3a31-4e3e-a0cf-54cddb6eee52",
+          "text": "autoregressive transformer generate videos review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-0fc9d2ec-f286-4e02-be61-35570dbb5109",
+          "text": "autoregressive transformer generate videos recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2017,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1765.114600000743,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "MaskCRT: Masked Conditional Residual Transformer for Learned Video Compression",
+          "arxiv_id": "2312.15829",
+          "resolved_arxiv_id": "2312.15829",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6278767512253639
+        },
+        {
+          "rank": 2,
+          "title": "Recurrent Autoregressive Diffusion: Global Memory Meets Local Attention",
+          "arxiv_id": "2511.12940",
+          "resolved_arxiv_id": "2511.12940",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5643858933468444
+        },
+        {
+          "rank": 3,
+          "title": "ViD-GPT: Introducing GPT-style Autoregressive Generation in Video Diffusion Models",
+          "arxiv_id": "2406.10981",
+          "resolved_arxiv_id": "2406.10981",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5402053747855395
+        },
+        {
+          "rank": 4,
+          "title": "An Empirical Study of Autoregressive Pre-training from Videos",
+          "arxiv_id": "2501.05453",
+          "resolved_arxiv_id": "2501.05453",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5384617134366071
+        },
+        {
+          "rank": 5,
+          "title": "Video In-context Learning: Autoregressive Transformers are Zero-Shot Video Imitators",
+          "arxiv_id": "2407.07356",
+          "resolved_arxiv_id": "2407.07356",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5211774903051076
+        },
+        {
+          "rank": 6,
+          "title": "Stable Video Infinity: Infinite-Length Video Generation with Error Recycling",
+          "arxiv_id": "2510.09212",
+          "resolved_arxiv_id": "2510.09212",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5041120767336423
+        },
+        {
+          "rank": 7,
+          "title": "From Slow Bidirectional to Fast Autoregressive Video Diffusion Models",
+          "arxiv_id": "2412.07772",
+          "resolved_arxiv_id": "2412.07772",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5002263509962052
+        },
+        {
+          "rank": 8,
+          "title": "ACDiT: Interpolating Autoregressive Conditional Modeling and Diffusion Transformer",
+          "arxiv_id": "2412.07720",
+          "resolved_arxiv_id": "2412.07720",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4959096158629068
+        },
+        {
+          "rank": 9,
+          "title": "Video Prediction of Dynamic Physical Simulations With Pixel-Space Spatiotemporal Transformers",
+          "arxiv_id": "2510.20807",
+          "resolved_arxiv_id": "2510.20807",
+          "doi": "10.1109/tnnls.2025.3585949",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48249051833084833
+        },
+        {
+          "rank": 10,
+          "title": "Fast Autoregressive Video Generation with Diagonal Decoding",
+          "arxiv_id": "2503.14070",
+          "resolved_arxiv_id": "2503.14070",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4756295578799813
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_3",
+      "query": "I am looking for research papers on the construction of multimodal foundation models that support both visual and audio inputs. These models should be pre-trained on large-scale datasets, including visual, audio, and audio-visual data. Please exclude survey papers.",
+      "query_type": "real_scholar",
+      "target_count": 39,
+      "target_ranks": {
+        "2201.02639": null,
+        "2403.15377": null,
+        "2104.11178": null,
+        "2310.05863": 8,
+        "2304.08345": null,
+        "2305.18500": null,
+        "2211.11275": 7,
+        "2401.12264": null,
+        "2306.02858": null,
+        "2312.14125": null,
+        "2310.01852": null,
+        "2406.15704": null,
+        "1705.08168": null,
+        "2306.09093": null,
+        "2408.05211": null,
+        "2305.12311": null,
+        "2006.09199": null,
+        "2107.00249": null,
+        "2307.08581": null,
+        "2305.14381": null,
+        "2409.17692": null,
+        "2312.17172": null,
+        "2212.04408": null,
+        "2106.13043": null,
+        "2312.06720": null,
+        "2407.11895": null,
+        "2309.05519": null,
+        "2312.03700": null,
+        "2406.07476": null,
+        "2111.12993": null,
+        "2205.01818": null,
+        "2311.18775": null,
+        "2305.11172": null,
+        "2305.16355": null,
+        "2311.13435": null,
+        "2405.04883": null,
+        "2212.07525": null,
+        "2310.08884": null,
+        "2409.19132": 3
+      },
+      "paper_recall_at_20": 0.07692307692307693,
+      "paper_recall_at_50": 0.07692307692307693,
+      "relevant_at_20_count": 3,
+      "relevant_at_50_count": 3,
+      "precision_at_10": 0.3,
+      "ndcg_at_10": 0.2528410271851774,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 47,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-53361562-b975-410e-8e5b-79dccc6f944e",
+          "text": "I am looking for research papers on the construction of multimodal foundation models that support both visual and audio inputs. These models should be pre-trained on large-scale datasets, including visual, audio, and audio-visual data. Please exclude survey papers.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-8b6bf405-f907-44e7-8933-fb8698d7a0bf",
+          "text": "multimodal foundation model visual audio pretraining large-scale dataset audio-visual learning",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-1bfb8371-3435-4898-9cf4-e476a153ef3c",
+          "text": "audio-visual representation learning joint embedding pretrained transformer contrastive learning",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-33e93894-aecd-41cc-8b6e-9958be28aeeb",
+          "text": "am construction multimodal foundation models support both visual audio inputs",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-9c1b3f2f-f4dd-4f92-a352-fc10d9332d46",
+          "text": "am construction multimodal foundation models support both visual review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-0ca6b0ed-bf6d-4a7e-a712-484d734b7641",
+          "text": "am construction multimodal foundation models support both visual recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 2,
+          "cache_hits": 0,
+          "elapsed_ms": 6698.135000000548,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Learning Self-Supervised Audio-Visual Representations for Sound Recommendations",
+          "arxiv_id": "2412.07406",
+          "resolved_arxiv_id": "2412.07406",
+          "doi": "10.1007/978-3-030-90436-4_10",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.528688447703294
+        },
+        {
+          "rank": 2,
+          "title": "3D Audio-Visual Segmentation",
+          "arxiv_id": "2411.02236",
+          "resolved_arxiv_id": "2411.02236",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5197672572172336
+        },
+        {
+          "rank": 3,
+          "title": "From Vision to Audio and Beyond: A Unified Model for Audio-Visual Representation and Generation",
+          "arxiv_id": "2409.19132",
+          "resolved_arxiv_id": "2409.19132",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48822787435924336
+        },
+        {
+          "rank": 4,
+          "title": "Audio-Visual Representation Learning via Knowledge Distillation from Speech Foundation Models",
+          "arxiv_id": "2502.05766",
+          "resolved_arxiv_id": "2502.05766",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48177421075234306
+        },
+        {
+          "rank": 5,
+          "title": "AUREXA-SE: Audio-Visual Unified Representation Exchange Architecture with Cross-Attention and Squeezeformer for Speech Enhancement",
+          "arxiv_id": "2510.05295",
+          "resolved_arxiv_id": "2510.05295",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4792744375733069
+        },
+        {
+          "rank": 6,
+          "title": "Learning Speech Representations from Raw Audio by Joint Audiovisual Self-Supervision",
+          "arxiv_id": "2007.04134",
+          "resolved_arxiv_id": "2007.04134",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47336811412629776
+        },
+        {
+          "rank": 7,
+          "title": "VATLM: Visual-Audio-Text Pre-Training with Unified Masked Prediction for Speech Representation Learning",
+          "arxiv_id": "2211.11275",
+          "resolved_arxiv_id": "2211.11275",
+          "doi": "10.1109/tmm.2023.3275873",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47117786407005346
+        },
+        {
+          "rank": 8,
+          "title": "Fine-grained Audio-Visual Joint Representations for Multimodal Large Language Models",
+          "arxiv_id": "2310.05863",
+          "resolved_arxiv_id": "2310.05863",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47000747533738546
+        },
+        {
+          "rank": 9,
+          "title": "Audio-Visual Separation with Hierarchical Fusion and Representation Alignment",
+          "arxiv_id": "2510.07326",
+          "resolved_arxiv_id": "2510.07326",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4678827697955852
+        },
+        {
+          "rank": 10,
+          "title": "AV-SUPERB: A Multi-Task Evaluation Benchmark for Audio-Visual Representation Models",
+          "arxiv_id": "2309.10787",
+          "resolved_arxiv_id": "2309.10787",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46714819983973727
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_4",
+      "query": "Provide me with all papers that discuss reinforcement learning training for Large Language Model agent tasks.",
+      "query_type": "real_scholar",
+      "target_count": 43,
+      "target_ranks": {
+        "2401.14151": null,
+        "2403.04642": null,
+        "2310.18940": null,
+        "2306.03604": null,
+        "2402.19446": null,
+        "2303.11366": null,
+        "2302.06692": null,
+        "2406.05872": null,
+        "2404.18978": null,
+        "2302.00763": null,
+        "2112.09332": null,
+        "2302.02662": null,
+        "2401.06603": null,
+        "2311.05596": null,
+        "2402.06700": 12,
+        "2401.00006": null,
+        "2402.19299": null,
+        "2310.00166": null,
+        "2312.08935": null,
+        "2307.02157": null,
+        "2404.18638": null,
+        "2405.15383": null,
+        "2402.02330": null,
+        "2303.00001": null,
+        "2309.17176": null,
+        "2310.17722": null,
+        "2308.13542": null,
+        "2310.12931": null,
+        "2304.04370": null,
+        "2308.02151": null,
+        "2310.20587": null,
+        "2309.17382": null,
+        "2307.09668": null,
+        "2307.11922": null,
+        "2305.14387": null,
+        "2209.14375": null,
+        "2402.12914": null,
+        "2305.08844": null,
+        "2301.12729": null,
+        "2104.07972": null,
+        "2402.16181": null,
+        "2307.04964": 3,
+        "2405.14751": null
+      },
+      "paper_recall_at_20": 0.046511627906976744,
+      "paper_recall_at_50": 0.046511627906976744,
+      "relevant_at_20_count": 2,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 0.11004588314904008,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 29,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-d53cb50d-709a-4026-b7bb-98a8ca5606fc",
+          "text": "Provide me with all papers that discuss reinforcement learning training for Large Language Model agent tasks.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-570f7a9d-b7ff-46c6-b613-f87dfe7eeb34",
+          "text": "reinforcement learning training large language model agents",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-6c44b98f-87fd-4d45-a103-0ed9acdddb2d",
+          "text": "RLHF agentic LLM policy optimization reward modeling",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-abde6ff7-03be-4c6c-880c-c8e9b7f0cbdc",
+          "text": "reinforcement learning training large language model agent tasks",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-fe1d568a-1917-4806-8bc8-34ad98986b6e",
+          "text": "reinforcement learning training large language model agent tasks review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-c6a5ee71-fe6e-45a0-a88f-27ace48fd47b",
+          "text": "reinforcement learning training large language model agent tasks recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2019,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 2733.6453999996593,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Optimizing Autonomous Driving for Safety: A Human-Centric Approach with LLM-Enhanced RLHF",
+          "arxiv_id": "2406.04481",
+          "resolved_arxiv_id": "2406.04481",
+          "doi": "10.1145/3675094.3677588",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6916436570424489
+        },
+        {
+          "rank": 2,
+          "title": "Moral Alignment for LLM Agents",
+          "arxiv_id": "2410.01639",
+          "resolved_arxiv_id": "2410.01639",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5837069223997923
+        },
+        {
+          "rank": 3,
+          "title": "Secrets of RLHF in Large Language Models Part I: PPO",
+          "arxiv_id": "2307.04964",
+          "resolved_arxiv_id": "2307.04964",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5537123196351528
+        },
+        {
+          "rank": 4,
+          "title": "Collab: Controlled Decoding using Mixture of Agents for LLM Alignment",
+          "arxiv_id": "2503.21720",
+          "resolved_arxiv_id": "2503.21720",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5410637054918591
+        },
+        {
+          "rank": 5,
+          "title": "A Survey of Reinforcement Learning from Human Feedback",
+          "arxiv_id": "2312.14925",
+          "resolved_arxiv_id": "2312.14925",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5251334077507332
+        },
+        {
+          "rank": 6,
+          "title": "Agentic AutoSurvey: Let LLMs Survey LLMs",
+          "arxiv_id": "2509.18661",
+          "resolved_arxiv_id": "2509.18661",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5195704350534522
+        },
+        {
+          "rank": 7,
+          "title": "Meta-Thinking in LLMs via Multi-Agent Reinforcement Learning: A Survey",
+          "arxiv_id": "2504.14520",
+          "resolved_arxiv_id": "2504.14520",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5179828852874017
+        },
+        {
+          "rank": 8,
+          "title": "Igniting Creative Writing in Small Language Models: LLM-as-a-Judge versus Multi-Agent Refined Rewards",
+          "arxiv_id": "2508.21476",
+          "resolved_arxiv_id": "2508.21476",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5164141879754321
+        },
+        {
+          "rank": 9,
+          "title": "Confidence Calibration and Rationalization for LLMs via Multi-Agent Deliberation",
+          "arxiv_id": "2404.09127",
+          "resolved_arxiv_id": "2404.09127",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.514674070340624
+        },
+        {
+          "rank": 10,
+          "title": "Toward Optimal LLM Alignments Using Two-Player Games",
+          "arxiv_id": "2406.10977",
+          "resolved_arxiv_id": "2406.10977",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5118997913712819
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_5",
+      "query": "Papers that apply RLHF to address the hallucination problem in image and video description.",
+      "query_type": "real_scholar",
+      "target_count": 6,
+      "target_ranks": {
+        "2309.14525": null,
+        "2402.11411": null,
+        "2402.06118": null,
+        "2312.10665": null,
+        "2311.10081": null,
+        "2312.00849": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 34,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-e26dc066-2b4f-43fe-bb08-17349bf1a788",
+          "text": "Papers that apply RLHF to address the hallucination problem in image and video description.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-0ebd1bb0-d611-4ee9-8e30-8a8b16f436ea",
+          "text": "RLHF hallucination image video description",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-1dcc432f-ccc2-42ce-98af-f2b02f2800c1",
+          "text": "reinforcement learning human feedback visual captioning hallucination mitigation",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-a7f115a6-8087-4108-bf5c-4c61eb86fda3",
+          "text": "rlhf hallucination problem image video description",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-d4ec3219-bdb4-42c7-b038-e5049a967f29",
+          "text": "rlhf hallucination problem image video description review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-588a94a3-f60c-46a8-9905-ebbb38bb3253",
+          "text": "rlhf hallucination problem image video description recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1932.0468999994773,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Stable and Safe Human-aligned Reinforcement Learning through Neural Ordinary Differential Equations",
+          "arxiv_id": "2401.13148",
+          "resolved_arxiv_id": "2401.13148",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5480755507521716
+        },
+        {
+          "rank": 2,
+          "title": "Learning to Navigate in Mazes with Novel Layouts using Abstract Top-down Maps",
+          "arxiv_id": "2412.12024",
+          "resolved_arxiv_id": "2412.12024",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.50145883640177
+        },
+        {
+          "rank": 3,
+          "title": "Mixing Human Demonstrations with Self-Exploration in Experience Replay for Deep Reinforcement Learning",
+          "arxiv_id": "2107.06840",
+          "resolved_arxiv_id": "2107.06840",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4757645862824614
+        },
+        {
+          "rank": 4,
+          "title": "Reinforcement Learning from Human Feedback: Whose Culture, Whose Values, Whose Perspectives?",
+          "arxiv_id": "2407.17482",
+          "resolved_arxiv_id": "2407.17482",
+          "doi": "10.1007/s13347-025-00861-0",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4737854373625889
+        },
+        {
+          "rank": 5,
+          "title": "RLHF-Blender: A Configurable Interactive Interface for Learning from Diverse Human Feedback",
+          "arxiv_id": "2308.04332",
+          "resolved_arxiv_id": "2308.04332",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4709688895566052
+        },
+        {
+          "rank": 6,
+          "title": "Human-Inspired Multi-Level Reinforcement Learning",
+          "arxiv_id": "2501.07502",
+          "resolved_arxiv_id": "2501.07502",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46805277194576056
+        },
+        {
+          "rank": 7,
+          "title": "A Survey of Reinforcement Learning from Human Feedback",
+          "arxiv_id": "2312.14925",
+          "resolved_arxiv_id": "2312.14925",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.458891689999474
+        },
+        {
+          "rank": 8,
+          "title": "Domain Generalization for Robust Model-Based Offline Reinforcement Learning",
+          "arxiv_id": "2211.14827",
+          "resolved_arxiv_id": "2211.14827",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4533598117916521
+        },
+        {
+          "rank": 9,
+          "title": "Reinforcement Learning from Human Feedback with High-Confidence Safety Constraints",
+          "arxiv_id": "2506.08266",
+          "resolved_arxiv_id": "2506.08266",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.45308568941485916
+        },
+        {
+          "rank": 10,
+          "title": "TROFI: Trajectory-Ranked Offline Inverse Reinforcement Learning",
+          "arxiv_id": "2506.22008",
+          "resolved_arxiv_id": "2506.22008",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.44711807031412276
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_6",
+      "query": "Papers that propose methods based on large language models and evaluate their performance through experiments on the HotPotQA dataset.",
+      "query_type": "real_scholar",
+      "target_count": 23,
+      "target_ranks": {
+        "2305.15064": null,
+        "2402.11166": null,
+        "2403.12393": null,
+        "2210.03629": null,
+        "2406.15319": null,
+        "2310.05915": null,
+        "2402.11924": null,
+        "2404.09129": null,
+        "2407.10245": null,
+        "2212.10509": null,
+        "2405.13021": null,
+        "2403.10131": null,
+        "2210.01296": null,
+        "2407.13101": null,
+        "2210.16865": null,
+        "2310.04406": null,
+        "2305.18323": null,
+        "2402.19350": null,
+        "2305.03130": null,
+        "2404.03414": null,
+        "2205.12650": null,
+        "2305.14323": null,
+        "2304.13007": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 29,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-991db0c6-5e90-44ca-98e5-d2f9c33387d9",
+          "text": "Papers that propose methods based on large language models and evaluate their performance through experiments on the HotPotQA dataset.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-7623a33a-a588-4933-9929-4f50cc4a4b25",
+          "text": "large language models HotPotQA evaluation",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-be7fe154-213d-46be-acf3-e778da559f09",
+          "text": "LLM benchmark multi-hop question answering experimental results",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-e07b3de2-fc4b-47a5-8565-4401f8ed674e",
+          "text": "methods large language models evaluate their performance through experiments hotpotqa",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-d699bf46-9aa0-42c6-966b-f22f0e888fe3",
+          "text": "methods large language models evaluate their performance through review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-f076338a-a643-42b5-8994-483e029eaece",
+          "text": "methods large language models evaluate their performance through recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 2122.7177000000665,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "PPTC-R benchmark: Towards Evaluating the Robustness of Large Language Models for PowerPoint Task Completion",
+          "arxiv_id": "2403.03788",
+          "resolved_arxiv_id": "2403.03788",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.704135528646871
+        },
+        {
+          "rank": 2,
+          "title": "Small LLMs Are Weak Tool Learners: A Multi-LLM Agent",
+          "arxiv_id": "2401.07324",
+          "resolved_arxiv_id": "2401.07324",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5949027654305078
+        },
+        {
+          "rank": 3,
+          "title": "Open-LLM-Leaderboard: From Multi-choice to Open-style Questions for LLMs Evaluation, Benchmark, and Arena",
+          "arxiv_id": "2406.07545",
+          "resolved_arxiv_id": "2406.07545",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5471508296566338
+        },
+        {
+          "rank": 4,
+          "title": "Pedestrian Attribute Recognition: A New Benchmark Dataset and A Large Language Model Augmented Framework",
+          "arxiv_id": "2408.09720",
+          "resolved_arxiv_id": "2408.09720",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5257926082024477
+        },
+        {
+          "rank": 5,
+          "title": "Beyond Binary: Towards Fine-Grained LLM-Generated Text Detection via Role Recognition and Involvement Measurement",
+          "arxiv_id": "2410.14259",
+          "resolved_arxiv_id": "2410.14259",
+          "doi": "10.1145/3696410.3714770",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5249930809545215
+        },
+        {
+          "rank": 6,
+          "title": "MSCoRe: A Benchmark for Multi-Stage Collaborative Reasoning in LLM Agents",
+          "arxiv_id": "2509.17628",
+          "resolved_arxiv_id": "2509.17628",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5085559441663049
+        },
+        {
+          "rank": 7,
+          "title": "Self-Evaluating LLMs for Multi-Step Tasks: Stepwise Confidence Estimation for Failure Detection",
+          "arxiv_id": "2511.07364",
+          "resolved_arxiv_id": "2511.07364",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5032276283438685
+        },
+        {
+          "rank": 8,
+          "title": "TAMAS: Benchmarking Adversarial Risks in Multi-Agent LLM Systems",
+          "arxiv_id": "2511.05269",
+          "resolved_arxiv_id": "2511.05269",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.502872510900966
+        },
+        {
+          "rank": 9,
+          "title": "Is Your LLM Really Mastering the Concept? A Multi-Agent Benchmark",
+          "arxiv_id": "2505.17512",
+          "resolved_arxiv_id": "2505.17512",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4990796159708649
+        },
+        {
+          "rank": 10,
+          "title": "LingBench++: A Linguistically-Informed Benchmark and Reasoning Framework for Multi-Step and Cross-Cultural Inference with LLMs",
+          "arxiv_id": "2507.16809",
+          "resolved_arxiv_id": "2507.16809",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49511976723386664
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_7",
+      "query": "Show me research on the long video description. Here, long videos are defined as those with a duration of at least several minutes.",
+      "query_type": "real_scholar",
+      "target_count": 31,
+      "target_ranks": {
+        "2402.13250": 5,
+        "2406.14515": null,
+        "2405.16009": null,
+        "2201.10990": null,
+        "2310.04900": null,
+        "2407.15754": null,
+        "2204.02968": null,
+        "2409.06299": null,
+        "2406.12846": null,
+        "2210.06031": null,
+        "2402.08268": null,
+        "2404.04346": null,
+        "1705.00754": 30,
+        "2406.17880": null,
+        "2312.02051": null,
+        "2404.05726": null,
+        "2404.03384": null,
+        "2406.04264": null,
+        "2408.15542": null,
+        "2312.05269": null,
+        "2406.04325": null,
+        "2402.13546": null,
+        "2307.16449": null,
+        "2403.10517": null,
+        "2301.11507": null,
+        "2311.17043": null,
+        "2312.07395": null,
+        "2310.19773": null,
+        "2311.17435": null,
+        "2303.12060": null,
+        "2404.01297": 19
+      },
+      "paper_recall_at_20": 0.06451612903225806,
+      "paper_recall_at_50": 0.0967741935483871,
+      "relevant_at_20_count": 2,
+      "relevant_at_50_count": 3,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 0.08514311764162098,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.2,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 46,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-eafcd6b6-7701-4712-b296-08bbac0a18c3",
+          "text": "Show me research on the long video description. Here, long videos are defined as those with a duration of at least several minutes.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-b3100ae7-d25f-4581-b23b-daf7828e1bc6",
+          "text": "long video description generation summarization minutes duration",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-109e9f9c-0256-4f36-8f0e-8926bf58f529",
+          "text": "video captioning long-form temporal modeling multi-minute",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-9dff05a4-9c69-4074-b283-fa900fdafa8d",
+          "text": "long video description here videos defined as those duration",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-a9016eef-a088-4a4e-b7d6-6b31c836f303",
+          "text": "long video description here videos defined as those review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-8cb0e662-dcca-4788-a2f3-0921acbf0756",
+          "text": "long video description here videos defined as those recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2015,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1412.6839000000473,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Activitynet 2019 Task 3: Exploring Contexts for Dense Captioning Events in Videos",
+          "arxiv_id": "1907.05092",
+          "resolved_arxiv_id": "1907.05092",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6399639368972755
+        },
+        {
+          "rank": 2,
+          "title": "NITS-VC System for VATEX Video Captioning Challenge 2020",
+          "arxiv_id": "2006.04058",
+          "resolved_arxiv_id": "2006.04058",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5422637651755382
+        },
+        {
+          "rank": 3,
+          "title": "LVD-2M: A Long-take Video Dataset with Temporally Dense Captions",
+          "arxiv_id": "2410.10816",
+          "resolved_arxiv_id": "2410.10816",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5117042283451858
+        },
+        {
+          "rank": 4,
+          "title": "Addressing the ID-Matching Challenge in Long Video Captioning",
+          "arxiv_id": "2510.06973",
+          "resolved_arxiv_id": "2510.06973",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5024630208096802
+        },
+        {
+          "rank": 5,
+          "title": "Video ReCap: Recursive Captioning of Hour-Long Videos",
+          "arxiv_id": "2402.13250",
+          "resolved_arxiv_id": "2402.13250",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5007448192840827
+        },
+        {
+          "rank": 6,
+          "title": "Fine-Grained Captioning of Long Videos through Scene Graph Consolidation",
+          "arxiv_id": "2502.16427",
+          "resolved_arxiv_id": "2502.16427",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4974535947856862
+        },
+        {
+          "rank": 7,
+          "title": "A Video is Worth 10,000 Words: Training and Benchmarking with Diverse Captions for Better Long Video Retrieval",
+          "arxiv_id": "2312.00115",
+          "resolved_arxiv_id": "2312.00115",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48472670789817723
+        },
+        {
+          "rank": 8,
+          "title": "REVECA -- Rich Encoder-decoder framework for Video Event CAptioner",
+          "arxiv_id": "2206.09178",
+          "resolved_arxiv_id": "2206.09178",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46407515162184715
+        },
+        {
+          "rank": 9,
+          "title": "MiraData: A Large-Scale Video Dataset with Long Durations and Structured Captions",
+          "arxiv_id": "2407.06358",
+          "resolved_arxiv_id": "2407.06358",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4625695607853792
+        },
+        {
+          "rank": 10,
+          "title": "Dense Video Captioning using Graph-based Sentence Summarization",
+          "arxiv_id": "2506.20583",
+          "resolved_arxiv_id": "2506.20583",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4581308826946634
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_8",
+      "query": "Do you know some papers about using reward shaping methods to train large language model agent.",
+      "query_type": "real_scholar",
+      "target_count": 15,
+      "target_ranks": {
+        "2401.07382": null,
+        "2308.02151": null,
+        "2303.00001": null,
+        "2205.13636": null,
+        "2402.00782": 10,
+        "2308.12270": null,
+        "2306.01693": null,
+        "2401.10020": null,
+        "2404.11999": null,
+        "2405.15194": 5,
+        "2310.00166": null,
+        "2409.12798": null,
+        "2405.14734": null,
+        "2312.08935": null,
+        "2302.06692": null
+      },
+      "paper_recall_at_20": 0.13333333333333333,
+      "paper_recall_at_50": 0.13333333333333333,
+      "relevant_at_20_count": 2,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.2,
+      "ndcg_at_10": 0.1487639058405727,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.2,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 22,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-619b7675-3964-40f0-a20e-467407be72fd",
+          "text": "Do you know some papers about using reward shaping methods to train large language model agent.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-90fa417d-917e-40ed-99dd-db36def8e1bd",
+          "text": "reward shaping reinforcement learning large language model agent training",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-a8de3724-20e8-4728-b643-7bab90638c3e",
+          "text": "reward shaping LLM agent policy optimization methods",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-580d904e-345a-493c-be89-f9a354e6fb4c",
+          "text": "do reward shaping methods train large language model agent",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-35e482a1-c6a4-4421-87f4-e582ebd32be2",
+          "text": "do reward shaping methods train large language model review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-3052b3a6-3b4d-45f3-962a-f10307ff5251",
+          "text": "do reward shaping methods train large language model recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2020,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1272.16000000044,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "From Reward Shaping to Q-Shaping: Achieving Unbiased Learning with LLM-Guided Knowledge",
+          "arxiv_id": "2410.01458",
+          "resolved_arxiv_id": "2410.01458",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7032896836696146
+        },
+        {
+          "rank": 2,
+          "title": "Reward Shaping to Mitigate Reward Hacking in RLHF",
+          "arxiv_id": "2502.18770",
+          "resolved_arxiv_id": "2502.18770",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5074234173063438
+        },
+        {
+          "rank": 3,
+          "title": "Zero-Shot LLMs in Human-in-the-Loop RL: Replacing Human Feedback for Reward Shaping",
+          "arxiv_id": "2503.22723",
+          "resolved_arxiv_id": "2503.22723",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.502166217356398
+        },
+        {
+          "rank": 4,
+          "title": "Learning Explainable Dense Reward Shapes via Bayesian Optimization",
+          "arxiv_id": "2504.16272",
+          "resolved_arxiv_id": "2504.16272",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5005061522175833
+        },
+        {
+          "rank": 5,
+          "title": "Extracting Heuristics from Large Language Models for Reward Shaping in Reinforcement Learning",
+          "arxiv_id": "2405.15194",
+          "resolved_arxiv_id": "2405.15194",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49186836546397583
+        },
+        {
+          "rank": 6,
+          "title": "AlphaPO: Reward Shape Matters for LLM Alignment",
+          "arxiv_id": "2501.03884",
+          "resolved_arxiv_id": "2501.03884",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.489290205062609
+        },
+        {
+          "rank": 7,
+          "title": "Aligning Dialogue Agents with Global Feedback via Large Language Model Multimodal Reward Decomposition",
+          "arxiv_id": "2505.15922",
+          "resolved_arxiv_id": "2505.15922",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48083952844234656
+        },
+        {
+          "rank": 8,
+          "title": "Shaping Explanations: Semantic Reward Modeling with Encoder-Only Transformers for GRPO",
+          "arxiv_id": "2509.13081",
+          "resolved_arxiv_id": "2509.13081",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47552919125888193
+        },
+        {
+          "rank": 9,
+          "title": "VORTEX: Aligning Task Utility and Human Preferences through LLM-Guided Reward Shaping",
+          "arxiv_id": "2509.16399",
+          "resolved_arxiv_id": "2509.16399",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4715554372336168
+        },
+        {
+          "rank": 10,
+          "title": "Dense Reward for Free in Reinforcement Learning from Human Feedback",
+          "arxiv_id": "2402.00782",
+          "resolved_arxiv_id": "2402.00782",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.467794042064119
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_9",
+      "query": "Give me papers about how to rank search results by the use of LLM.",
+      "query_type": "real_scholar",
+      "target_count": 39,
+      "target_ranks": {
+        "2311.01555": null,
+        "2310.14122": null,
+        "2306.17563": null,
+        "2310.09497": null,
+        "2309.15088": null,
+        "2310.14408": null,
+        "2304.09542": null,
+        "2305.08845": null,
+        "2406.11678": null,
+        "2301.10521": null,
+        "2407.02485": null,
+        "2403.19181": null,
+        "2406.00231": null,
+        "2406.13331": null,
+        "2305.02156": null,
+        "2404.11791": null,
+        "2406.18740": null,
+        "2406.00247": null,
+        "2404.18424": null,
+        "2405.20654": null,
+        "2407.00128": null,
+        "2312.02724": null,
+        "2312.02969": null,
+        "2401.06311": null,
+        "2305.13729": null,
+        "2402.17497": null,
+        "2312.15450": null,
+        "2406.15657": null,
+        "2402.04853": null,
+        "2309.06991": null,
+        "2403.18093": null,
+        "2310.07712": null,
+        "2310.08319": null,
+        "2309.07606": null,
+        "2305.02182": null,
+        "2402.10548": null,
+        "2409.17460": null,
+        "2306.01599": null,
+        "2310.13243": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 47,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "planned_queries": [
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-6ed2f9cb-5385-43e0-8fa4-3d5c19dd716d",
+          "text": "Give me papers about how to rank search results by the use of LLM.",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-25f72664-ec6f-4763-907d-b8d341ab478a",
+          "text": "LLM ranking search results relevance scoring",
+          "intent": "topic",
+          "priority": 1,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-daba6bcf-4d10-41c7-9e3c-80e6a70602e2",
+          "text": "large language model information retrieval reranking methods",
+          "intent": "method",
+          "priority": 2,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-16810a5e-ab52-4a98-b469-49d3b96f4970",
+          "text": "rank search by llm",
+          "intent": "method",
+          "priority": 4,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-80f3401b-3557-4381-b27d-b354dec51ba1",
+          "text": "rank search by llm review survey",
+          "intent": "foundational",
+          "priority": 5,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        },
+        {
+          "protocol": "research.search_query.v1",
+          "query_id": "query-2c205729-0a5c-4f37-a153-ee19c91eea18",
+          "text": "rank search by llm recent advances",
+          "intent": "recent",
+          "priority": 6,
+          "provider_filters": {
+            "year_from": 2021,
+            "year_to": 2025
+          }
+        }
+      ],
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1513.2518999998865,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents",
+          "arxiv_id": "2402.11651",
+          "resolved_arxiv_id": "2402.11651",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6576780834901258
+        },
+        {
+          "rank": 2,
+          "title": "WizardLM: Empowering large pre-trained language models to follow complex instructions",
+          "arxiv_id": "2304.12244",
+          "resolved_arxiv_id": "2304.12244",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5483874468128327
+        },
+        {
+          "rank": 3,
+          "title": "Demystifying Instruction Mixing for Fine-tuning Large Language Models",
+          "arxiv_id": "2312.10793",
+          "resolved_arxiv_id": "2312.10793",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5076148083450283
+        },
+        {
+          "rank": 4,
+          "title": "PB-LLM: Partially Binarized Large Language Models",
+          "arxiv_id": "2310.00034",
+          "resolved_arxiv_id": "2310.00034",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4758881187109151
+        },
+        {
+          "rank": 5,
+          "title": "Large Language Models and Multimodal Retrieval for Visual Word Sense Disambiguation",
+          "arxiv_id": "2310.14025",
+          "resolved_arxiv_id": "2310.14025",
+          "doi": "10.18653/v1/2023.emnlp-main.807",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4711995144528563
+        },
+        {
+          "rank": 6,
+          "title": "How do language models learn facts? Dynamics, curricula and hallucinations",
+          "arxiv_id": "2503.21676",
+          "resolved_arxiv_id": "2503.21676",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4709930543795078
+        },
+        {
+          "rank": 7,
+          "title": "Classifying German Language Proficiency Levels Using Large Language Models",
+          "arxiv_id": "2512.06483",
+          "resolved_arxiv_id": "2512.06483",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4687512434218861
+        },
+        {
+          "rank": 8,
+          "title": "A Survey on Multimodal Large Language Models",
+          "arxiv_id": "2306.13549",
+          "resolved_arxiv_id": "2306.13549",
+          "doi": "10.1093/nsr/nwae403",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4608742583315389
+        },
+        {
+          "rank": 9,
+          "title": "PediatricsGPT: Large Language Models as Chinese Medical Assistants for Pediatric Applications",
+          "arxiv_id": "2405.19266",
+          "resolved_arxiv_id": "2405.19266",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.45984421184890867
+        },
+        {
+          "rank": 10,
+          "title": "Large Language Model Evaluation Via Multi AI Agents: Preliminary results",
+          "arxiv_id": "2404.01023",
+          "resolved_arxiv_id": "2404.01023",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.45663263224731077
+        }
+      ]
+    }
+  ],
+  "quality_gate": {
+    "passed": false,
+    "checks": {
+      "evaluation_valid": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 0.0,
+        "passed": false
+      },
+      "paper_recall_at_20": {
+        "operator": ">=",
+        "target": 0.8,
+        "actual": 0.0658321204232682,
+        "passed": false
+      },
+      "paper_recall_at_50": {
+        "operator": ">=",
+        "target": 0.9,
+        "actual": 0.07276163057858481,
+        "passed": false
+      },
+      "precision_at_10": {
+        "operator": ">=",
+        "target": 0.6,
+        "actual": 0.08,
+        "passed": false
+      },
+      "ndcg_at_10": {
+        "operator": ">=",
+        "target": 0.7,
+        "actual": 0.07068398169654513,
+        "passed": false
+      },
+      "arxiv_target_resolution_rate": {
+        "operator": ">=",
+        "target": 0.98,
+        "actual": 1.0,
+        "passed": true
+      },
+      "duplicate_paper_rate": {
+        "operator": "<=",
+        "target": 0.02,
+        "actual": 0.0,
+        "passed": true
+      },
+      "unverifiable_paper_rate": {
+        "operator": "==",
+        "target": 0.0,
+        "actual": 0.0,
+        "passed": true
+      },
+      "provider_failure_case_success_rate": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 1.0,
+        "passed": true
+      }
+    }
+  }
+}

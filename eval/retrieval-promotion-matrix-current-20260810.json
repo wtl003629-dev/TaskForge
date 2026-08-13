@@ -1,0 +1,291 @@
+{
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "name": "table_numeric_shape_aware_locked",
+      "baseline": {
+        "label": "tatqa-locked-bm25-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-locked-shape-aware",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0
+      }
+    },
+    {
+      "name": "tatqa_whole_target",
+      "baseline": {
+        "label": "tatqa-whole-bm25-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-whole-shape-aware",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-final-routing-20260809",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_rrf"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_table_profile_lookup",
+      "baseline": {
+        "label": "tatqa-locked-shape-aware-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-table-profile-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-locked-table-profile-lookup",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-table-profile-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_whole_table_profile_target",
+      "baseline": {
+        "label": "tatqa-whole-shape-aware-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-table-profile-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-whole-table-profile-lookup",
+        "path": "../.taskforge/eval-runs/tatqa-locked-parent-scan-context1-shapes-table-profile-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_rrf"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_table_profile_lineage_closure",
+      "baseline": {
+        "label": "tatqa-table-profile-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-v2-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-table-profile-lineage",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-v2-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_whole_lineage_target",
+      "baseline": {
+        "label": "tatqa-whole-lineage-bm25-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-v2-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "tatqa-whole-lineage",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-v2-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_rrf"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_table_profile_structured_lineage",
+      "baseline": {
+        "label": "tatqa-table-profile-lineage-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-structured-v3-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-table-profile-structured-lineage",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-structured-v3-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_structured_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_whole_structured_lineage_target",
+      "baseline": {
+        "label": "tatqa-whole-lineage-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-structured-v3-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-whole-structured-lineage",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-structured-v3-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_structured_rrf"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.75,
+        "min_candidate_recall_at_candidate_k": 0.90
+      }
+    },
+    {
+      "name": "tatqa_table_profile_lineage_pair_rerank",
+      "baseline": {
+        "label": "tatqa-table-profile-structured-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-pair-rerank-v1-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_structured_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-table-profile-lineage-pair-rerank",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-pair-rerank-v1-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+      },
+      "policy": {
+        "profile": "table_numeric",
+        "min_recall_delta": 0.01,
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.778333,
+        "min_candidate_recall_at_candidate_k": 0.947674
+      }
+    },
+    {
+      "name": "tatqa_whole_lineage_pair_rerank_target",
+      "baseline": {
+        "label": "tatqa-whole-structured-control",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-pair-rerank-v1-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_structured_rrf"
+      },
+      "candidate": {
+        "label": "tatqa-whole-lineage-pair-rerank",
+        "path": "../.taskforge/eval-runs/tatqa-locked-table-profile-lineage-pair-rerank-v1-20260810",
+        "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+      },
+      "policy": {
+        "min_recall_delta": 0.01,
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 1200.0,
+        "min_candidate_recall_at_10": 0.778333,
+        "min_candidate_recall_at_candidate_k": 0.95
+      }
+    },
+    {
+      "name": "cross_document_anchor_profile",
+      "baseline": {
+        "label": "multihop-current-bm25-control",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-current-source-anchor3",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "bm25_source_coverage_anchor_rrf"
+      },
+      "policy": {
+        "profile": "cross_document",
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 940.5,
+        "min_candidate_recall_at_10": 0.9,
+        "min_candidate_recall_at_candidate_k": 0.98
+      }
+    },
+    {
+      "name": "multihop_whole_protection",
+      "baseline": {
+        "label": "multihop-whole-bm25-control",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-whole-source-anchor3",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "bm25_source_coverage_anchor_rrf"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2,
+        "max_p95_ms": 940.5,
+        "min_candidate_recall_at_10": 0.9,
+        "min_candidate_recall_at_candidate_k": 0.98
+      }
+    },
+    {
+      "name": "general_text_anchor_control",
+      "baseline": {
+        "label": "multihop-general-bm25-control",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "multihop-general-anchor3",
+        "path": "../.taskforge/eval-runs/multihop-heldout-profile-routed-anchor3-sourcelabels-20260810",
+        "stage": "bm25_source_coverage_anchor_rrf"
+      },
+      "policy": {
+        "profile": "general_text",
+        "require_identical_retrieval": true,
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "pdf_layout",
+      "baseline": {
+        "label": "synthetic-pdf-bm25",
+        "path": "../.taskforge/eval-runs/synthetic-pdf-profile-20260809-rerun",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "synthetic-pdf-table-router",
+        "path": "../.taskforge/eval-runs/synthetic-pdf-profile-20260809-rerun",
+        "stage": "bm25_table_router"
+      },
+      "policy": {
+        "max_p95_ratio": 1.2
+      }
+    },
+    {
+      "name": "qasper_general_text",
+      "baseline": {
+        "label": "qasper-bm25",
+        "path": "../.taskforge/eval-runs/qasper-general-100-bm25-20260809",
+        "stage": "lexical_bm25"
+      },
+      "candidate": {
+        "label": "qasper-general-baseline-control",
+        "path": "../.taskforge/eval-runs/qasper-general-100-bm25-20260809",
+        "stage": "lexical_bm25"
+      },
+      "policy": {
+        "profile": "general_text",
+        "require_identical_retrieval": true,
+        "max_p95_ratio": 1.2
+      }
+    }
+  ]
+}

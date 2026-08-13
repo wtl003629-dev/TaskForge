@@ -12,11 +12,19 @@ from uuid import NAMESPACE_URL, uuid5
 
 from .domain import AgentProfile, RunState, Task
 from .knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
+from .literature.evidence import ScopeBoundEvidenceService
+from .literature.repository import LiteratureAccess
+from .literature.service import LiteratureDiscoveryService
 from .memory import (
     InMemoryMemoryStore,
     MemoryItem,
     MemoryProvenance,
     MemoryScope,
+)
+from .research_protocol import (
+    EvidenceSearchRequest,
+    LiteratureRequest,
+    ScopeExpansionRequest,
 )
 from .security import evaluate_arithmetic, grep_workspace, read_workspace_text
 from .tooling import ToolRegistry, ToolRisk, ToolSpec
@@ -29,7 +37,14 @@ def agent_profiles(*, model: str = "demo") -> list[AgentProfile]:
 
     common = [
         "calculator",
+        "literature_search",
+        "literature_expand",
+        "literature_get",
         "knowledge_search",
+        "scope_get",
+        "paper_search",
+        "paper_read",
+        "citation_verify",
         "memory_recall",
         "memory_remember",
         "artifact_write",
@@ -58,6 +73,21 @@ def agent_profiles(*, model: str = "demo") -> list[AgentProfile]:
                             "calculator",
                             "knowledge_search",
                             "memory_recall",
+                            "artifact_write",
+                        ],
+                    },
+                    {
+                        "id": "paper-research",
+                        "name": "论文调研",
+                        "description": "通过统一论文检索、证据读取和引用校验完成论文调研。",
+                        "tools": [
+                            "literature_search",
+                            "literature_expand",
+                            "literature_get",
+                            "scope_get",
+                            "paper_search",
+                            "paper_read",
+                            "citation_verify",
                             "artifact_write",
                         ],
                     },
@@ -194,6 +224,8 @@ def create_tool_registry(
     artifact_root: str | Path,
     knowledge_store: InMemoryKnowledgeStore,
     memory_store: InMemoryMemoryStore,
+    research_service: ScopeBoundEvidenceService | None = None,
+    literature_discovery: LiteratureDiscoveryService | None = None,
 ) -> ToolRegistry:
     """Bind tools to host-selected roots and stores; model input cannot replace them."""
 
@@ -204,10 +236,23 @@ def create_tool_registry(
     registry.register(
         ToolSpec(
             name="calculator",
-            description="Evaluate a bounded arithmetic expression without eval or a shell.",
+            description=(
+                "Evaluate one bounded numeric expression. expression may contain only "
+                "numeric literals, whitespace, parentheses, + - * / // % **, and "
+                "numeric comparisons < <= > >= == !=. Do not include units, "
+                "variables, lists, or functions; "
+                "for a count use arithmetic such as 1+1+1."
+            ),
             parameters={
                 "type": "object",
-                "properties": {"expression": {"type": "string", "maxLength": 200}},
+                "properties": {
+                    "expression": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "pattern": r"^[0-9eE+\-*/().%<>=!\s]+$",
+                    }
+                },
                 "required": ["expression"],
                 "additionalProperties": False,
             },
@@ -310,6 +355,8 @@ def create_tool_registry(
                     ),
                     "version": hit.chunk.version,
                     "score": round(hit.score, 6),
+                    "retrieval_profile": hit.retrieval_profile,
+                    "retrieval_backend": hit.retrieval_backend,
                     "matched_terms": list(hit.matched_terms),
                     "text": hit.chunk.text[:2_000],
                 }
@@ -335,6 +382,414 @@ def create_tool_registry(
         ),
         search_knowledge,
     )
+
+    if literature_discovery is not None:
+        def compact_discovery_result(result: Any) -> dict[str, Any]:
+            papers = [
+                paper.model_copy(
+                    update={
+                        "canonical_title": paper.canonical_title[:240],
+                        "abstract": "",
+                        "source_urls": list(paper.source_urls[:2]),
+                        "references": [],
+                        "cited_by": [],
+                        "matched_queries": list(paper.matched_queries[:4]),
+                        "relevance_reason": paper.relevance_reason[:320],
+                    },
+                    deep=True,
+                )
+                for paper in result.papers[:20]
+            ]
+            return result.model_copy(update={"papers": papers}, deep=True).model_dump(
+                mode="json"
+            )
+
+        async def literature_search(
+            arguments: dict[str, Any],
+            task: Task,
+            _profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            values = dict(arguments)
+            conversation_id = str(values.pop("conversation_id"))
+            result = await literature_discovery.discover(
+                LiteratureAccess(task.tenant_id, task.user_id, conversation_id),
+                LiteratureRequest.model_validate(values),
+            )
+            return compact_discovery_result(result)
+
+        async def literature_expand(
+            arguments: dict[str, Any],
+            task: Task,
+            _profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            result = await literature_discovery.expand_citations(
+                LiteratureAccess(task.tenant_id, task.user_id),
+                str(arguments["request_id"]),
+                [str(value) for value in arguments["seed_paper_ids"]],
+                include_references=bool(arguments.get("include_references", True)),
+                include_citations=bool(arguments.get("include_citations", True)),
+                per_seed_limit=int(arguments.get("per_seed_limit", 20)),
+                total_limit=int(arguments.get("total_limit", 100)),
+            )
+            return compact_discovery_result(result)
+
+        def literature_get(
+            arguments: dict[str, Any],
+            task: Task,
+            _profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            paper = literature_discovery.repository.get_paper(
+                LiteratureAccess(task.tenant_id, task.user_id),
+                str(arguments["paper_id"]),
+            )
+            return paper.model_dump(mode="json")
+
+        registry.register(
+            ToolSpec(
+                name="literature_search",
+                description="Discover and rank candidate papers before a Host ResearchScope exists.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "conversation_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "request_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "query": {"type": "string", "minLength": 1, "maxLength": 4_000},
+                        "research_questions": {"type": "array", "items": {"type": "string"}, "maxItems": 16},
+                        "year_from": {"type": ["integer", "null"], "minimum": 1000, "maximum": 3000},
+                        "year_to": {"type": ["integer", "null"], "minimum": 1000, "maximum": 3000},
+                        "required_terms": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+                        "excluded_terms": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+                        "result_limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+                    },
+                    "required": ["conversation_id", "request_id", "query"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                strict=False,
+                timeout_seconds=60,
+                max_output_chars=30_000,
+            ),
+            literature_search,
+        )
+        registry.register(
+            ToolSpec(
+                name="literature_expand",
+                description="Expand citations as candidates without modifying a ResearchScope.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "request_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "seed_paper_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 20},
+                        "include_references": {"type": "boolean", "default": True},
+                        "include_citations": {"type": "boolean", "default": True},
+                        "per_seed_limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 20},
+                        "total_limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+                    },
+                    "required": ["request_id", "seed_paper_ids"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                strict=False,
+                timeout_seconds=60,
+                max_output_chars=30_000,
+            ),
+            literature_expand,
+        )
+        registry.register(
+            ToolSpec(
+                name="literature_get",
+                description="Read one tenant-visible canonical paper candidate.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "paper_id": {"type": "string", "minLength": 1, "maxLength": 240}
+                    },
+                    "required": ["paper_id"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                max_output_chars=10_000,
+            ),
+            literature_get,
+        )
+
+    if research_service is not None:
+        def research_access(task: Task) -> LiteratureAccess:
+            return LiteratureAccess(
+                tenant_id=task.tenant_id,
+                user_id=task.user_id,
+            )
+
+        def bound_scope(
+            arguments: dict[str, Any],
+            task: Task,
+        ) -> tuple[str, int | None]:
+            proposed_id = str(arguments["scope_id"])
+            proposed_version = arguments.get("scope_version")
+            host_id = task.metadata.get("research_scope_id")
+            host_version = task.metadata.get("research_scope_version")
+            if host_id is not None and proposed_id != host_id:
+                raise ValueError("tool scope_id does not match the host-bound research scope")
+            if host_version is not None:
+                if proposed_version is not None and proposed_version != host_version:
+                    raise ValueError("tool scope_version does not match the host-bound version")
+                proposed_version = host_version
+            return proposed_id, int(proposed_version) if proposed_version is not None else None
+
+        def scope_get(
+            arguments: dict[str, Any],
+            task: Task,
+            _profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            scope_id, scope_version = bound_scope(arguments, task)
+            scope = research_service.repository.get_scope(
+                research_access(task),
+                scope_id,
+                version=scope_version,
+            )
+            return scope.model_dump(mode="json")
+
+        def paper_search(
+            arguments: dict[str, Any],
+            task: Task,
+            profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            scope_id, scope_version = bound_scope(arguments, task)
+            result = research_service.search(
+                research_access(task),
+                EvidenceSearchRequest.model_validate(
+                    {**arguments, "scope_id": scope_id, "scope_version": scope_version}
+                ),
+            )
+            # The authoritative cards are already persisted by the evidence
+            # service.  The model-facing observation is a compact, structured
+            # projection so generic output truncation can never turn it into an
+            # unusable JSON preview (which would also prevent Host from joining
+            # real Evidence IDs into the blackboard).
+            compact_cards = [
+                card.model_copy(
+                    update={
+                        "title": card.title[:240] if card.title else None,
+                        "section": card.section[:200] if card.section else None,
+                        "snippet": card.snippet[:320],
+                        "retrieval_sources": list(card.retrieval_sources[:4]),
+                        "supported_requirements": list(
+                            card.supported_requirements[:4]
+                        ),
+                    },
+                    deep=True,
+                )
+                for card in result.evidence[:8]
+            ]
+            return result.model_copy(
+                update={"evidence": compact_cards},
+                deep=True,
+            ).model_dump(mode="json")
+
+        def paper_read(
+            arguments: dict[str, Any],
+            task: Task,
+            profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            scope_id, scope_version = bound_scope(arguments, task)
+            result = research_service.read_evidence(
+                research_access(task),
+                scope_id,
+                arguments["evidence_id"],
+                scope_version=scope_version,
+            )
+            return result.model_dump(mode="json")
+
+        def citation_verify(
+            arguments: dict[str, Any],
+            task: Task,
+            profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            scope_id, scope_version = bound_scope(arguments, task)
+            result = research_service.verify_citation(
+                research_access(task),
+                scope_id,
+                arguments["claim"],
+                arguments["evidence_ids"],
+                scope_version=scope_version,
+            )
+            return result.model_dump(mode="json")
+
+        def scope_expansion_request(
+            arguments: dict[str, Any],
+            task: Task,
+            profile: AgentProfile,
+            _state: RunState,
+        ) -> dict[str, Any]:
+            role = profile.metadata.get("role_id")
+            requested_by = {
+                "source_evaluator": "evaluator",
+                "critical_reviewer": "critic",
+            }.get(str(role))
+            if requested_by is None:
+                raise ValueError("only evaluator or critic may request scope expansion")
+            scope_id, scope_version = bound_scope(arguments, task)
+            access = research_access(task)
+            scope = research_service.repository.get_scope(
+                access,
+                scope_id,
+                version=scope_version,
+            )
+            request = research_service.repository.request_expansion(
+                access,
+                ScopeExpansionRequest(
+                    scope_id=scope.scope_id,
+                    requested_by=requested_by,
+                    reason=arguments["reason"],
+                    proposed_paper_ids=arguments.get("proposed_paper_ids", []),
+                ),
+            )
+            research_service.repository.transition_scope_status(
+                access,
+                scope.scope_id,
+                "expansion_requested",
+                expected_version=scope.scope_version,
+            )
+            return request.model_dump(mode="json")
+
+        registry.register(
+            ToolSpec(
+                name="scope_get",
+                description="Read the host-confirmed ResearchScope boundary for this user.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "scope_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "scope_version": {"type": "integer", "minimum": 1}
+                    },
+                    "required": ["scope_id", "scope_version"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                max_output_chars=8_000,
+            ),
+            scope_get,
+        )
+        registry.register(
+            ToolSpec(
+                name="paper_search",
+                description="Search only the host-confirmed ResearchScope and return evidence cards.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "scope_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "scope_version": {"type": "integer", "minimum": 1},
+                        "query": {"type": "string", "minLength": 1, "maxLength": 4_000},
+                        "top_k": {"type": "integer", "minimum": 1, "maximum": 8, "default": 8},
+                        "candidate_k": {"type": "integer", "minimum": 10, "maximum": 50, "default": 50},
+                        "mode": {"type": "string", "enum": ["standard", "rigorous"], "default": "standard"},
+                        "intent": {
+                            "type": "string",
+                            "enum": [
+                                "general_fact",
+                                "method_definition",
+                                "experimental_setup",
+                                "numeric_table",
+                                "cross_paper_comparison",
+                                "figure_or_layout",
+                                "claim_verification",
+                                "related_work"
+                            ],
+                            "default": "general_fact"
+                        },
+                    },
+                    "required": ["scope_id", "scope_version", "query"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                strict=False,
+                # Search returns bounded evidence cards.  Full passages are
+                # available only through paper_read(evidence_id).
+                max_output_chars=14_000,
+            ),
+            paper_search,
+        )
+        registry.register(
+            ToolSpec(
+                name="paper_read",
+                description="Read one evidence item after re-checking its ResearchScope.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "scope_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "scope_version": {"type": "integer", "minimum": 1},
+                        "evidence_id": {"type": "string", "minLength": 1, "maxLength": 1_024}
+                    },
+                    "required": ["scope_id", "scope_version", "evidence_id"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                max_output_chars=12_000,
+            ),
+            paper_read,
+        )
+        registry.register(
+            ToolSpec(
+                name="citation_verify",
+                description="Resolve Evidence IDs and check lexical support for a claim.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "scope_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "scope_version": {"type": "integer", "minimum": 1},
+                        "claim": {"type": "string", "minLength": 1, "maxLength": 4_000},
+                        "evidence_ids": {
+                            "type": "array",
+                            "items": {"type": "string", "minLength": 1, "maxLength": 1_024},
+                            "minItems": 1,
+                            "maxItems": 10,
+                        },
+                    },
+                    "required": ["scope_id", "scope_version", "claim", "evidence_ids"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                max_output_chars=12_000,
+            ),
+            citation_verify,
+        )
+        registry.register(
+            ToolSpec(
+                name="scope_expansion_request",
+                description=(
+                    "Request user approval for genuinely new papers outside the "
+                    "host-bound Scope; never use this for a selected paper that merely "
+                    "needs re-ingestion or better evidence. This tool never changes "
+                    "the selected paper set."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "scope_id": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "scope_version": {"type": "integer", "minimum": 1},
+                        "reason": {"type": "string", "minLength": 1, "maxLength": 2_000},
+                        "proposed_paper_ids": {
+                            "type": "array",
+                            "items": {"type": "string", "minLength": 1, "maxLength": 240},
+                            "maxItems": 100,
+                            "default": []
+                        },
+                    },
+                    "required": ["scope_id", "scope_version", "reason", "proposed_paper_ids"],
+                    "additionalProperties": False,
+                },
+                risk=ToolRisk.READ,
+                max_output_chars=8_000,
+            ),
+            scope_expansion_request,
+        )
 
     def recall_memory(arguments: dict[str, Any], task: Task, profile: AgentProfile, _state: RunState) -> dict[str, Any]:
         hits = memory_store.recall(

@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "dataset": "QASPER",
+  "fit_run": ".taskforge\\eval-runs\\qasper-train-tuning-200-graph-rerank-v6-20260811",
+  "validation_run": ".taskforge\\eval-runs\\qasper-train-validation-200-graph-rerank-v6-20260811",
+  "stage": "qdrant_qasper_dense_rerank",
+  "training_cases": 186,
+  "positive_pairs": 5372,
+  "feature_names": [
+    "reranker_score",
+    "base_score",
+    "reciprocal_rank",
+    "lexical_coverage",
+    "lexical_frequency",
+    "numeric_coverage",
+    "section_match",
+    "method_section",
+    "experiment_section",
+    "discussion_section",
+    "abstract",
+    "length_log"
+  ],
+  "validation": {
+    "recall_at_1": 0.2202083333333333,
+    "recall_at_5": 0.5289583333333333,
+    "recall_at_10": 0.6829999999999999,
+    "recall_at_50": 0.9626666666666667,
+    "ndcg_at_10": 0.45985087647034684
+  },
+  "model": {
+    "schema_version": "1.0",
+    "algorithm": "pairwise_logistic_linear",
+    "feature_names": [
+      "reranker_score",
+      "base_score",
+      "reciprocal_rank",
+      "lexical_coverage",
+      "lexical_frequency",
+      "numeric_coverage",
+      "section_match",
+      "method_section",
+      "experiment_section",
+      "discussion_section",
+      "abstract",
+      "length_log"
+    ],
+    "means": [
+      -5.0646059426205206,
+      0.6668060341192434,
+      0.17346728786598115,
+      0.2725800311227125,
+      0.16808684553173145,
+      0.009228402973596514,
+      0.030047599158083648,
+      0.026147141758523455,
+      0.04947449371955909,
+      0.0,
+      0.03640092284029736,
+      6.011846782756203
+    ],
+    "scales": [
+      5.379078545663677,
+      0.08860576928883783,
+      0.21468514099162359,
+      0.19325340138273878,
+      0.1363494462424944,
+      0.09562028839191727,
+      0.07232396528151276,
+      0.15957276940751242,
+      0.21685656132741846,
+      1.0,
+      0.1872855991705504,
+      0.8593821207657925
+    ],
+    "weights": [
+      0.06357104722128727,
+      1.07528553134466,
+      0.22770162961692736,
+      0.3396681485522072,
+      -0.3672166578209763,
+      0.45469403749808124,
+      0.45039136972996185,
+      -0.46053985421870836,
+      0.25291356570377177,
+      0.0,
+      -1.31680599864627,
+      0.9504813847620099
+    ],
+    "bias": 0.0,
+    "training_cases": 186,
+    "positive_pairs": 5372
+  }
+}

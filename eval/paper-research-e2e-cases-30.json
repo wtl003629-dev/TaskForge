@@ -1,0 +1,942 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "paper_research_deterministic_functional_e2e",
+  "provenance": "TaskForge-authored integration fixtures using public paper metadata; not a human relevance or answer-quality benchmark.",
+  "counts": {
+    "single_paper": 10,
+    "comparison": 10,
+    "survey": 10
+  },
+  "cases": [
+    {
+      "case_id": "single-01",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Attention Is All You Need",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-02",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-03",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Language Models are Few-Shot Learners",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-04",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Dense Passage Retrieval for Open-Domain Question Answering",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-05",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-06",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-07",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of ReAct: Synergizing Reasoning and Acting in Language Models",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-08",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-09",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "single-10",
+      "task_type": "single_paper",
+      "query": "Explain the main method and limitation of Corrective Retrieval Augmented Generation",
+      "user_intent": "Explain the selected paper's method and evidence-backed limitation.",
+      "papers": [
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        }
+      ],
+      "expected_selected_paper_count": 1
+    },
+    {
+      "case_id": "comparison-01",
+      "task_type": "comparison",
+      "query": "Compare Attention Is All You Need with BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        },
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-02",
+      "task_type": "comparison",
+      "query": "Compare BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding with Language Models are Few-Shot Learners",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        },
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-03",
+      "task_type": "comparison",
+      "query": "Compare Language Models are Few-Shot Learners with Dense Passage Retrieval for Open-Domain Question Answering",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        },
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-04",
+      "task_type": "comparison",
+      "query": "Compare Dense Passage Retrieval for Open-Domain Question Answering with Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        },
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-05",
+      "task_type": "comparison",
+      "query": "Compare Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks with Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        },
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-06",
+      "task_type": "comparison",
+      "query": "Compare Chain-of-Thought Prompting Elicits Reasoning in Large Language Models with ReAct: Synergizing Reasoning and Acting in Language Models",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        },
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-07",
+      "task_type": "comparison",
+      "query": "Compare ReAct: Synergizing Reasoning and Acting in Language Models with Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        },
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-08",
+      "task_type": "comparison",
+      "query": "Compare Toolformer: Language Models Can Teach Themselves to Use Tools with Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        },
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-09",
+      "task_type": "comparison",
+      "query": "Compare Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection with Corrective Retrieval Augmented Generation",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        },
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "comparison-10",
+      "task_type": "comparison",
+      "query": "Compare Corrective Retrieval Augmented Generation with Attention Is All You Need",
+      "user_intent": "Compare the methods, retrieval or reasoning mechanism, and stated limitations across the selected papers.",
+      "papers": [
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        },
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        }
+      ],
+      "expected_selected_paper_count": 2
+    },
+    {
+      "case_id": "survey-01",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Attention Is All You Need, Dense Passage Retrieval for Open-Domain Question Answering, and ReAct: Synergizing Reasoning and Acting in Language Models",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        },
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        },
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-02",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding, Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks, and Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        },
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        },
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-03",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Language Models are Few-Shot Learners, Chain-of-Thought Prompting Elicits Reasoning in Large Language Models, and Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        },
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        },
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-04",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Dense Passage Retrieval for Open-Domain Question Answering, ReAct: Synergizing Reasoning and Acting in Language Models, and Corrective Retrieval Augmented Generation",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        },
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        },
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-05",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks, Toolformer: Language Models Can Teach Themselves to Use Tools, and Attention Is All You Need",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        },
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        },
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-06",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Chain-of-Thought Prompting Elicits Reasoning in Large Language Models, Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection, and BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        },
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        },
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-07",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting ReAct: Synergizing Reasoning and Acting in Language Models, Corrective Retrieval Augmented Generation, and Language Models are Few-Shot Learners",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "react",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao"
+          ],
+          "year": 2022,
+          "arxiv_id": "2210.03629",
+          "abstract": "ReAct interleaves verbal reasoning traces with actions and observations, allowing language models to update plans while interacting with external environments."
+        },
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        },
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-08",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Toolformer: Language Models Can Teach Themselves to Use Tools, Attention Is All You Need, and Dense Passage Retrieval for Open-Domain Question Answering",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "toolformer",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu"
+          ],
+          "year": 2023,
+          "arxiv_id": "2302.04761",
+          "abstract": "Toolformer self-supervises API-call demonstrations so a language model can decide which tool to call, when to call it, and how to use returned results."
+        },
+        {
+          "paper_key": "attention",
+          "title": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer"
+          ],
+          "year": 2017,
+          "arxiv_id": "1706.03762",
+          "abstract": "The Transformer replaces recurrence with multi-head self-attention and reports strong machine translation quality with more parallelizable training."
+        },
+        {
+          "paper_key": "dpr",
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "authors": [
+            "Vladimir Karpukhin",
+            "Barlas Oguz"
+          ],
+          "year": 2020,
+          "arxiv_id": "2004.04906",
+          "abstract": "DPR learns separate dense encoders for questions and passages and improves top-k passage retrieval for open-domain question answering."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-09",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection, BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding, and Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "selfrag",
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "authors": [
+            "Akari Asai",
+            "Zexuan Zhong"
+          ],
+          "year": 2023,
+          "arxiv_id": "2310.11511",
+          "abstract": "Self-RAG trains a language model to retrieve on demand and emit reflection tokens that critique relevance, support, and generation quality."
+        },
+        {
+          "paper_key": "bert",
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang"
+          ],
+          "year": 2018,
+          "arxiv_id": "1810.04805",
+          "abstract": "BERT pre-trains deep bidirectional Transformer representations using masked language modeling and next sentence prediction before task fine-tuning."
+        },
+        {
+          "paper_key": "rag",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.11401",
+          "abstract": "RAG combines a pretrained sequence-to-sequence generator with a non-parametric dense passage index and marginalizes retrieved documents during generation."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    },
+    {
+      "case_id": "survey-10",
+      "task_type": "survey",
+      "query": "Survey a research thread connecting Corrective Retrieval Augmented Generation, Language Models are Few-Shot Learners, and Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "user_intent": "Synthesize the selected papers into a short evidence-grounded survey with differences and open limitations.",
+      "papers": [
+        {
+          "paper_key": "crag",
+          "title": "Corrective Retrieval Augmented Generation",
+          "authors": [
+            "Shi-Qi Yan",
+            "Jia-Chen Gu"
+          ],
+          "year": 2024,
+          "arxiv_id": "2401.15884",
+          "abstract": "Corrective RAG evaluates retrieved documents, triggers corrective web retrieval when confidence is low, and refines evidence before generation."
+        },
+        {
+          "paper_key": "gpt3",
+          "title": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann"
+          ],
+          "year": 2020,
+          "arxiv_id": "2005.14165",
+          "abstract": "GPT-3 studies in-context zero-shot, one-shot, and few-shot learning at large scale without gradient updates for each downstream task."
+        },
+        {
+          "paper_key": "cot",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang"
+          ],
+          "year": 2022,
+          "arxiv_id": "2201.11903",
+          "abstract": "Chain-of-thought prompting supplies intermediate reasoning demonstrations and improves arithmetic, commonsense, and symbolic reasoning in sufficiently large language models."
+        }
+      ],
+      "expected_selected_paper_count": 3
+    }
+  ]
+}

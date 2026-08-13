@@ -1,0 +1,184 @@
+{
+  "baseline": {
+    "by_category": {
+      "arithmetic": {
+        "cases": 39,
+        "recall": 0.9658119658119657
+      },
+      "count": {
+        "cases": 8,
+        "recall": 0.5416666666666666
+      },
+      "multi-span": {
+        "cases": 11,
+        "recall": 0.6553030303030303
+      },
+      "span": {
+        "cases": 19,
+        "recall": 1.0
+      }
+    },
+    "macro_recall": 0.8858225108225107,
+    "state_counts": {
+      "complete": 66,
+      "partial": 4,
+      "zero": 7
+    }
+  },
+  "candidates": [
+    {
+      "artifact_sha256": "42d8f6a448b93692cf77aaaaa56583cf22b8f4b32ba2e3cc7223809759140e97",
+      "by_category": {
+        "arithmetic": {
+          "cases": 39,
+          "recall": 0.9914529914529914
+        },
+        "count": {
+          "cases": 8,
+          "recall": 0.8958333333333334
+        },
+        "multi-span": {
+          "cases": 11,
+          "recall": 0.8181818181818182
+        },
+        "span": {
+          "cases": 19,
+          "recall": 0.9473684210526315
+        }
+      },
+      "category_deltas": {
+        "arithmetic": 0.02564102564102566,
+        "count": 0.35416666666666674,
+        "multi-span": 0.16287878787878796,
+        "span": -0.052631578947368474
+      },
+      "macro_delta": 0.06006493506493504,
+      "macro_recall": 0.9458874458874458,
+      "model_id": "taskforge-tatqa-slot-logistic-seed-20260812",
+      "seed": 20260812,
+      "state_counts": {
+        "complete": 71,
+        "partial": 3,
+        "zero": 3
+      }
+    },
+    {
+      "artifact_sha256": "5c75277997faa9d4fc7d518c1009395ec038d1a4dffd9f05d31989fc245b182e",
+      "by_category": {
+        "arithmetic": {
+          "cases": 39,
+          "recall": 0.9914529914529914
+        },
+        "count": {
+          "cases": 8,
+          "recall": 0.8958333333333334
+        },
+        "multi-span": {
+          "cases": 11,
+          "recall": 0.8181818181818182
+        },
+        "span": {
+          "cases": 19,
+          "recall": 0.9473684210526315
+        }
+      },
+      "category_deltas": {
+        "arithmetic": 0.02564102564102566,
+        "count": 0.35416666666666674,
+        "multi-span": 0.16287878787878796,
+        "span": -0.052631578947368474
+      },
+      "macro_delta": 0.06006493506493504,
+      "macro_recall": 0.9458874458874458,
+      "model_id": "taskforge-tatqa-slot-logistic-seed-20260813",
+      "seed": 20260813,
+      "state_counts": {
+        "complete": 71,
+        "partial": 3,
+        "zero": 3
+      }
+    },
+    {
+      "artifact_sha256": "e37ab561e6e51ff9a64cfd223c66d1dc80fcb59b21544a57f23594f5aa2d0f85",
+      "by_category": {
+        "arithmetic": {
+          "cases": 39,
+          "recall": 0.9914529914529914
+        },
+        "count": {
+          "cases": 8,
+          "recall": 0.8958333333333334
+        },
+        "multi-span": {
+          "cases": 11,
+          "recall": 0.8181818181818182
+        },
+        "span": {
+          "cases": 19,
+          "recall": 0.9473684210526315
+        }
+      },
+      "category_deltas": {
+        "arithmetic": 0.02564102564102566,
+        "count": 0.35416666666666674,
+        "multi-span": 0.16287878787878796,
+        "span": -0.052631578947368474
+      },
+      "macro_delta": 0.06006493506493504,
+      "macro_recall": 0.9458874458874458,
+      "model_id": "taskforge-tatqa-slot-logistic-seed-20260814",
+      "seed": 20260814,
+      "state_counts": {
+        "complete": 71,
+        "partial": 3,
+        "zero": 3
+      }
+    }
+  ],
+  "configuration": {
+    "budget": 10,
+    "heuristic_weight": 0.5,
+    "learned_weight": 1.0,
+    "max_category_drop": 0.03,
+    "min_macro_delta": 0.03,
+    "rrf_k": 60
+  },
+  "diagnostic_only": true,
+  "gate": {
+    "category_failures": [
+      {
+        "category": "span",
+        "delta": -0.052631578947368474,
+        "seed": 20260812
+      },
+      {
+        "category": "span",
+        "delta": -0.052631578947368474,
+        "seed": 20260813
+      },
+      {
+        "category": "span",
+        "delta": -0.052631578947368474,
+        "seed": 20260814
+      }
+    ],
+    "checks": {
+      "all_macro_deltas": true,
+      "category_non_regression": false,
+      "direction_consistent": true,
+      "three_distinct_seeds": true
+    },
+    "passed": false
+  },
+  "promotion_eligible": false,
+  "schema_version": "1.0",
+  "tuning_split": {
+    "id": "tatqa-train-slot-tuning-600-v1",
+    "sha256": "d5b7979d010a3ca6b5e972f2e016c8b023a81f4ebbbe094e9bea6c0df7c58216"
+  },
+  "validation_split": {
+    "id": "tatqa-train-group-validation-102-v2",
+    "mapping_eligible_cases": 77,
+    "sha256": "13dc58ab5b1e458a0efa4e75e36e79b42600e79f49b778a235195f00cab6fd04"
+  }
+}

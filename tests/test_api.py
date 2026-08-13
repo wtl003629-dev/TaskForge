@@ -14,6 +14,7 @@ from taskforge.config import Settings
 from taskforge.domain import ModelTurn, ToolRequest
 from taskforge.memory import MemoryItem, MemoryScope
 from taskforge.providers import ScriptedProvider
+from taskforge.routed_knowledge import RoutedKnowledgeStore
 from taskforge.worker import DurableWorker
 
 
@@ -40,9 +41,14 @@ def make_settings(tmp_path: Path, **changes) -> Settings:
         "orchestration_sqlite_path": tmp_path / "state" / "orchestration.sqlite3",
         "review_case_sqlite_path": tmp_path / "state" / "review-cases.sqlite3",
         "verification_sqlite_path": tmp_path / "state" / "verification.sqlite3",
+        "literature_sqlite_path": tmp_path / "state" / "literature.sqlite3",
+        "literature_cache_path": tmp_path / "state" / "literature-cache.sqlite3",
         "workspace_root": workspace,
         "artifact_root": tmp_path / "artifacts",
         "provider": "demo",
+        "retrieval_routing": "lexical",
+        "general_text_backend": "bm25",
+        "research_reranker_model": None,
     }
     values.update(changes)
     return Settings(_env_file=None, **values)
@@ -85,6 +91,19 @@ def test_health_and_agent_catalog_do_not_expose_instructions(tmp_path: Path) -> 
     }
     assert all("instructions" not in item for item in payload)
     assert "instructions" not in json.dumps(payload, ensure_ascii=False).casefold()
+
+
+def test_default_application_runtime_uses_online_profile_router(tmp_path: Path) -> None:
+    api = create_app(make_settings(tmp_path, retrieval_routing="profile"))
+    with TestClient(api):
+        container = api.state.container
+        assert isinstance(
+            container.runtime.context.knowledge_store, RoutedKnowledgeStore
+        )
+        assert (
+            container.runtime.context.knowledge_store.authoritative_store
+            is container.knowledge_store
+        )
 
 
 def test_skill_pack_is_a_backend_enforced_tool_subset(tmp_path: Path) -> None:

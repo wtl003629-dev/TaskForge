@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "purpose": "two-step Top-20 to Top-30 cross-encoder budget audit",
+  "policy": {
+    "selection_split": "qasper-train-tuning-200-v1",
+    "first_pass_k": 20,
+    "maximum_k": 30,
+    "confidence_signal": "top1_minus_top2_cross_encoder_score",
+    "escalate_when_margin_below": 0.7,
+    "candidate_k": 50,
+    "candidate_set_preserved": true
+  },
+  "tuning": {
+    "run": ".taskforge/eval-runs/qasper-train-tuning-200-graph-adaptive-20260811",
+    "base_recall_at_10": 0.7453116883116883,
+    "base_ndcg_at_10": 0.5138605614752231,
+    "graph_recall_at_10": 0.7678928571428572,
+    "graph_ndcg_at_10": 0.5252444971460597,
+    "candidate_recall_at_50": 0.9737554112554112,
+    "escalation_rate": 0.39,
+    "mean_applied_k": 23.3,
+    "base_p95_ms": 849.3791,
+    "graph_increment_p95_ms": 2.0502
+  },
+  "validation": {
+    "run": ".taskforge/eval-runs/qasper-train-validation-200-graph-adaptive-20260811",
+    "base_recall_at_10": 0.7256388888888888,
+    "base_ndcg_at_10": 0.48710344133512945,
+    "graph_recall_at_10": 0.7468194444444444,
+    "graph_ndcg_at_10": 0.4950351670594869,
+    "candidate_recall_at_50": 0.9626666666666667,
+    "escalation_rate": 0.35,
+    "mean_applied_k": 23.225,
+    "scored_pairs": 4645,
+    "base_latency_ms": {
+      "mean": 495.129605,
+      "p50": 439.9227,
+      "p95": 928.4336
+    },
+    "graph_increment_p95_ms": 2.1337
+  },
+  "fixed_top30_validation_control": {
+    "run": ".taskforge/eval-runs/qasper-train-validation-200-graph-tuned-top30-20260811",
+    "graph_recall_at_10": 0.7609861111111111,
+    "graph_ndcg_at_10": 0.5069308473996643,
+    "candidate_recall_at_50": 0.9626666666666667,
+    "scored_pairs": 5794,
+    "base_latency_ms": {
+      "mean": 598.748873,
+      "p50": 564.289,
+      "p95": 951.8812
+    },
+    "graph_increment_p95_ms": 2.2485
+  },
+  "adaptive_delta_vs_fixed_top30": {
+    "graph_recall_at_10": -0.0141666666666667,
+    "graph_ndcg_at_10": -0.0118956803401774,
+    "candidate_recall_at_50": 0.0,
+    "scored_pairs": -1149,
+    "scored_pair_ratio": -0.198308595098378,
+    "base_mean_latency_ms": -103.619268,
+    "base_p50_latency_ms": -124.3663,
+    "base_p95_latency_ms": -23.4476
+  },
+  "promotion": {
+    "passed": false,
+    "decision": "keep_opt_in_negative_ablation",
+    "reasons": [
+      "validation graph Recall@10 is below the 0.75 floor",
+      "validation nDCG@10 is below the 0.5056 floor",
+      "Recall@10 drops 0.0142 versus fixed Top-30, exceeding the 0.005 allowance",
+      "p95 improves only 23.4 ms because 35% of cases still take the slow path"
+    ],
+    "default": "fixed Top-30 plus graph feature rerank"
+  }
+}

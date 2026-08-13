@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -119,13 +120,19 @@ def test_one_model_turn_has_a_bounded_tool_fanout() -> None:
         )
 
 
-def make_profile(*, max_steps: int = 5) -> AgentProfile:
+def make_profile(
+    *,
+    max_steps: int = 5,
+    allowed_tools: list[str] | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> AgentProfile:
     return AgentProfile(
         id="profile-1",
         name="researcher",
         instructions="Use evidence and controlled tools.",
-        allowed_tools=["lookup", "sensitive"],
+        allowed_tools=allowed_tools or ["lookup", "sensitive"],
         max_steps=max_steps,
+        metadata=metadata or {},
     )
 
 
@@ -268,6 +275,64 @@ async def test_runtime_executes_tool_then_final_and_checkpoints_trajectory() -> 
     assert second_context["trajectory"][0]["tool_results"][0]["output"] == {
         "echo": {"query": "agent runtime"}
     }
+
+
+@pytest.mark.asyncio
+async def test_research_trajectory_is_compacted_only_for_provider_context() -> None:
+    provider = ScriptedProvider(
+        [
+            {
+                "action": "paper_search",
+                "call_id": "paper-1",
+                "arguments": {"query": "recall"},
+            },
+            {
+                "action": "paper_search",
+                "call_id": "paper-2",
+                "arguments": {"query": "precision"},
+            },
+            {"action": "final", "answer": "finished"},
+        ]
+    )
+    registry = ToolRegistry()
+    registry.register(
+        ToolSpec(
+            name="paper_search",
+            description="search",
+            parameters={
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"],
+                "additionalProperties": False,
+            },
+        ),
+        lambda *_: {
+            "query": "recall",
+            "evidence": [
+                {
+                    "evidence_id": "E1",
+                    "source": "paper://1",
+                    "text": "long evidence text " * 100,
+                }
+            ],
+            "coverage": {"source_count": 1},
+        },
+    )
+    runtime, _, _, _, _ = make_runtime(provider, registry=registry)
+    profile = make_profile(
+        allowed_tools=["paper_search"],
+        metadata={"compact_tool_trajectory": True},
+    )
+    state = await runtime.run(make_task(), profile)
+    assert state.status == RunStatus.COMPLETED
+    historical = provider.calls[2].context["trajectory"][0]["tool_results"][0]["output"]
+    assert historical["receipt_type"] == "research.search.v1"
+    assert historical["evidence_ids"] == ["E1"]
+    assert len(json.dumps(historical, ensure_ascii=False)) < 500
+    latest = provider.calls[2].context["trajectory"][1]["tool_results"][0]["output"]
+    assert "evidence" in latest
+    durable = state.receipts["paper-1"].output
+    assert len(durable["evidence"][0]["text"]) > 500
 
 
 @pytest.mark.asyncio
@@ -533,3 +598,114 @@ async def test_runtime_ports_integrate_with_real_registry_context_and_sqlite(tmp
     persisted = checkpoint.load(completed.run_id)
     assert persisted == completed
     assert provider.calls[1].context["assembled"]["retrieval_query"] == task.goal
+
+
+@pytest.mark.asyncio
+async def test_host_tool_call_limits_cap_same_turn_fanout_and_hide_exhausted_tool(tmp_path) -> None:
+    task = make_task()
+    profile = AgentProfile(
+        id="profile-limited",
+        name="limited researcher",
+        instructions="Use one lookup and stop.",
+        allowed_tools=["lookup"],
+        max_steps=2,
+        metadata={"tool_call_limits": {"lookup": 1}},
+    )
+    registry = ToolRegistry()
+    calls: list[str] = []
+    registry.register(
+        ToolSpec(
+            name="lookup",
+            description="Bounded lookup",
+            parameters={
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"],
+                "additionalProperties": False,
+            },
+        ),
+        lambda arguments, *_: calls.append(arguments["query"]) or arguments,
+    )
+    provider = ScriptedProvider(
+        [
+            ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(call_id="first", name="lookup", arguments={"query": "one"}),
+                    ToolRequest(call_id="second", name="lookup", arguments={"query": "two"}),
+                ],
+            ),
+            ModelTurn(kind="final", final_answer="done"),
+        ]
+    )
+    checkpoint = SQLiteCheckpointStore(tmp_path / "limited.db")
+    checkpoint.save_task(task)
+    checkpoint.save_profile(profile)
+    runtime = AgentRuntime(
+        provider=provider,
+        registry=registry,
+        policy=CapabilityPolicy(registry),
+        checkpoint=checkpoint,
+        context=ContextAssembler(),
+    )
+
+    completed = await runtime.run(task, profile)
+
+    assert completed.status == RunStatus.COMPLETED
+    assert calls == ["one"]
+    assert completed.steps[0].tool_results[1].error == "tool_call_limit_exceeded"
+    assert provider.calls[1].tools == ()
+
+
+@pytest.mark.asyncio
+async def test_successful_host_terminal_tool_completes_without_extra_model_turn(tmp_path) -> None:
+    task = make_task()
+    profile = AgentProfile(
+        id="profile-terminal",
+        name="structured role",
+        instructions="Submit the durable result.",
+        allowed_tools=["submit"],
+        max_steps=1,
+        metadata={"terminal_tools": ["submit"]},
+    )
+    registry = ToolRegistry()
+    registry.register(
+        ToolSpec(
+            name="submit",
+            description="Submit durable structured output",
+            parameters={
+                "type": "object",
+                "properties": {"value": {"type": "string"}},
+                "required": ["value"],
+                "additionalProperties": False,
+            },
+            risk=ToolRisk.COMPUTE,
+        ),
+        lambda arguments, *_: arguments,
+    )
+    provider = ScriptedProvider(
+        [
+            ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(call_id="submit-1", name="submit", arguments={"value": "done"})
+                ],
+            )
+        ]
+    )
+    checkpoint = SQLiteCheckpointStore(tmp_path / "terminal.db")
+    checkpoint.save_task(task)
+    checkpoint.save_profile(profile)
+    runtime = AgentRuntime(
+        provider=provider,
+        registry=registry,
+        policy=CapabilityPolicy(registry),
+        checkpoint=checkpoint,
+        context=ContextAssembler(),
+    )
+
+    completed = await runtime.run(task, profile)
+
+    assert completed.status == RunStatus.COMPLETED
+    assert completed.final_answer == "Host accepted submit receipt."
+    assert len(provider.calls) == 1

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Frozen retrieval reference for the paper-research Agent migration",
+  "source_artifacts": [
+    "eval/retrieval-retained-capabilities-b2-20260811.json",
+    "eval/reports/qasper-graph-tuned-top30-20260811.json"
+  ],
+  "main_matrix": {
+    "tatqa_table_numeric": {
+      "recall_at_10": 0.9902,
+      "candidate_recall_at_50": 0.9902,
+      "status": "passed"
+    },
+    "qasper_b0_to_b2": {
+      "baseline_recall_at_10": 0.5170,
+      "recall_at_10": 0.6282,
+      "baseline_candidate_recall_at_50": 0.9068,
+      "candidate_recall_at_50": 0.9738,
+      "status": "passed"
+    },
+    "multihop_cross_document": {
+      "baseline_recall_at_10": 0.8408,
+      "recall_at_10": 0.9199,
+      "baseline_candidate_recall_at_50": 0.9744,
+      "candidate_recall_at_50": 0.9893,
+      "status": "passed"
+    },
+    "pdf_layout_smoke": {
+      "recall_at_10": 1.0,
+      "candidate_recall_at_50": 1.0,
+      "status": "passed"
+    }
+  },
+  "qasper_opt_in_reference": {
+    "graph_rerank_validation_recall_at_10": 0.7610,
+    "graph_rerank_candidate_recall_at_50": 0.9627,
+    "status": "reference_only"
+  },
+  "comparison_contract": {
+    "same_locked_split": true,
+    "same_metric_definition": true,
+    "acl_violation_count_must_equal": 0,
+    "evidence_id_resolution_must_equal": 1.0
+  }
+}

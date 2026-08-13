@@ -1,0 +1,891 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "open_literature_discovery",
+  "metric_boundary": "Paper-level known-item discovery over open providers; these metrics are not bounded passage Recall@10 or Candidate@50.",
+  "live_external_requests": true,
+  "created_at": "2026-08-12T12:13:07.722657+00:00",
+  "dataset": "eval\\literature-discovery-cases.json",
+  "dataset_sha256": "b279c270fb40d3c7d1713cc871757f1d18bfa5a54e250cff0a71c19a0355a305",
+  "case_count": 6,
+  "target_paper_count": 6,
+  "summary": {
+    "paper_recall_at_20": 1.0,
+    "paper_recall_at_50": 1.0,
+    "precision_at_10": 0.10000000000000002,
+    "ndcg_at_10": 1.0,
+    "known_item_hit_at_5": 1.0,
+    "known_item_hit_at_10": 1.0,
+    "mrr_at_20": 1.0,
+    "provider_failure_count": 8,
+    "raw_candidate_count": 1419,
+    "deduplicated_result_count": 300,
+    "deduplication_reduction": 0.7885835095137421,
+    "duplicate_paper_rate": 0.0,
+    "unverifiable_paper_rate": 0.0,
+    "arxiv_target_resolution_rate": 1.0,
+    "provider_failure_case_success_rate": 1.0
+  },
+  "by_query_type": {
+    "known_item": {
+      "case_count": 6,
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.10000000000000002,
+      "ndcg_at_10": 1.0
+    }
+  },
+  "rows": [
+    {
+      "id": "rag-original",
+      "query": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2005.11401": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 240,
+      "cross_source_verified_count": 2,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 0,
+          "request_count": 15,
+          "cache_hits": 0,
+          "elapsed_ms": 6166.552200000297,
+          "failure": "query-f7626f65-e0eb-4b8c-82a2-90948e7a6beb: ProviderError: semantic_scholar request failed; query-8d7c3a30-99d0-419b-ac42-0adfe4feb72b: ProviderError: semantic_scholar request failed; query-b87ddee1-48db-459e-adde-7a1066a0c497: ProviderError: semantic_scholar request failed; query-bc68b64e-e59c-4f5f-bbb4-5d03ab58df9a: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 8351.304899999377,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 6227.350600000136,
+          "failure": null
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 9,
+          "cache_hits": 0,
+          "elapsed_ms": 19643.50889999878,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "arxiv_id": "2005.11401",
+          "doi": null,
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9283779450633705
+        },
+        {
+          "rank": 2,
+          "title": "Evidentiality-guided Generation for Knowledge-Intensive NLP Tasks",
+          "arxiv_id": "2112.08688",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8599999999999999
+        },
+        {
+          "rank": 3,
+          "title": "PRAG: Paninian Retrieval-Augmented Generation for Safety-Critical Medical Question Answering",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2009.13081",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8209411397178118
+        },
+        {
+          "rank": 4,
+          "title": "What Makes Good In-Context Examples for GPT-$3$?",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2101.06804",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7152383475973787
+        },
+        {
+          "rank": 5,
+          "title": "The Web Is Your Oyster - Knowledge-Intensive NLP against a Very Large Web Corpus",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2112.09924",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7011303512206268
+        },
+        {
+          "rank": 6,
+          "title": "Retrieval-Augmented Transformer-XL for Close-Domain Dialog Generation",
+          "arxiv_id": null,
+          "doi": "10.32473/flairs.v34i1.128369",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6948908408003718
+        },
+        {
+          "rank": 7,
+          "title": "Recent Advances in Natural Language Processing via Large Pre-Trained Language Models: A Survey",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2111.01243",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6486660929637149
+        },
+        {
+          "rank": 8,
+          "title": "Improving language models by retrieving from trillions of tokens",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2112.04426",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6033237754372799
+        },
+        {
+          "rank": 9,
+          "title": "Multi-Task Retrieval for Knowledge-Intensive Tasks",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2021.acl-long.89",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.5823779450633706
+        },
+        {
+          "rank": 10,
+          "title": "Adding Linguistic Knowledge to NLP Tasks for Bulgarian: The Verb Paradigm Patterns",
+          "arxiv_id": null,
+          "doi": "10.26615/issn.2603-2821.2019_012",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.552
+        }
+      ]
+    },
+    {
+      "id": "dpr",
+      "query": "Dense Passage Retrieval for Open-Domain Question Answering",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2004.04906": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 240,
+      "cross_source_verified_count": 13,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 20,
+          "request_count": 15,
+          "cache_hits": 0,
+          "elapsed_ms": 6956.477499999892,
+          "failure": "query-621c27a1-9d0d-41ab-8825-63c34284589c: ProviderError: semantic_scholar request failed; query-0c0dea6a-0619-489c-a984-7dace682f60a: ProviderError: semantic_scholar request failed; query-9cbdeabc-62bd-403c-adb9-5a4141e2e161: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 7,
+          "cache_hits": 0,
+          "elapsed_ms": 9520.72969999972,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 7,
+          "cache_hits": 0,
+          "elapsed_ms": 5150.2643000003445,
+          "failure": null
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 60,
+          "request_count": 9,
+          "cache_hits": 0,
+          "elapsed_ms": 21527.755699999034,
+          "failure": "query-0c0dea6a-0619-489c-a984-7dace682f60a: ProviderError: crossref request failed"
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+          "arxiv_id": "2004.04906",
+          "doi": "10.18653/v1/2020.emnlp-main.550",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9728309223824606
+        },
+        {
+          "rank": 2,
+          "title": "RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering",
+          "arxiv_id": "2010.08191",
+          "doi": "10.18653/v1/2021.naacl-main.466",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9564336644492656
+        },
+        {
+          "rank": 3,
+          "title": "Efficient Passage Retrieval with Hashing for Open-domain Question Answering",
+          "arxiv_id": "2106.00882",
+          "doi": "10.18653/v1/2021.acl-short.123",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9450752432356214
+        },
+        {
+          "rank": 4,
+          "title": "Dense Hierarchical Retrieval for Open-Domain Question Answering",
+          "arxiv_id": "2110.15439",
+          "doi": "10.18653/v1/2021.findings-emnlp.19",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9397316522847065
+        },
+        {
+          "rank": 5,
+          "title": "Multi-Task Dense Retrieval via Model Uncertainty Fusion for Open-Domain Question Answering",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2021.findings-emnlp.26",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9315326223483317
+        },
+        {
+          "rank": 6,
+          "title": "Encoder Adaptation of Dense Passage Retrieval for Open-Domain Question Answering",
+          "arxiv_id": "2110.01599",
+          "doi": "10.48550/arxiv.2110.01599",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9274998100077264
+        },
+        {
+          "rank": 7,
+          "title": "xMoCo: Cross Momentum Contrastive Learning for Open-Domain Question Answering",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2021.acl-long.477",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9043125794607836
+        },
+        {
+          "rank": 8,
+          "title": "Contextualized Query Embeddings for Conversational Search",
+          "arxiv_id": "2104.08707",
+          "doi": "10.18653/v1/2021.emnlp-main.77",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8767314585663019
+        },
+        {
+          "rank": 9,
+          "title": "A Replication Study of Dense Passage Retriever",
+          "arxiv_id": "2104.05740",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8761465491955355
+        },
+        {
+          "rank": 10,
+          "title": "Dealing with Typos for BERT-based Passage Retrieval and Ranking",
+          "arxiv_id": "2108.12139",
+          "doi": "10.18653/v1/2021.emnlp-main.225",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8740608097049459
+        }
+      ]
+    },
+    {
+      "id": "react",
+      "query": "ReAct Synergizing Reasoning and Acting in Language Models",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2210.03629": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 240,
+      "cross_source_verified_count": 1,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 0,
+          "request_count": 16,
+          "cache_hits": 0,
+          "elapsed_ms": 7789.019100000587,
+          "failure": "query-5c243de2-73ca-429b-bbf0-3e0668e84df2: ProviderError: semantic_scholar request failed; query-7f21fe05-2a34-4f53-8cbd-991e5c132f41: ProviderError: semantic_scholar request failed; query-09acc713-43f8-4b1c-8299-e3ebcea3f556: ProviderError: semantic_scholar request failed; query-8df14198-7491-43c7-aacd-15e8d8fb7de9: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 10529.326700001548,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 7959.537900000214,
+          "failure": null
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 9,
+          "cache_hits": 0,
+          "elapsed_ms": 18113.446400000612,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "arxiv_id": "2210.03629",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8639999999999999
+        },
+        {
+          "rank": 2,
+          "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2305.10601",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7037406081547407
+        },
+        {
+          "rank": 3,
+          "title": "Mathematical discoveries from program search with large language models",
+          "arxiv_id": null,
+          "doi": "10.1038/s41586-023-06924-6",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7010165315097642
+        },
+        {
+          "rank": 4,
+          "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2303.11366",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6982703195789388
+        },
+        {
+          "rank": 5,
+          "title": "Augmented Language Models: a Survey",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2302.07842",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6932179711584445
+        },
+        {
+          "rank": 6,
+          "title": "Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2211.12588",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.687360926061137
+        },
+        {
+          "rank": 7,
+          "title": "ThoughtSource: A central hub for large language model reasoning data",
+          "arxiv_id": null,
+          "doi": "10.1038/s41597-023-02433-3",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6852316522847065
+        },
+        {
+          "rank": 8,
+          "title": "Reasoning on Graphs: Faithful and Interpretable Large Language Model Reasoning",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2310.01061",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6837234110761237
+        },
+        {
+          "rank": 9,
+          "title": "Large Language Models and Logical Reasoning",
+          "arxiv_id": null,
+          "doi": "10.3390/encyclopedia3020049",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6729998100077265
+        },
+        {
+          "rank": 10,
+          "title": "OPT-R: Exploring the Role of Explanations in Finetuning and Prompting for Reasoning Skills of Large Language Models",
+          "arxiv_id": "2305.12001",
+          "doi": "10.18653/v1/2023.nlrse-1.10",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.66773184227698
+        }
+      ]
+    },
+    {
+      "id": "self-rag",
+      "query": "Self-RAG Learning to Retrieve Generate and Critique through Self-Reflection",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2310.11511": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 240,
+      "cross_source_verified_count": 2,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 0,
+          "request_count": 15,
+          "cache_hits": 0,
+          "elapsed_ms": 6890.227900001264,
+          "failure": "query-978c673f-dac8-447f-ab29-4328cce8f622: ProviderError: semantic_scholar request failed; query-9d863867-a2dc-4451-9660-c95841a72f06: ProviderError: semantic_scholar request failed; query-c22c36fb-507b-4ca4-8bcf-30a775b1a1e4: ProviderError: semantic_scholar request failed; query-e93cdbc3-cfda-4872-b5e2-0e17548e7adb: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 7,
+          "cache_hits": 0,
+          "elapsed_ms": 8106.133999999656,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 6,
+          "cache_hits": 0,
+          "elapsed_ms": 3754.784800001289,
+          "failure": null
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 9,
+          "cache_hits": 0,
+          "elapsed_ms": 19203.75039999999,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+          "arxiv_id": "2310.11511",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.8679999999999999
+        },
+        {
+          "rank": 2,
+          "title": "Reinforcement Learning for Optimizing RAG for Domain Chatbots",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2401.06800",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6336566666273619
+        },
+        {
+          "rank": 3,
+          "title": "The Value of Critical Self-Reflection in the Development of Cultural Competency",
+          "arxiv_id": null,
+          "doi": "10.52938/tales.v3i1.2893",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6121568566196354
+        },
+        {
+          "rank": 4,
+          "title": "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2024.naacl-long.389",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5729888661822081
+        },
+        {
+          "rank": 5,
+          "title": "Improving medical reasoning through retrieval and self-reflection with retrieval-augmented large language models",
+          "arxiv_id": "2401.15269",
+          "doi": "10.1093/bioinformatics/btae238",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.5694963878885725
+        },
+        {
+          "rank": 6,
+          "title": "Choosing Light",
+          "arxiv_id": null,
+          "doi": "10.5771/9781538193204",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.560888888888889
+        },
+        {
+          "rank": 7,
+          "title": "A Survey of Elementary School Teachers' Self-Reflection Skills: Uncovering the Role of Reflection in Improving Learning Quality",
+          "arxiv_id": null,
+          "doi": "10.53400/mimbar-sd.v11i4.78699",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5442222222222223
+        },
+        {
+          "rank": 8,
+          "title": "A Brief Review of Hypernetworks in Deep Learning",
+          "arxiv_id": "2306.06955",
+          "doi": "10.1007/s10462-024-10862-8",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5402222222222223
+        },
+        {
+          "rank": 9,
+          "title": "Going Beyond L2 Learning －The Effects of Self-Assessment on Student Metacognition, Self-Regulated Learning and Self-Reflection",
+          "arxiv_id": null,
+          "doi": "10.46392/kjge.2023.17.3.201",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5343790788418575
+        },
+        {
+          "rank": 10,
+          "title": "Unleashing the potential of prompt engineering for large language models",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2310.14735",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5332252552293066
+        }
+      ]
+    },
+    {
+      "id": "lost-in-the-middle",
+      "query": "Lost in the Middle How Language Models Use Long Contexts",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2307.03172": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 239,
+      "cross_source_verified_count": 3,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 0,
+          "request_count": 14,
+          "cache_hits": 0,
+          "elapsed_ms": 7331.180799999856,
+          "failure": "query-12725699-819d-45f3-9326-66213eb83fef: ProviderError: semantic_scholar request failed; query-74dbade1-1f35-4126-9413-3b8f4f2b01b3: ProviderError: semantic_scholar request failed; query-0af824cc-45d7-45e5-aa76-c7b91a79a9be: ProviderError: semantic_scholar request failed; query-faeedd52-9b02-4678-9f56-40286de78f6d: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 10689.086700000189,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 7,
+          "cache_hits": 0,
+          "elapsed_ms": 8165.101000000504,
+          "failure": null
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 79,
+          "request_count": 10,
+          "cache_hits": 0,
+          "elapsed_ms": 17494.555400000536,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "arxiv_id": "2307.03172",
+          "doi": "10.1162/tacl_a_00638",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9756666419833724
+        },
+        {
+          "rank": 2,
+          "title": "Found in the Middle: How Language Models Use Long Contexts Better via Plug-and-Play Positional Encoding",
+          "arxiv_id": "2403.04797",
+          "doi": "10.52202/079017-1943",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.8678039031922392
+        },
+        {
+          "rank": 3,
+          "title": "Lost in the Middle, and In-Between: Enhancing Language Models' Ability to Reason Over Long Contexts in Multi-Hop QA",
+          "arxiv_id": "2412.10079",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.802
+        },
+        {
+          "rank": 4,
+          "title": "Never Lost in the Middle: Mastering Long-Context Question Answering with Position-Agnostic Decompositional Training",
+          "arxiv_id": "2311.09198",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.728
+        },
+        {
+          "rank": 5,
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2302.04761",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6834974598035938
+        },
+        {
+          "rank": 6,
+          "title": "LooGLE: Can Long-Context Language Models Understand Long Contexts?",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2024.acl-long.859",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.6709309048934645
+        },
+        {
+          "rank": 7,
+          "title": "FltLM: An Intergrated Long-Context Large Language Model for Effective Context Filtering and Understanding",
+          "arxiv_id": "2410.06886",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6653333333333333
+        },
+        {
+          "rank": 8,
+          "title": "Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization",
+          "arxiv_id": "2406.16008",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6619999999999999
+        },
+        {
+          "rank": 9,
+          "title": "Where am I? Large Language Models Wandering between Semantics and Structures in Long Contexts",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2024.emnlp-main.783",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6472679677307465
+        },
+        {
+          "rank": 10,
+          "title": "Larger language models do in-context learning differently",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2303.03846",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6397419099022882
+        }
+      ]
+    },
+    {
+      "id": "colbert",
+      "query": "ColBERT Efficient and Effective Passage Search via Contextualized Late Interaction over BERT",
+      "query_type": "known_item",
+      "target_count": 1,
+      "target_ranks": {
+        "2004.12832": 1
+      },
+      "paper_recall_at_20": 1.0,
+      "paper_recall_at_50": 1.0,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 1.0,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 1.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 50,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 220,
+      "cross_source_verified_count": 2,
+      "provider_reports": [
+        {
+          "provider": "semantic_scholar",
+          "query_count": 4,
+          "result_count": 0,
+          "request_count": 14,
+          "cache_hits": 0,
+          "elapsed_ms": 7463.564899999255,
+          "failure": "query-5c713eda-1755-47a1-92f8-d39119b57e8d: ProviderError: semantic_scholar request failed; query-3a3d1fae-81cb-4d94-bcea-7eba4d9ccb13: ProviderError: semantic_scholar request failed; query-f96a08c4-f5a5-4169-88dc-da8a3efb5f17: ProviderError: semantic_scholar request failed; query-517280db-bd16-4fba-9402-085df83e2059: ProviderError: semantic_scholar request failed"
+        },
+        {
+          "provider": "openalex",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 7,
+          "cache_hits": 0,
+          "elapsed_ms": 8657.414699999208,
+          "failure": null
+        },
+        {
+          "provider": "arxiv",
+          "query_count": 4,
+          "result_count": 60,
+          "request_count": 8,
+          "cache_hits": 0,
+          "elapsed_ms": 7791.698999999426,
+          "failure": "query-517280db-bd16-4fba-9402-085df83e2059: ProviderError: arxiv request failed"
+        },
+        {
+          "provider": "crossref",
+          "query_count": 4,
+          "result_count": 80,
+          "request_count": 9,
+          "cache_hits": 0,
+          "elapsed_ms": 19437.985700000354,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT",
+          "arxiv_id": "2004.12832",
+          "doi": "10.48550/arxiv.2004.12832",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.9459573376927204
+        },
+        {
+          "rank": 2,
+          "title": "MelBERT: Metaphor Detection via Contextualized Late Interaction using Metaphorical Identification Theories",
+          "arxiv_id": "2104.13615",
+          "doi": "10.18653/v1/2021.naacl-main.141",
+          "verification_status": "cross_source_verified",
+          "relevance_score": 0.6475947281615348
+        },
+        {
+          "rank": 3,
+          "title": "ColBERTv2: Effective and Efficient Retrieval via Lightweight Late\\n Interaction",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2112.01488",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6389147069185556
+        },
+        {
+          "rank": 4,
+          "title": "Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2010.02666",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5547352244764912
+        },
+        {
+          "rank": 5,
+          "title": "FILIP: Fine-grained Interactive Language-Image Pre-Training",
+          "arxiv_id": null,
+          "doi": "10.48550/arxiv.2111.07783",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5421957076956914
+        },
+        {
+          "rank": 6,
+          "title": "Improving the Efficiency and Effectiveness for BERT-based Entity Resolution",
+          "arxiv_id": null,
+          "doi": "10.1609/aaai.v35i15.17562",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5211766616663149
+        },
+        {
+          "rank": 7,
+          "title": "A Study on Token Pruning for ColBERT",
+          "arxiv_id": "2112.06540",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.51
+        },
+        {
+          "rank": 8,
+          "title": "Effective and efficient community search over large heterogeneous information networks",
+          "arxiv_id": null,
+          "doi": "10.14778/3380750.3380756",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5017255372981719
+        },
+        {
+          "rank": 9,
+          "title": "Contextualized Query Embeddings for Conversational Search",
+          "arxiv_id": null,
+          "doi": "10.18653/v1/2021.emnlp-main.77",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4967398875104733
+        },
+        {
+          "rank": 10,
+          "title": "Effective and Efficient Community Search Over Large Directed Graphs",
+          "arxiv_id": null,
+          "doi": "10.1109/tkde.2018.2872982",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4940078552412197
+        }
+      ]
+    }
+  ]
+}

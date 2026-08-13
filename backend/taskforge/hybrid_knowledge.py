@@ -164,6 +164,7 @@ class HybridKnowledgeStore:
         candidate_multiplier: int = 5,
         rerank: bool = False,
         neighbor_window: int = 1,
+        max_chunks_per_document: int | None = None,
     ) -> None:
         if not isinstance(backend, HybridSearchBackend):
             raise TypeError("backend must implement search(HybridSearchRequest)")
@@ -171,10 +172,19 @@ class HybridKnowledgeStore:
             raise ValueError("candidate_multiplier must be between 1 and 100")
         if not 0 <= int(neighbor_window) <= 5:
             raise ValueError("neighbor_window must be between 0 and 5")
+        if max_chunks_per_document is not None and not 1 <= int(
+            max_chunks_per_document
+        ) <= 100:
+            raise ValueError("max_chunks_per_document must be between 1 and 100")
         self.backend = backend
         self.candidate_multiplier = int(candidate_multiplier)
         self.rerank = bool(rerank)
         self.neighbor_window = int(neighbor_window)
+        self.max_chunks_per_document = (
+            None
+            if max_chunks_per_document is None
+            else int(max_chunks_per_document)
+        )
         self._catalog: dict[tuple[str, str], tuple[KnowledgeChunk, HybridChunk]] = {}
         for chunk in chunks:
             self.upsert_catalog(chunk)
@@ -298,6 +308,7 @@ class HybridKnowledgeStore:
             allowed_chunk_ids=allowed_chunk_ids,
             top_k=seed_top_k,
             candidate_k=candidate_k,
+            max_chunks_per_document=self.max_chunks_per_document,
             rerank=self.rerank,
             neighbor_window=self.neighbor_window,
             max_expanded_hits=top_k,

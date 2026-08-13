@@ -2,15 +2,21 @@
 
 [![CI](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml/badge.svg)](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml)
 
-TaskForge 是一个 **Provider-neutral、权限受控、可恢复的通用 Agent Runtime**。它参考了截图项目的 Agent Profile、RAG、分层记忆、工具与审批等产品能力，同时采用 Coding Agent 的 Harness 思路：模型只提出 `ToolRequest`，宿主负责权限、参数校验、执行、幂等、checkpoint 和评测。
+TaskForge 当前定位为一个 **交互式论文研究 Agent**：系统先根据用户需求执行多源开放文献发现，由用户选择研究论文；Host 随后创建不可由 Agent 改写的 `ResearchScope`，在所选论文内执行结构感知证据检索，最后由 Planner、Evaluator、Writer、Critic 四角色完成计划、筛证、写作和逐条审校。
 
-它不是“套一个聊天页面”，也不把模型当授权系统。
+```text
+研究需求 -> 开放论文发现 -> 用户选文 -> ResearchScope
+         -> PDF/摘要摄取 -> 有界证据检索 -> 四 Agent -> 人工复核
+```
+
+底层仍是 Provider-neutral、权限受控、可恢复的 Agent Harness：模型只提出 `ToolRequest`，宿主负责身份、权限、Schema、执行、幂等、checkpoint、证据账本和评测。论文原文不在角色间复制，模型也不是授权系统。
 
 ## 当前能运行什么
 
-同一套 `AgentRuntime` 通过配置切换三类 Agent，无需复制核心循环：
+论文研究工作台是当前产品主链；同一套 `AgentRuntime` 也保留下列可配置能力，无需复制核心循环：
 
-- 研究与报告：ACL 过滤知识检索、作用域记忆召回、审批后生成报告；
+- 论文研究：四源候选发现、PaperCard 选择/排除、Scope 安全摄取、有界证据卡、四角色结构化交接；
+- 通用研究与报告：ACL 过滤知识检索、作用域记忆召回、审批后生成报告；
 - 代码库诊断：安全 `workspace_grep`、按行读取、证据化结论；
 - 文档审阅：真实 PDF/表格分块、本地文档与知识库检索、版本/来源保留、结构化交付；
 - 企业变更审查：受理、合规、风险、决策四角色固定 DAG，最终只生成 `model_untrusted` 建议，必须由人工批准或拒绝。
@@ -24,6 +30,9 @@ Task -> governed retrieval/grep -> ToolResult receipt
 
 ReviewCase -> intake -> [compliance, risk] -> decision recommendation
            -> waiting_human_review -> human approve/reject
+
+PaperResearch -> planner -> evaluator -> writer -> critic
+              -> waiting_human_review -> human approve/reject
 ```
 
 Demo Provider 是确定性离线状态机，用来证明真实工具、审批、持久化和恢复链路；它不会伪装成 LLM。设置凭据后可显式切换到 OpenAI Responses Provider。Native function call 会被归一化为同一个 `ToolRequest`，工具输出通过 `previous_response_id + function_call_output` 续接。
@@ -37,7 +46,7 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 | 产品主链已接入 | FastAPI/Workbench 的默认或可配置运行路径会调用该能力 | 仍不等于外部依赖、生产认证或规模化部署已验证 |
 | live 已验证 | 使用真实凭据和真实外部服务显式执行并留存结果 | 只有这一层才能声明对应真实服务链路通过 |
 
-当前产品主链使用 SQLite Knowledge/Memory 与词法检索，并接入单 Agent 和固定四角色审查流程；离线回归使用 Demo Provider。Qdrant 混合检索仍是本地评测路径，PostgreSQL/Neo4j 是可选模块但尚未接入应用配置主链，OpenAI Provider 只有模拟 HTTP 契约测试。仓库尚未宣称任何真实模型、PostgreSQL、Neo4j 或远程 MCP 的 live 成功。
+当前论文主链使用 SQLite 保存 PaperCard、ResearchScope、EvidenceCard、ClaimRecord 和审计事件，并在 `ContextAssembler` 前复用四类检索路由：`general_text`、`table_numeric`、`cross_document`、`pdf_layout`。路由前执行 tenant/ACL、Scope 版本、有效期和知识库过滤。真实 DeepSeek 四角色业务 E2E 已留存一条 paired A/B；PostgreSQL/Neo4j 仍是未接入主链的可选模块，不能借论文 E2E 声称这些外部依赖已验证。
 
 ## 核心能力
 
@@ -50,8 +59,9 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 - MCP client（固定握手式旧版 `2025-11-25`）：仅从宿主 JSON 配置挂载 allowlist 工具，执行前仍经过本地风险、审批和 Schema；
 - 审计与指标：append-only 事件、secret-like 字段拒绝、run/tool 成功率、p50/p95、token/cost 与 safety 计数；
 - 安全代码检索：不执行 shell；限制工作区、glob、regex、文件大小、结果数和时间；
-- RAG：产品主链使用 tenant-first ACL、版本/有效期和词法检索，并保留可替换的 hybrid score 接口；
-- 结构化 PDF RAG：`pypdf/pdfplumber` 段落与表格提取、页码/邻接 provenance；BM25 + 本地 Qdrant named dense/sparse + RRF + 可替换 reranker 当前属于离线评测路径；
+- RAG：产品主链在 tenant-first ACL、版本/有效期过滤后，按查询与可见语料选择通用 BM25/可选 BGE dense、表格数值 BM25+特征重排、跨文档 source-coverage RRF 或 PDF 结构字段+邻接召回；选择结果和实际 backend 会写入上下文/工具回执；
+- 结构化 PDF RAG：`pypdf/pdfplumber` 段落与表格提取，并持久化 block 类型、表格行、页码、bbox 与邻接 provenance；默认在线路径使用结构字段 BM25 和相邻块扩展，本地 Qdrant named dense/sparse 与 server-side RRF 仍属于离线/显式 opt-in 路径；
+- 通用文本图谱实验：`LocalEvidenceGraph` 在候选集内使用文档/章节/邻接/实体结构做可审计重排，并提供受限 1--2 跳候选扩展接口；仅 `general_text` 路由 opt-in，未替换表格、跨文档和 PDF 默认路径；
 - Memory：tenant/org/user/agent/task 五级 scope、过期时间和 provenance；
 - 多角色编排：固定有向无环图、角色 capability、RoleRun 尝试/恢复、分层上下文、handoff、proposed/verified fact 与一次性 host verification receipt；引用有据的 claim（其 evidence refs 全部来自该角色本次运行真实检索到的 knowledge_search 回执）由宿主自动签发 `authority=tool` receipt 并置为 verified，随后向下游依赖角色创建 handoff；未检索到引用的 claim 保持 `model_untrusted`/`proposed`；
 - 业务决策边界：模型只能提交结构化建议，case 状态和最终批准由宿主状态机与人工身份控制；
@@ -81,6 +91,8 @@ backend/taskforge/
   evaluation.py        轨迹级评测
   document_ingestion.py PDF/表格与 provenance 摄取
   hybrid_retrieval.py  BM25/Qdrant/RRF/rerank 检索
+  rag_profiles.py      基于查询/可见语料特征的四类路由
+  routed_knowledge.py  在线 KnowledgeStore 检索路由适配层
   orchestration.py     多角色计划、RoleRun、事实、handoff 与私有记忆
   case_runtime.py      固定角色计划到 AgentRuntime 的安全桥接
   review_cases.py      企业审查业务状态机与人工决策
@@ -140,7 +152,7 @@ TASKFORGE_OPENAI_MODEL=你的可用模型名
 
 未同时提供 key 和 model 时服务会 fail fast，不会静默回退到 mock。Provider 实现遵循 OpenAI 官方的 [function calling flow](https://developers.openai.com/api/docs/guides/function-calling)：应用执行函数并回传与 `call_id` 对应的输出；模型从未获得 Python callable 或宿主权限。
 
-仓库单测只覆盖离线 runtime 和模拟 HTTP 契约，不代表真实模型效果。填好 key 与 model 后，可显式执行一条真实、可能计费的 native tool-calling 冒烟测试：
+通用 OpenAI 路径的单测仍只覆盖离线 runtime 和模拟 HTTP 契约，不代表真实 OpenAI 模型效果。填好 key 与 model 后，可显式执行一条真实、可能计费的 native tool-calling 冒烟测试：
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_live_openai_smoke.py --confirm-live-call
@@ -148,7 +160,7 @@ TASKFORGE_OPENAI_MODEL=你的可用模型名
 
 该脚本要求模型调用一次受控 `calculator`，再通过 `previous_response_id + function_call_output` 完成回答；未带 `--confirm-live-call` 时会在任何网络请求前退出。只有这条脚本真实通过后，才能声明当前凭据、模型和网络环境的 live API 链路已验证。
 
-`/api/review-cases` 的 `execution` 响应把状态拆为四项：`provider_configured`、`contract_tested_mock`、`live_smoke_verified` 与 `business_e2e_verified`。配置 key/model 只会令第一项为 `true`；模拟 HTTP 契约测试也不等于真实调用。当前尚未实现可校验、可持久化的 live smoke 与业务 E2E 验证记录，因此即使本地脚本曾成功，API 中后两项仍保持 `false`，不会从环境变量或 API key 推断成功。
+`/api/review-cases` 的通用 `execution` 状态不会从 API key 推断成功；论文研究的真实 DeepSeek 业务验证保存在独立、不可混用的 E2E 报告中。当前一条完整四角色任务从预优化 `212,874` Token 降至 `62,186` Token，Scope 越界为 0；这证明该任务链路执行成功，不证明所有研究问题的回答质量或生产 SLA。
 
 ## 切换 DeepSeek Provider
 
@@ -172,6 +184,25 @@ TASKFORGE_DEEPSEEK_MODEL=deepseek-chat
 
 ## 评测
 
+论文研究采用三层互不替代的报告：
+
+| 层级 | 数据量 | 当前结果 |
+|---|---:|---|
+| 开放论文发现 | 100 个真实需求、792 个已知相关 arXiv 标签 | 本机匿名 Provider live：Recall@20/50 `0.001/0.001`，**质量门禁失败**；336 个 Provider/查询组失败暴露了限流和跨语言查询短板 |
+| 用户选文后的证据检索 | 414 个锁定资产 | TAT-QA `0.9902/0.9902`、QASPER B2 `0.6282/0.9738`、MultiHop `0.9199/0.9893`、PDF `1.0/1.0`（Recall@10/Candidate@50） |
+| 用户直接上传 PDF 后的核心召回 | QASPER dev 38 篇 / 100 题 | Recall-first 默认 Jina/MiniLM `0.7493/0.9986`；PDF 分布校准 MiniLM `0.7871/0.9986`；章节意图先验 + rank fusion opt-in **`0.8078/0.9986`**；50 题校准/调参集 `0.8217/0.9817`（非独立，且与 100 题有 6 道题重合）；二次 rewrite `0.2778` 负消融 |
+| 端到端 | 用户上传硬边界回归 + 历史 30 条生命周期/1 条 DeepSeek A/B | 当前 upload → PDF indexing → bounded evidence 回归通过；旧 30 条摘要回退报告只作历史记录 |
+
+在此前非独立的 50 题校准集之外，已冻结一份新的论文级 holdout：QASPER dev、100 题、33 篇论文，与训练集、50 题校准集和原锁定 100 题均无论文重叠；未据此调参。当前冻结配置一次性评测为 Recall@10 **`0.8317`**、Recall@50 **`1.0000`**、nDCG@10 `0.6485`（p95 `6.10 s`）。这支持“没有明显过拟合”的工程判断，但仍不等价于对所有论文分布的数学证明。
+
+开放发现只返回标题、来源链接和一句话介绍，不自动下载论文。用户选择并上传 PDF 后才建立 RAG；未上传论文禁止用摘要回退。开放发现低分不是有界检索低分，也不会被标题型冒烟覆盖。历史报告分别见：
+
+- [`eval/reports/literature-discovery-full100-live.json`](eval/reports/literature-discovery-full100-live.json)
+- [`eval/reports/paper-research-e2e-30-deterministic.json`](eval/reports/paper-research-e2e-30-deterministic.json)
+- [`eval/reports/paper-research-business-e2e-live.json`](eval/reports/paper-research-business-e2e-live.json)
+
+完整定位、复现命令和口径见 [`docs/PAPER_RESEARCH_AGENT.md`](docs/PAPER_RESEARCH_AGENT.md) 与 [`docs/EVALUATION.md`](docs/EVALUATION.md)。
+
 ```powershell
 python scripts\run_eval.py --output .taskforge\eval-report.json
 ```
@@ -189,7 +220,14 @@ python scripts\fetch_rag_eval.py --dataset tatqa-dev
 python scripts\run_rag_experiment.py --dataset tatqa
 ```
 
-当前本机锁定 TAT-QA 结果是一个必须保留的负结果：BM25 Recall@10 为 `0.658333`，无语义 hash 向量的 Qdrant RRF 为 `0.248333`，再加词法 rerank 后为 `0.318333`。因此它只证明本地 Qdrant/RRF 路径可执行，不能证明混合检索优于词法基线，更不能证明生产语义检索质量。原始结果、负结果解释和第三方数据许可边界见 [评测协议](docs/EVALUATION.md)。离线/模拟 HTTP 通过不等于真实模型通过。
+当前主评测按产品需要拆成四个隔离场景：TAT-QA 题目自带上下文中的表格/数值证据、QASPER 长文档、MultiHop-RAG 可识别跨文档证据，以及合成 PDF/权限冒烟。历史 retained-capability 控制结果分别为 Recall@10 `0.9902`、`0.2206`、`0.9199` 和 `1.0000`；QASPER 的 `0.2206` 只代表旧的 100 题 BM25 审计控制，不是当前文档隔离调优结果。PDF 仅有 12 题，不能作为生产质量证明。完整矩阵见 [保留能力基线](eval/retrieval-retained-capabilities-20260811.json) 和 [评测协议](docs/EVALUATION.md)。
+
+ QASPER 的新文档隔离调优集已经固定为 200 个训练题（按论文划分，历史 100 题不参与调参）。B0 BM25 为 Recall@10 `0.5170` / Candidate@50 `0.9068`；通过论文标题、章节上下文和真实本地 BGE small 向量，B2 达到 `0.6282` / `0.9738`，最新同代码产物 p95 `10.04 ms`，配对 bootstrap CI 下界为正。对同一 Candidate@50 只重排 Top-20 后，QASPER Recall@10 达到 `0.7341`，p95 `549.6 ms`；独立验证集为 `0.7223`，配对 CI 下界为 `+0.0379`。该 reranker 只作为 `general_text` 路由的显式 opt-in，不替换表格、跨文档或 PDF 路由。完整 B0-B5 消融（含未晋级的 B1/B3/B4/B5 负结果）见 [QASPER 消融矩阵](eval/qasper-hierarchical-ablation-20260811.json)；Top-N 扫描见 [QASPER reranker 报告](eval/reports/qasper-rerank-topn-20260811.json)；四场景回归门禁见 [B2 四场景报告](eval/reports/retrieval-retained-capabilities-b2-20260811.json)。
+在此基础上，候选保持型 `LocalEvidenceGraph` 使用训练集选择的图/实体/章节/邻接/PPR 权重，在独立 validation 上达到 Recall@10 `0.7610`、nDCG@10 `0.5069`，Candidate@50 保持 `0.9627`；Top-30 交叉编码器基线 p95 为 `951.9 ms`，图重排增量 p95 为 `2.25 ms`，ACL 违规为 `0`。该结果只晋级为 `general_text/QASPER` opt-in，不替换表格、跨文档或 PDF 路由；Top-30 配置与独立产物见 [图谱重排 Top-30 报告](eval/reports/qasper-graph-tuned-top30-20260811.json)，旧权重审计仍保留在 [图谱重排报告](eval/reports/qasper-graph-feature-20260811.json)。
+
+Top-20 低置信度升级 Top-30 的两段式 Cross-Encoder 预算也已实现并真实分批推理。训练划分使用 Top-1/Top-2 分差 `<0.7` 选择阈值；独立 validation 减少 `19.83%` 的打分对、平均延迟降低 `103.6 ms`，但图路线 Recall@10 从 `0.7610` 降至 `0.7468`、nDCG@10 降至 `0.4950`，因此只保留为 opt-in 负消融，不替换固定 Top-30 默认质量配置。详见 [自适应重排报告](eval/reports/qasper-adaptive-rerank-20260811.json)。
+
+旧 TAT-QA 全库发现压力测试仍保留为负结果：BM25 Recall@10 为 `0.658333`，无语义 hash 向量的 Qdrant RRF 为 `0.248333`，再加词法 rerank 后为 `0.318333`。它不是 TAT-QA 官方任务口径，只证明实验路径可执行，不能证明混合检索优于词法基线，也不能与官方答案榜直接比较。离线/模拟 HTTP 通过不等于真实模型通过。
 
 ## 持久知识与 Memory
 
@@ -217,6 +255,20 @@ psql "$env:TASKFORGE_POSTGRES_DSN" -v ON_ERROR_STOP=1 `
 
 ## 受控 MCP
 
+论文研究能力已封装为独立 MCP Server，支持 stdio 与 HTTP `/mcp`，向 TaskForge、Claude Code 和 Hermes 暴露 8 个工具：`literature_search`、`literature_expand`、`literature_get`、`scope_get`、`paper_search`、`paper_read`、`citation_verify`、`scope_expansion_request`。其中 `paper_search` 强制要求 ready Scope；Scope 创建、修改和确认不作为 Agent 工具暴露。
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_research_mcp.py --transport stdio `
+  --tenant local --user researcher
+
+.\.venv\Scripts\python.exe scripts\run_research_mcp.py --transport http `
+  --host 127.0.0.1 --port 8765
+```
+
+本机 Hermes `0.15.1` 已实际连接 stdio Server 并发现 8/8 工具；Claude Code `2.1.158` 已识别项目级 [`.mcp.json`](.mcp.json)，状态为首次交互批准前的 `Pending approval`。仓库自动测试覆盖 stdio JSON-RPC dispatcher、HTTP JSON-RPC 和 TaskForge MCP Client 互操作。配置细节见 [`docs/PAPER_RESEARCH_AGENT.md`](docs/PAPER_RESEARCH_AGENT.md)。
+
+下文是 TaskForge 作为远程 MCP 客户端连接其他服务时的独立安全边界，不要和上面的论文 MCP Server 混为一谈。
+
 远程 MCP 默认完全关闭。可从 `config/mcp.example.json` 复制配置并设置 `TASKFORGE_MCP_CONFIG_PATH`；配置文件必须把 server 绑定到已存在的 Agent profile，并为每个远程工具声明本地 policy，模型、远端 description 和 annotations 都不能修改权限。例如：
 
 ```json
@@ -242,7 +294,7 @@ psql "$env:TASKFORGE_POSTGRES_DSN" -v ON_ERROR_STOP=1 `
 }
 ```
 
-客户端固定实现握手式协议修订 `2025-11-25` 的 initialize、分页 `tools/list` 和 `tools/call`。它每次请求做 DNS/IP preflight、禁重定向、流式限制响应大小，并在服务端选择 SSE 时明确 fail closed；当前只实现 JSON response 子集。远端返回 `isError=true` 会记为失败；side-effecting 工具若没有声明必填 string `idempotency_key`，会在挂载前被拒绝。这个 preflight 与 httpx 的实际连接解析不是 IP pinning，不能单独消除 DNS rebinding TOCTOU，生产部署仍需 egress proxy/firewall。MCP 官方在 2026-07-28 已把 current revision 更新为无连接态、per-request metadata 的 `2026-07-28`，本仓库尚未实现该新版，不能宣称“最新 MCP 全兼容”。仓库测试使用模拟 HTTP，没有调用真实 MCP 服务。
+通用远程客户端固定实现握手式协议修订 `2025-11-25` 的 initialize、分页 `tools/list` 和 `tools/call`。它每次请求做 DNS/IP preflight、禁重定向、流式限制响应大小，并在服务端选择 SSE 时明确 fail closed；当前只实现 JSON response 子集。远端返回 `isError=true` 会记为失败；side-effecting 工具若没有声明必填 string `idempotency_key`，会在挂载前被拒绝。这个 preflight 与 httpx 的实际连接解析不是 IP pinning，不能单独消除 DNS rebinding TOCTOU，生产部署仍需 egress proxy/firewall。MCP 官方在 2026-07-28 已把 current revision 更新为无连接态、per-request metadata 的 `2026-07-28`，本仓库尚未实现该新版，不能宣称“最新 MCP 全兼容”。
 
 ## Docker Compose
 
@@ -254,12 +306,14 @@ docker compose up --build
 
 ## 已知边界
 
-- 产品主链当前只把 SQLite `memory`/`sqlite` context、case、orchestration 和 Operations 接入应用配置；PostgreSQL adapter 仅做 fake DB-API 契约测试，Neo4j retriever 仅做 fake-driver 测试且 gate 默认关闭，两者都不是当前应用主链；
-- 本地 Qdrant/hash 混合检索属于评测脚本路径，锁定结果显著低于 BM25；FastEmbed/OpenAI embedding 仅有注入或模拟测试。真实语义模型、远程 Qdrant、PostgreSQL、Neo4j 与远程 MCP 均无 live 成功声明；
+- 产品主链已把 SQLite `memory`/`sqlite` context 和四类检索 profile router 接入应用配置；PostgreSQL adapter 仅做 fake DB-API 契约测试，Neo4j retriever 仅做 fake-driver 测试且 gate 默认关闭，两者都不是当前应用主链；
+- 默认 `general_text` 使用 FastEmbed BGE-small；设置 `TASKFORGE_GENERAL_TEXT_BACKEND=bm25` 可显式回退到 BM25。上传链路默认使用 Jina + MiniLM 归一化集成以优先 Recall，BGE-M3 零样本在 20 题验证上为负结果，领域微调入口已提供但需 GPU 才适合完整训练；本地 Qdrant/hash 与图重排仍是评测或显式 opt-in 路径；真实远程 Qdrant、PostgreSQL、Neo4j 与远程 MCP 均无 live 成功声明；
 - 演示知识只为 `local` tenant 加载显式 allowlist 文档，其他 tenant 会检索为空而不是跨租户回退；
 - API header 是演示 identity，需要在生产前替换为可信认证与 RBAC；
 - Worker 已有 SQLite lease/CAS；审批 API 的并发锁仍只覆盖单进程，横向扩容审批需要数据库级 claim；
-- MCP 仅在宿主显式配置后启用，当前 JSON-only，测试只使用模拟 HTTP；没有模型生成 shell 或容器代码执行。多角色是已经接入产品 API 的宿主固定 DAG，但不是开放式、可动态配置的自主 Agent 群聊，且尚未用真实模型运行；
+- 开放发现卡片不是证据；只有用户上传并成功解析的 PDF 才能进入 ready Scope。历史摘要回退 E2E 已失效，需按新上传协议重跑；
+- 论文 MCP Server 已验证 stdio/HTTP JSON-RPC 与本地客户端互操作；通用远程 MCP Client 仍是 JSON response 子集。没有模型生成 shell 或容器代码执行；四角色是已接入产品 API 的宿主固定 DAG，不是开放式群聊；
+- 100 题匿名 Provider 开放发现质量门禁当前失败，本轮主要伴随 Semantic Scholar/OpenAlex/arXiv 限流和中文查询未翻译；代码已加入礼貌全局限速、联系身份、API Key 入口和保守的中英学术术语桥接，但在正式配额下用同一数据重跑前，不能在简历中声称 Paper Recall/Precision/nDCG 达标；
 - RoleRun SQLite 租约会在 provider/tool dispatch 前重新 fencing，能阻止失去租约的旧 worker 执行工具；但已发出的 provider HTTP 请求无法撤回，进程停顿跨过租期时仍可能产生重复模型调用或费用，不能宣称 provider exactly-once；
 - Queue/审计/checkpoint 分属本地 SQLite 事务，尚不是跨库原子 exactly-once；下游副作用仍必须自行尊重 idempotency key；
 - 创建 queued Run 尚无客户端请求幂等键；网络结果不明确时不会伪造 mock 成功，但调用方仍需先按业务请求标识查询再决定是否重试；

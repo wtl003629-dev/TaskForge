@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "split_id": "tatqa-train-online-repeat-30-v1",
+  "dataset": "TAT-QA",
+  "source_split": "official_train",
+  "source_sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+  "selection": {
+    "strategy": "category_round_robin_within_locked",
+    "limit": 30,
+    "seed": 20260811,
+    "excluded_split_ids": [],
+    "parent_split_id": "tatqa-train-online-heldout-100-v1"
+  },
+  "case_ids": [
+    "tatqa:d4dde3a9-906d-4932-a142-c58e8154d1ca",
+    "tatqa:8e986521-2054-41b9-86ed-420b645770d3",
+    "tatqa:2fb32581-289c-4815-a3b0-2a1fcfbac96a",
+    "tatqa:3dc10f11-eb2d-4135-9a77-ad5bcae9183f",
+    "tatqa:a4546f07-b70d-4e47-a066-8889e467d2d3",
+    "tatqa:f35c3b8a-6ca8-420f-9623-ad0def46f316",
+    "tatqa:73c8786a-ce2b-49c8-b715-993dd3af82fa",
+    "tatqa:05937d8e-2c06-49c2-8d29-43793323218d",
+    "tatqa:f142323d-6ccd-4ff9-ad9f-046f8358326a",
+    "tatqa:6559f926-a7c6-4258-ab34-34830ec7ed33",
+    "tatqa:7e47aa54-46cf-429d-86bf-9c2d055f76f3",
+    "tatqa:9f7b28c2-8fa3-437c-a0a1-43950d3ec637",
+    "tatqa:070848eb-432d-4fd5-869f-d597f8076efd",
+    "tatqa:18d4aead-787f-45f7-8be0-23a3ab412ee2",
+    "tatqa:c9fbaf52-8b16-469f-846f-9403fb542c50",
+    "tatqa:ff20580a-997b-4cb8-9d03-61de5db89efe",
+    "tatqa:463c5904-cecf-4c47-b7ea-b33e37036a00",
+    "tatqa:39c7996c-f408-497a-bfc5-e0a48b805776",
+    "tatqa:cb6e15b0-94eb-4bf2-b671-e51f47d4ca54",
+    "tatqa:0e35f641-5e02-4bb4-9bb0-4e63503ada19",
+    "tatqa:cd0fe186-1742-4477-9ba4-bfbd89038a28",
+    "tatqa:32090c14-bc68-4dcc-a2a3-c3741c67564e",
+    "tatqa:56b6bec6-a9b8-4fba-8095-e80802186511",
+    "tatqa:42745f21-9277-4938-8125-974d5e7fc4af",
+    "tatqa:678a543c-800b-4656-a826-da4c1139e45b",
+    "tatqa:489779b6-3f31-4ab0-b124-82d45e2df9a4",
+    "tatqa:ed8cbf22-8467-4acb-bb1e-18445268f5bb",
+    "tatqa:5f49835a-c402-4a33-8617-8a056a4f0980",
+    "tatqa:7c06a4dc-a76d-414a-a817-329860886573",
+    "tatqa:ddf32f59-b192-42f1-8b65-69c264520f62"
+  ],
+  "category_counts": {
+    "arithmetic": 6,
+    "count": 6,
+    "multi-span": 6,
+    "table": 6,
+    "text": 6
+  }
+}

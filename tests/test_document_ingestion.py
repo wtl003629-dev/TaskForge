@@ -24,6 +24,7 @@ def _write_pdf(
     pages: int = 1,
     include_content: bool = True,
     include_table: bool = True,
+    include_headings: bool = True,
     password: str | None = None,
 ) -> None:
     writer = PdfWriter()
@@ -52,11 +53,12 @@ def _write_pdf(
                 if page_index == 0
                 else "High risk exports require human approval."
             )
-            commands.extend(
-                [
-                    f"BT /F1 16 Tf 72 740 Td ({_pdf_text(heading)}) Tj ET",
-                    f"BT /F1 11 Tf 72 710 Td ({_pdf_text(paragraph)}) Tj ET",
-                ]
+            if include_headings:
+                commands.append(
+                    f"BT /F1 16 Tf 72 740 Td ({_pdf_text(heading)}) Tj ET"
+                )
+            commands.append(
+                f"BT /F1 11 Tf 72 710 Td ({_pdf_text(paragraph)}) Tj ET"
             )
             if include_table and page_index == 0:
                 for y in (680, 650, 620):
@@ -147,6 +149,21 @@ def test_heading_boundaries_and_chunk_neighbors_span_pages(tmp_path: Path) -> No
     assert result.chunks[1].previous_block_id == result.chunks[0].block_ids[-1]
 
 
+def test_page_boundary_mode_prevents_small_pages_from_merging(tmp_path: Path) -> None:
+    pdf = tmp_path / "two-pages-without-headings.pdf"
+    _write_pdf(pdf, pages=2, include_table=False, include_headings=False)
+
+    merged = extract_pdf_document(pdf, chunk_chars=2_000)
+    preserved = extract_pdf_document(
+        pdf,
+        chunk_chars=2_000,
+        preserve_page_boundaries=True,
+    )
+
+    assert [chunk.pages for chunk in merged.chunks] == [(1, 2)]
+    assert [chunk.pages for chunk in preserved.chunks] == [(1,), (2,)]
+
+
 def test_rejects_oversize_too_many_pages_encrypted_and_empty(tmp_path: Path) -> None:
     regular = tmp_path / "regular.pdf"
     _write_pdf(regular, pages=2, include_table=False)
@@ -189,4 +206,3 @@ def test_rejects_non_pdf_and_reports_missing_dependency(tmp_path: Path, monkeypa
     with pytest.raises(PDFDependencyError, match="pdfplumber") as error:
         extract_pdf_document(pdf)
     assert "pypdf>=5,<7" in str(error.value)
-

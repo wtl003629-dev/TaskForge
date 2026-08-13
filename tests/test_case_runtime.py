@@ -752,6 +752,102 @@ async def test_submit_schema_is_strict_and_tool_executes_at_most_once(
     assert len(store.list_shared_facts(access())) == 1
 
 
+def test_research_submit_schema_uses_short_nonduplicating_envelope() -> None:
+    spec = submit_role_result_spec(
+        role_id="retrieval_planner",
+        require_research_payload=True,
+    )
+
+    properties = spec.parameters["properties"]
+    assert properties["claims"]["maxItems"] == 1
+    assert properties["summary"]["maxLength"] == 400
+    assert properties["handoff_summary"]["maxLength"] == 400
+    assert properties["claims"]["items"]["properties"]["evidence_refs"][
+        "maxItems"
+    ] == 4
+    assert "research_payload" in properties
+    assert "research_payload" in spec.parameters["required"]
+
+
+@pytest.mark.asyncio
+async def test_host_injects_bound_research_protocol_discriminator(
+    tmp_path: Path,
+) -> None:
+    store = SQLiteOrchestrationStore(tmp_path / "orchestration.db")
+    research_profile = profile(
+        role_id="retrieval_planner",
+        profile_id="profile-planner",
+        max_steps=3,
+    )
+    plan = store.create_plan(
+        access(),
+        objective=(
+            "Plan a bounded survey\nCASE_INPUT_JSON="
+            '{"research_scope_id":"scope-1","research_scope_version":1}'
+        ),
+        allowed_role_ids=["retrieval_planner"],
+        slots=[
+            SpeakerSlot(
+                slot_id="planner",
+                role_id="retrieval_planner",
+                agent_profile_id="profile-planner",
+                instruction="Create the typed plan.",
+            )
+        ],
+        client_idempotency_key="plan:host-protocol-injection",
+    )
+    provider = ScriptedProvider(
+        [
+            ModelTurn(
+                kind="tool",
+                tool_requests=[
+                    ToolRequest(
+                        call_id="submit-research",
+                        name=SUBMIT_ROLE_RESULT,
+                        arguments={
+                            "claims": [],
+                            "summary": "Plan ready.",
+                            "handoff_summary": "Use the bounded plan.",
+                            # Deliberately omit the Host-known top-level
+                            # discriminator; nested typed data stays strict.
+                            "research_payload": {
+                                "plan": {
+                                    "research_questions": ["What is supported?"],
+                                    "evidence_requirements": ["A cited passage"],
+                                    "output_outline": ["Findings"],
+                                }
+                            },
+                        },
+                    )
+                ],
+            ),
+            final_turn(),
+        ]
+    )
+    agent_runtime, _ = runtime(tmp_path, provider, ToolRegistry())
+    executor = CaseAgentExecutor(
+        store=store,
+        runtime=agent_runtime,
+        user_id="user-a",
+        profiles={"profile-planner": research_profile},
+    )
+
+    outcome = await executor.execute_next(
+        tenant_id="tenant-a",
+        conversation_id="conversation-a",
+        plan_id=plan.plan_id,
+    )
+
+    assert outcome is not None
+    assert outcome.role_run.status == RoleRunStatus.SUCCEEDED
+    assert outcome.role_result is not None
+    assert outcome.role_result.research_payload is not None
+    assert (
+        outcome.role_result.research_payload.protocol
+        == "research.planner_handoff.v1"
+    )
+
+
 @pytest.mark.asyncio
 async def test_invalid_submit_arguments_do_not_create_a_structured_result(
     tmp_path: Path,

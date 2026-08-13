@@ -89,3 +89,29 @@ def test_research_survey_profiles_follow_depth_selection() -> None:
         "synthesis_writer",
     ]
     assert [p.metadata["role_id"] for p in rigorous] == list(RESEARCH_SURVEY_ROLES)
+
+
+def test_paper_protocol_scopes_retrieval_to_evaluator() -> None:
+    profiles = research_survey_profiles(model="test-model", protocol="paper")
+    by_role = {profile.metadata["role_id"]: profile for profile in profiles}
+    assert "paper_search" not in by_role["retrieval_planner"].allowed_tools
+    assert "paper_search" in by_role["source_evaluator"].allowed_tools
+    assert "paper_search" not in by_role["synthesis_writer"].allowed_tools
+    assert "paper_search" not in by_role["critical_reviewer"].allowed_tools
+    assert all(
+        profile.metadata["research_protocol"] == "paper"
+        for profile in profiles
+    )
+
+
+def test_paper_text_cannot_grant_scope_mutation_capabilities() -> None:
+    profiles = research_survey_profiles(model="test-model", protocol="paper")
+    forbidden = {
+        "scope_create",
+        "scope_update",
+        "scope_confirm",
+        "research_scope_create",
+        "research_scope_update",
+    }
+    assert all(forbidden.isdisjoint(profile.allowed_tools) for profile in profiles)
+    assert profiles[0].allowed_tools == []

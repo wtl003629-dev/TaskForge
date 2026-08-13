@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "dataset": {
+    "kind": "qasper_locked",
+    "qasper_input_path": ".taskforge/eval-cache/qasper-train-v0.3.json",
+    "qasper_locked_split_path": "eval/splits/qasper-train-validation-200-v1.json",
+    "qasper_context_mode": "provided_document_context"
+  },
+  "retrieval": {
+    "stages": ["qdrant_qasper_dense_rerank", "graph_feature_rerank"],
+    "development_sweep": true,
+    "top_k": [1, 5, 10, 20, 50],
+    "candidate_k": 50,
+    "semantic_embedding": true,
+    "semantic_model": "BAAI/bge-small-en-v1.5",
+    "learned_reranker": true,
+    "reranker_model": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "rerank_top_k": 30,
+    "reranker_batch_size": 64,
+    "graph_feature_rerank": true,
+    "graph_rerank_base_stage": "qdrant_qasper_dense_rerank",
+    "graph_rerank_seed_k": 10,
+    "graph_rerank_graph_weight": 0.087379,
+    "graph_rerank_entity_weight": 0.261752,
+    "graph_rerank_section_weight": 0.001521,
+    "graph_rerank_adjacency_weight": 0.097470,
+    "graph_rerank_ppr_weight": 0.040464
+  },
+  "filters": {
+    "tenant_id": "tenant-evaluation",
+    "request_principals": ["user:evaluator"],
+    "indexed_acl_principals": ["role:rag-reviewer", "user:evaluator"],
+    "knowledge_base_id": "taskforge-evaluation",
+    "version": "1",
+    "version_order": 1
+  }
+}

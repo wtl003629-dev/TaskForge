@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "dataset": "QASPER",
+  "split": "qasper-train-tuning-200-v1",
+  "context_mode": "provided_document_context",
+  "backend": "qasper_hierarchical_in_memory_dense",
+  "candidate_k": 50,
+  "candidate_recall_at_50": 0.9737554112554112,
+  "model": {
+    "dense": "BAAI/bge-small-en-v1.5",
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "learned": true
+  },
+  "results": [
+    {
+      "rerank_top_k": 16,
+      "run": ".taskforge/eval-runs/rag-qasper-locked-20260811T063902.856479Z",
+      "recall_at_10": 0.706978354978355,
+      "ndcg_at_10": 0.4928418205163421,
+      "p50_ms": 229.049,
+      "p95_ms": 490.0101,
+      "scored_pairs": 3178
+    },
+    {
+      "rerank_top_k": 20,
+      "run": ".taskforge/eval-runs/rag-qasper-locked-20260811T063744.396869Z",
+      "recall_at_10": 0.7340616883116883,
+      "ndcg_at_10": 0.5108429626548255,
+      "p50_ms": 274.4054,
+      "p95_ms": 549.5927,
+      "scored_pairs": 3935
+    },
+    {
+      "rerank_top_k": 24,
+      "run": ".taskforge/eval-runs/rag-qasper-locked-20260811T064006.992430Z",
+      "recall_at_10": 0.7432283549783549,
+      "ndcg_at_10": 0.5113262110455754,
+      "p50_ms": 389.3506,
+      "p95_ms": 728.7508,
+      "scored_pairs": 4635
+    }
+  ],
+  "validation": {
+    "split": "qasper-train-validation-200-v1",
+    "baseline_run": ".taskforge/eval-runs/qasper-train-validation-200-b2-20260811",
+    "rerank_top_k": 20,
+    "candidate_run": ".taskforge/eval-runs/rag-qasper-locked-20260811T064209.937621Z",
+    "baseline_recall_at_10": 0.6366666666666666,
+    "candidate_recall_at_10": 0.7223055555555555,
+    "candidate_recall_delta": 0.08563888888888888,
+    "paired_recall_ci_95": [0.03791666666666667, 0.13377916666666664],
+    "candidate_p95_ms": 693.2396,
+    "gate_report": "eval/reports/qasper-validation-rerank-top20-20260811.json"
+  },
+  "decision": {
+    "recommended_rerank_top_k": 20,
+    "reason": "Top-20 retains most of Top-24 quality while keeping p95 below 550 ms on the tuning split; validation paired CI is positive.",
+    "scope": "QASPER/general_text long-document evaluation route only",
+    "other_routes_changed": false
+  }
+}

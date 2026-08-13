@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 
@@ -274,6 +274,8 @@ class OpenAIChatCompletionsProvider:
         model: str | None = None,
         base_url: str = "https://api.deepseek.com",
         timeout_seconds: float = 60.0,
+        thinking_mode: Literal["enabled", "disabled"] | None = None,
+        json_mode: bool = False,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         if not isinstance(api_key, str) or not api_key.strip():
@@ -282,11 +284,15 @@ class OpenAIChatCompletionsProvider:
             raise OpenAIProviderConfigurationError("provider model cannot be empty")
         if timeout_seconds <= 0:
             raise OpenAIProviderConfigurationError("timeout_seconds must be positive")
+        if thinking_mode not in {None, "enabled", "disabled"}:
+            raise OpenAIProviderConfigurationError("thinking_mode is invalid")
         self._api_key = api_key
         self._enabled = enabled
         self._model = model
         self._base_url = base_url.rstrip("/")
         self._timeout = httpx.Timeout(timeout_seconds)
+        self._thinking_mode = thinking_mode
+        self._json_mode = json_mode
         self._owns_client = client is None
         self._client = client or httpx.AsyncClient()
 
@@ -313,6 +319,15 @@ class OpenAIChatCompletionsProvider:
             messages=messages,
             tools=tools,
         )
+        thinking_mode = profile.metadata.get("thinking_mode", self._thinking_mode)
+        if thinking_mode not in {None, "enabled", "disabled"}:
+            raise OpenAIProviderConfigurationError(
+                "profile thinking_mode must be enabled or disabled"
+            )
+        if thinking_mode is not None:
+            payload["thinking"] = {"type": thinking_mode}
+        if self._json_mode:
+            payload["response_format"] = {"type": "json_object"}
         try:
             response = await self._client.post(
                 f"{self._base_url}/chat/completions",

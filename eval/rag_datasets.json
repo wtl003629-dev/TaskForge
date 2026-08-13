@@ -20,6 +20,24 @@
       ]
     },
     {
+      "dataset_id": "tatqa-train",
+      "name": "TAT-QA training labels (held-out online evaluation source)",
+      "homepage": "https://github.com/NExTplusplus/TAT-QA",
+      "license": "CC BY 4.0",
+      "commercial_use": true,
+      "redistribution": "allowed-with-attribution",
+      "automated": true,
+      "notes": "Pinned official train split. TaskForge reserves locked IDs from this artifact for the online held-out evaluation and never uses those IDs for tuning.",
+      "artifacts": [
+        {
+          "filename": "tatqa_dataset_train.json",
+          "url": "https://raw.githubusercontent.com/NExTplusplus/TAT-QA/ec12a30c26365ff05face6ffc431aaff9cb67c91/dataset_raw/tatqa_dataset_train.json",
+          "sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+          "max_bytes": 14000000
+        }
+      ]
+    },
+    {
       "dataset_id": "tat-dqa",
       "name": "TAT-DQA",
       "homepage": "https://nextplusplus.github.io/TAT-DQA/",
@@ -48,9 +66,22 @@
       "license": "CC BY 4.0",
       "commercial_use": true,
       "redistribution": "catalog-only",
-      "automated": false,
-      "notes": "Long scientific text with strong paragraph evidence; load with the official dataset card and pin its revision.",
-      "artifacts": []
+      "automated": true,
+      "notes": "Long scientific text with strong paragraph evidence. Train and validation are pinned to the AllenAI Hugging Face Parquet conversion revision 06806e4608976fc2fac0a090ac425d5b2b29caf4; the final test file is intentionally not cataloged.",
+      "artifacts": [
+        {
+          "filename": "qasper-train-v0.3.parquet",
+          "url": "https://huggingface.co/datasets/allenai/qasper/resolve/06806e4608976fc2fac0a090ac425d5b2b29caf4/qasper/train/0000.parquet",
+          "sha256": "9af08092ee26c4f700202c1f90d1592b662926f23f3a308a10ff0a53345e37fe",
+          "max_bytes": 15000000
+        },
+        {
+          "filename": "qasper-validation-v0.3.parquet",
+          "url": "https://huggingface.co/datasets/allenai/qasper/resolve/06806e4608976fc2fac0a090ac425d5b2b29caf4/qasper/validation/0000.parquet",
+          "sha256": "089781b91c337d348dd9e8b57cc8adc100ed2d9cab84a6127402bcccf1559222",
+          "max_bytes": 5000000
+        }
+      ]
     },
     {
       "dataset_id": "musique",

@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from urllib.parse import unquote
 from uuid import uuid4
 
 from fastapi import (
@@ -53,6 +54,28 @@ from .domain import (
     utc_now,
 )
 from .knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
+from .literature import (
+    LiteratureAccess,
+    LiteratureDiscoveryService,
+    OpenAICompatibleQueryRewriter,
+    PaperIngestionService,
+    ScopeBoundEvidenceService,
+    SQLiteLiteratureRepository,
+)
+from .literature.models import DiscoveryResult, ProviderReport
+from .literature.providers import (
+    ArxivProvider,
+    CrossrefProvider,
+    OpenAlexProvider,
+    SemanticScholarProvider,
+)
+from .literature.providers.base import SQLiteProviderCache
+from .literature.repository import (
+    LiteratureAccessError,
+    LiteratureConflictError,
+    LiteratureNotFoundError,
+    LiteratureRepositoryError,
+)
 from .mcp import MCPServerConfig, MCPStreamableHTTPClient, mount_mcp_tools
 from .memory import (
     InMemoryMemoryStore,
@@ -80,6 +103,24 @@ from .orchestration import (
 )
 from .persistent_context import SQLiteKnowledgeStore, SQLiteMemoryStore
 from .providers import ModelProvider
+from .research_protocol import (
+    ClaimRecord,
+    EvidenceCard,
+    EvidenceSearchRequest,
+    IngestionStatus,
+    LiteratureRequest,
+    PaperCard,
+    ResearchScope,
+    ScopeEvidenceResult,
+    ScopeExpansionRequest,
+)
+from .research_reranking import build_research_reranker
+from .research_retrieval import (
+    CitationVerification,
+    ResearchEvidence,
+    ResearchRetrievalService,
+)
+from .research_supervised_ranker import SupervisedResearchRanker
 from .review_cases import (
     CaseAccess,
     CaseAccessDeniedError,
@@ -94,6 +135,7 @@ from .review_cases import (
     SQLiteReviewCaseStore,
 )
 from .review_service import ReviewCaseCoordinator, ReviewCoordinationError
+from .routed_knowledge import RoutedKnowledgeStore
 from .runtime import AgentRuntime
 from .tooling import CapabilityPolicy
 from .verification import SQLiteVerificationStore, VerificationSignatureError
@@ -245,6 +287,12 @@ class ReviewCaseCreate(StrictModel):
 
 class ReviewRunCreate(StrictModel):
     max_iterations: int = Field(default=4, ge=1, le=12)
+
+
+class ResearchAgentRunCreate(StrictModel):
+    title: str = Field(min_length=1, max_length=500)
+    context: str = Field(default="User-confirmed bounded literature research.", min_length=1, max_length=16_000)
+    survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
 
 
 class ReviewDecisionCreate(StrictModel):
@@ -416,6 +464,94 @@ class Principal:
     user_id: str
 
 
+class LiteratureSearchCreate(StrictModel):
+    conversation_id: str = Field(min_length=1, max_length=240)
+    request: LiteratureRequest
+
+
+class LiteratureRecommendation(StrictModel):
+    paper_id: str = Field(min_length=1, max_length=240)
+    title: str = Field(min_length=1, max_length=2_000)
+    source_urls: list[str] = Field(default_factory=list, max_length=8)
+    short_description: str = Field(default="", max_length=500)
+    authors: list[str] = Field(default_factory=list, max_length=16)
+    year: int | None = Field(default=None, ge=1000, le=3000)
+
+
+class LiteratureDiscoveryResponse(StrictModel):
+    request_id: str = Field(min_length=1, max_length=240)
+    papers: list[LiteratureRecommendation] = Field(default_factory=list, max_length=100)
+    provider_reports: list[ProviderReport] = Field(default_factory=list, max_length=16)
+    total_raw_candidates: int = Field(default=0, ge=0)
+    query_rewrite_applied: bool = False
+
+
+class DirectResearchUploadResponse(StrictModel):
+    scope: ResearchScope
+    paper: PaperCard
+    upload: IngestionStatus
+
+
+class CitationExpansionCreate(StrictModel):
+    request_id: str = Field(min_length=1, max_length=240)
+    seed_paper_ids: list[str] = Field(min_length=1, max_length=20)
+    include_references: bool = True
+    include_citations: bool = True
+    per_seed_limit: int = Field(default=20, ge=1, le=20)
+    total_limit: int = Field(default=100, ge=1, le=100)
+
+
+class ResearchScopeCreate(StrictModel):
+    request_id: str = Field(min_length=1, max_length=240)
+    conversation_id: str = Field(min_length=1, max_length=240)
+    selected_paper_ids: list[str] = Field(min_length=1, max_length=128)
+    selected_source_uris: list[str] = Field(default_factory=list, max_length=128)
+    excluded_paper_ids: list[str] = Field(default_factory=list, max_length=256)
+    user_intent: str = Field(min_length=1, max_length=4_000)
+    allowed_expansion: bool = False
+    confirm: bool = False
+
+
+class ResearchScopeUpdate(StrictModel):
+    selected_paper_ids: list[str] | None = Field(default=None, min_length=1, max_length=128)
+    excluded_paper_ids: list[str] | None = Field(default=None, max_length=256)
+    user_intent: str | None = Field(default=None, min_length=1, max_length=4_000)
+    allowed_expansion: bool | None = None
+    expected_version: int = Field(ge=1)
+    confirm: bool = False
+
+    @model_validator(mode="after")
+    def contains_change(self) -> ResearchScopeUpdate:
+        if not self.confirm and all(
+            value is None
+            for value in (
+                self.selected_paper_ids,
+                self.excluded_paper_ids,
+                self.user_intent,
+                self.allowed_expansion,
+            )
+        ):
+            raise ValueError("scope update must contain at least one change")
+        return self
+
+
+class ScopeExpansionCreate(StrictModel):
+    requested_by: Literal["evaluator", "critic"]
+    reason: str = Field(min_length=1, max_length=2_000)
+    proposed_paper_ids: list[str] = Field(default_factory=list, max_length=100)
+
+
+class ScopeExpansionDecision(StrictModel):
+    approve: bool
+
+
+class CitationVerifyCreate(StrictModel):
+    claim_id: str | None = Field(default=None, min_length=1, max_length=240)
+    claim: str = Field(min_length=1, max_length=2_000)
+    evidence_ids: list[str] = Field(min_length=1, max_length=10)
+    risk_level: Literal["low", "medium", "high"] = "medium"
+
+
 @dataclass(slots=True)
 class AppContainer:
     settings: Settings
@@ -431,6 +567,10 @@ class AppContainer:
     review_profiles: dict[str, AgentProfile]
     review_execution: ReviewExecutionDisclosure
     verification_store: SQLiteVerificationStore
+    literature_repository: SQLiteLiteratureRepository
+    literature_discovery: LiteratureDiscoveryService
+    paper_ingestion: PaperIngestionService
+    scope_evidence: ScopeBoundEvidenceService
     mcp_status: list[MCPServerSummary] = field(default_factory=list)
     approval_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
 
@@ -819,12 +959,20 @@ def _profile_for_skill_pack(
             "selected_skill_pack_id": pack.id,
         }
     )
+    instructions = profile.instructions
+    if pack.id == "paper-research":
+        instructions += (
+            " Use paper_search for literature retrieval, paper_read for the exact source text, "
+            "and citation_verify before asserting a claim. Every substantive conclusion must "
+            "include a resolvable Evidence ID."
+        )
     # A stable derived ID keeps queued runs from overwriting another pack's
     # checkpointed Profile snapshot under the base Profile primary key.
     derived_id = f"{profile.id}--skill--{pack.id}"
     return profile.model_copy(
         update={
             "id": derived_id,
+            "instructions": instructions,
             "allowed_tools": list(pack.tools),
             "metadata": metadata,
         },
@@ -987,7 +1135,10 @@ def create_app(
         item.id: item
         for item in (
             enterprise_review_profiles(model=profile_model or "demo")
-            + research_survey_profiles(model=profile_model or "demo")
+            + research_survey_profiles(
+                model=profile_model or "demo",
+                protocol="paper",
+            )
         )
     }
     profile_catalog = {**profiles, **review_profiles}
@@ -1011,18 +1162,161 @@ def create_app(
             local_knowledge_chunks(workspace, tenant_id="local")
         )
         memory = InMemoryMemoryStore()
+    retrieval_knowledge = (
+        RoutedKnowledgeStore(
+            knowledge,
+            general_text_backend=config.general_text_backend,
+            semantic_model=config.semantic_model,
+            semantic_cache_path=str(config.semantic_cache_path),
+        )
+        if config.retrieval_routing == "profile"
+        else knowledge
+    )
+    research_embedder = getattr(retrieval_knowledge, "_embedder", None)
+    research_reranker = (
+        build_research_reranker(
+            config.research_reranker_backend,
+            config.research_reranker_model,
+            device=config.research_reranker_device,
+            batch_size=config.research_reranker_batch_size,
+        )
+        if config.research_reranker_model is not None
+        else None
+    )
+    research_retrieval = ResearchRetrievalService(
+        retrieval_knowledge,
+        dense_embedder=research_embedder,
+        reranker=research_reranker,
+        graph_enabled=config.research_graph_enabled,
+        structure_fusion_enabled=config.research_structure_fusion_enabled,
+        structure_section_weight=config.research_structure_section_weight,
+        structure_query_coverage_weight=config.research_structure_query_coverage_weight,
+        preserve_head_k=config.research_preserve_head_k,
+        reranker_context_window=config.research_reranker_context_window,
+        lexical_fusion_weight=config.research_lexical_fusion_weight,
+        intent_section_fusion_enabled=config.research_intent_section_fusion_enabled,
+        intent_section_fusion_weight=config.research_intent_section_fusion_weight,
+        intent_query_overlap_weight=config.research_intent_query_overlap_weight,
+        intent_rank_fusion_weight=config.research_intent_rank_fusion_weight,
+        feature_ranker=(
+            SupervisedResearchRanker.from_model_dump(
+                json.loads(config.research_feature_ranker_path.read_text(encoding="utf-8"))["model"]
+            )
+            if config.research_feature_ranker_path is not None
+            else None
+        ),
+    )
+    literature_repository = SQLiteLiteratureRepository(config.literature_sqlite_path)
+    literature_cache = SQLiteProviderCache(
+        config.literature_cache_path,
+        ttl_seconds=config.literature_cache_ttl_seconds,
+    )
+    provider_options: dict[str, Any] = {
+        "cache": literature_cache,
+        "timeout_seconds": config.literature_provider_timeout_seconds,
+        "max_retries": config.literature_provider_max_retries,
+    }
+    contact_headers = (
+        {"User-Agent": f"TaskForge/0.3 (mailto:{config.literature_contact_email})"}
+        if config.literature_contact_email
+        else {}
+    )
+    semantic_headers = {
+        **contact_headers,
+        **(
+            {"x-api-key": config.semantic_scholar_api_key.get_secret_value()}
+            if config.semantic_scholar_api_key is not None
+            else {}
+        ),
+    }
+    openalex_headers = {
+        **contact_headers,
+        **(
+            {
+                "Authorization": (
+                    f"Bearer {config.openalex_api_key.get_secret_value()}"
+                )
+            }
+            if config.openalex_api_key is not None
+            else {}
+        ),
+    }
+    literature_discovery = LiteratureDiscoveryService(
+        literature_repository,
+        [
+            SemanticScholarProvider(
+                headers=semantic_headers,
+                concurrency=1,
+                min_interval_seconds=1.0,
+                **provider_options,
+            ),
+            OpenAlexProvider(
+                headers=openalex_headers,
+                concurrency=1,
+                min_interval_seconds=1.05,
+                **provider_options,
+            ),
+            ArxivProvider(
+                headers=contact_headers,
+                concurrency=1,
+                min_interval_seconds=3.1,
+                **provider_options,
+            ),
+            CrossrefProvider(
+                headers=contact_headers,
+                concurrency=1,
+                min_interval_seconds=0.21,
+                **provider_options,
+            ),
+        ],
+        results_per_query=config.literature_results_per_query,
+        dense_embedder=research_embedder,
+        query_rewriter=(
+            OpenAICompatibleQueryRewriter(
+                api_key=config.deepseek_api_key.get_secret_value(),
+                model=config.deepseek_model,
+                base_url=config.deepseek_base_url,
+                timeout_seconds=config.deepseek_timeout_seconds,
+            )
+            if config.provider == "deepseek"
+            and config.deepseek_api_key is not None
+            and config.deepseek_model is not None
+            else OpenAICompatibleQueryRewriter(
+                api_key=config.openai_api_key.get_secret_value(),
+                model=config.openai_model,
+                base_url=config.openai_base_url,
+                timeout_seconds=config.openai_timeout_seconds,
+            )
+            if config.provider == "openai"
+            and config.openai_api_key is not None
+            and config.openai_model is not None
+            else None
+        ),
+    )
+    paper_ingestion = PaperIngestionService(
+        literature_repository,
+        knowledge,
+        artifacts,
+    )
+    scope_evidence = ScopeBoundEvidenceService(
+        literature_repository,
+        research_retrieval,
+        rewrite_enabled=config.research_rewrite_enabled,
+    )
     registry = create_tool_registry(
         workspace_root=workspace,
         artifact_root=artifacts,
-        knowledge_store=knowledge,
+        knowledge_store=retrieval_knowledge,
         memory_store=memory,
+        research_service=scope_evidence,
+        literature_discovery=literature_discovery,
     )
     runtime = AgentRuntime(
         provider=selected_provider,
         registry=registry,
         policy=CapabilityPolicy(registry),
         checkpoint=store,
-        context=ContextAssembler(knowledge, memory),
+        context=ContextAssembler(retrieval_knowledge, memory),
     )
     container = AppContainer(
         settings=config,
@@ -1043,6 +1337,10 @@ def create_app(
             verification_store=verification_store,
         ),
         verification_store=verification_store,
+        literature_repository=literature_repository,
+        literature_discovery=literature_discovery,
+        paper_ingestion=paper_ingestion,
+        scope_evidence=scope_evidence,
         mcp_status=[
             MCPServerSummary(
                 namespace=binding.server.namespace,
@@ -1078,6 +1376,8 @@ def create_app(
                 )
             yield
         finally:
+            await literature_discovery.aclose()
+            await paper_ingestion.aclose()
             for client in reversed(mcp_clients):
                 await client.aclose()
             for context_store in (knowledge, memory):
@@ -1097,6 +1397,85 @@ def create_app(
         lifespan=lifespan,
     )
     api.state.container = container
+
+    def literature_access(
+        principal: Principal,
+        conversation_id: str | None = None,
+    ) -> LiteratureAccess:
+        return LiteratureAccess(
+            tenant_id=principal.tenant_id,
+            user_id=principal.user_id,
+            conversation_id=conversation_id,
+        )
+
+    def literature_discovery_response(
+        result: DiscoveryResult,
+    ) -> LiteratureDiscoveryResponse:
+        return LiteratureDiscoveryResponse(
+            request_id=result.request_id,
+            papers=[
+                LiteratureRecommendation(
+                    paper_id=paper.paper_id,
+                    title=paper.canonical_title,
+                    source_urls=list(paper.source_urls[:8]),
+                    short_description=paper.short_description,
+                    authors=list(paper.authors[:16]),
+                    year=paper.year,
+                )
+                for paper in result.papers
+            ],
+            provider_reports=result.provider_reports,
+            total_raw_candidates=result.total_raw_candidates,
+            query_rewrite_applied=result.query_rewrite_applied,
+        )
+
+    async def read_pdf_upload(request: Request) -> tuple[bytes, str]:
+        content_type = request.headers.get("content-type", "").split(";", 1)[0].strip()
+        if content_type != "application/pdf":
+            raise HTTPException(status_code=415, detail="Upload must use application/pdf")
+        declared = request.headers.get("content-length")
+        if (
+            declared
+            and declared.isdigit()
+            and int(declared) > container.paper_ingestion.max_upload_bytes
+        ):
+            raise HTTPException(status_code=413, detail="Uploaded PDF exceeds the size limit")
+        payload = bytearray()
+        async for chunk in request.stream():
+            payload.extend(chunk)
+            if len(payload) > container.paper_ingestion.max_upload_bytes:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Uploaded PDF exceeds the size limit",
+                )
+        filename = unquote(request.headers.get("x-filename") or "uploaded-paper.pdf")
+        return bytes(payload), filename
+
+    def validated_case_scope(
+        principal: Principal,
+        submission: CaseSubmission,
+    ) -> ResearchScope:
+        raw_scope_id = submission.attributes.get("research_scope_id")
+        raw_version = submission.attributes.get("research_scope_version")
+        if (
+            not isinstance(raw_scope_id, str)
+            or not raw_scope_id.strip()
+            or isinstance(raw_version, bool)
+            or not isinstance(raw_version, int)
+            or raw_version < 1
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail="Research survey requires a host-valid ResearchScope ID and version",
+            )
+        scope = container.literature_repository.get_scope(
+            literature_access(principal),
+            raw_scope_id,
+            version=raw_version,
+        )
+        if scope.status != "ready":
+            raise HTTPException(status_code=409, detail="ResearchScope must be ready")
+        return scope
 
     def review_coordinator(principal: Principal) -> ReviewCaseCoordinator:
         executor = CaseAgentExecutor(
@@ -1197,6 +1576,34 @@ def create_app(
     ) -> JSONResponse:
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
+    @api.exception_handler(LiteratureNotFoundError)
+    async def literature_not_found(
+        _: Request,
+        __: LiteratureNotFoundError,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": "Research resource not found"})
+
+    @api.exception_handler(LiteratureAccessError)
+    async def literature_access_denied(
+        _: Request,
+        __: LiteratureAccessError,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": "Research resource not found"})
+
+    @api.exception_handler(LiteratureConflictError)
+    async def literature_conflict(
+        _: Request,
+        exc: LiteratureConflictError,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @api.exception_handler(LiteratureRepositoryError)
+    async def literature_repository_error(
+        _: Request,
+        exc: LiteratureRepositoryError,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=400, content={"detail": str(exc)})
+
     @api.get("/health", response_model=Health)
     async def health() -> Health:
         return Health(
@@ -1216,6 +1623,471 @@ def create_app(
         # Endpoints and credential environment-variable names are deliberately
         # absent: this is an operational capability view, not a config dump.
         return [item.model_copy(deep=True) for item in container.mcp_status]
+
+    @api.post(
+        "/api/literature/search",
+        response_model=LiteratureDiscoveryResponse,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def search_literature(
+        body: LiteratureSearchCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> LiteratureDiscoveryResponse:
+        return literature_discovery_response(
+            await container.literature_discovery.discover(
+                literature_access(principal, body.conversation_id),
+                body.request,
+            )
+        )
+
+    @api.get(
+        "/api/literature/requests/{request_id}",
+        response_model=LiteratureRequest,
+    )
+    async def get_literature_request(
+        request_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> LiteratureRequest:
+        return container.literature_repository.get_request(
+            literature_access(principal),
+            request_id,
+        )
+
+    @api.get(
+        "/api/literature/papers/{paper_id}",
+        response_model=PaperCard,
+    )
+    async def get_literature_paper(
+        paper_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> PaperCard:
+        return container.literature_repository.get_paper(
+            literature_access(principal),
+            paper_id,
+        )
+
+    @api.get(
+        "/api/literature/requests/{request_id}/papers",
+        response_model=list[PaperCard],
+    )
+    async def list_literature_papers(
+        request_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+        limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    ) -> list[PaperCard]:
+        return container.literature_repository.list_papers(
+            literature_access(principal),
+            request_id,
+            limit=limit,
+        )
+
+    @api.post(
+        "/api/literature/expand-citations",
+        response_model=LiteratureDiscoveryResponse,
+    )
+    @api.post(
+        "/api/literature/expand",
+        response_model=LiteratureDiscoveryResponse,
+        include_in_schema=False,
+    )
+    async def expand_literature_citations(
+        body: CitationExpansionCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> LiteratureDiscoveryResponse:
+        return literature_discovery_response(
+            await container.literature_discovery.expand_citations(
+                literature_access(principal),
+                body.request_id,
+                body.seed_paper_ids,
+                include_references=body.include_references,
+                include_citations=body.include_citations,
+                per_seed_limit=body.per_seed_limit,
+                total_limit=body.total_limit,
+            )
+        )
+
+    @api.post(
+        "/api/research/uploads",
+        response_model=DirectResearchUploadResponse,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def create_research_scope_from_upload(
+        request: Request,
+        principal: Annotated[Principal, Depends(_principal)],
+        conversation_id: Annotated[str, Query(min_length=1, max_length=240)],
+        user_intent: Annotated[str, Query(min_length=1, max_length=4_000)],
+        title: Annotated[str | None, Query(min_length=1, max_length=2_000)] = None,
+    ) -> DirectResearchUploadResponse:
+        payload, filename = await read_pdf_upload(request)
+        safe_filename = filename.replace("\\", "/").rsplit("/", 1)[-1].strip()
+        display_title = " ".join((title or Path(safe_filename).stem).split())
+        if not display_title:
+            raise HTTPException(status_code=422, detail="Uploaded paper title is required")
+        access = literature_access(principal, conversation_id)
+        literature_request = LiteratureRequest(
+            request_id=f"literature-upload-{uuid4()}",
+            query=user_intent,
+        )
+        container.literature_repository.save_request(access, literature_request)
+        paper = PaperCard(
+            paper_id=f"paper-upload-{hashlib.sha256(payload).hexdigest()[:32]}",
+            canonical_title=display_title,
+            short_description=f"User-uploaded PDF: {display_title}"[:500],
+            verification_status="metadata_partial",
+        )
+        container.literature_repository.upsert_paper(access, paper)
+        scope = container.literature_repository.create_scope(
+            access,
+            ResearchScope(
+                tenant_id=principal.tenant_id,
+                owner_user_id=principal.user_id,
+                conversation_id=conversation_id,
+                request_id=literature_request.request_id,
+                selected_paper_ids=[paper.paper_id],
+                user_intent=user_intent,
+                allowed_expansion=False,
+                status="confirmed",
+                confirmed_at=utc_now(),
+            ),
+        )
+        try:
+            upload = container.paper_ingestion.upload_pdf(
+                access,
+                scope.scope_id,
+                paper.paper_id,
+                payload,
+                filename=safe_filename,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return DirectResearchUploadResponse(
+            scope=scope,
+            paper=container.literature_repository.get_paper(access, paper.paper_id),
+            upload=upload,
+        )
+
+    @api.post(
+        "/api/research/scopes",
+        response_model=ResearchScope,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def create_research_scope(
+        body: ResearchScopeCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ResearchScope:
+        confirmed_at = utc_now() if body.confirm else None
+        return container.literature_repository.create_scope(
+            literature_access(principal, body.conversation_id),
+            ResearchScope(
+                tenant_id=principal.tenant_id,
+                owner_user_id=principal.user_id,
+                conversation_id=body.conversation_id,
+                request_id=body.request_id,
+                selected_paper_ids=body.selected_paper_ids,
+                selected_source_uris=body.selected_source_uris,
+                excluded_paper_ids=body.excluded_paper_ids,
+                user_intent=body.user_intent,
+                allowed_expansion=body.allowed_expansion,
+                status="confirmed" if body.confirm else "draft",
+                confirmed_at=confirmed_at,
+            ),
+        )
+
+    @api.get("/api/research/scopes", response_model=list[ResearchScope])
+    async def list_research_scopes(
+        principal: Annotated[Principal, Depends(_principal)],
+        conversation_id: Annotated[str | None, Query(max_length=240)] = None,
+    ) -> list[ResearchScope]:
+        return container.literature_repository.list_scopes(
+            literature_access(principal, conversation_id)
+        )
+
+    @api.get("/api/research/scopes/{scope_id}", response_model=ResearchScope)
+    async def get_research_scope(
+        scope_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+        version: Annotated[int | None, Query(ge=1)] = None,
+    ) -> ResearchScope:
+        return container.literature_repository.get_scope(
+            literature_access(principal),
+            scope_id,
+            version=version,
+        )
+
+    @api.patch("/api/research/scopes/{scope_id}", response_model=ResearchScope)
+    async def update_research_scope(
+        scope_id: str,
+        body: ResearchScopeUpdate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ResearchScope:
+        return container.literature_repository.update_scope(
+            literature_access(principal),
+            scope_id,
+            selected_paper_ids=body.selected_paper_ids,
+            excluded_paper_ids=body.excluded_paper_ids,
+            user_intent=body.user_intent,
+            allowed_expansion=body.allowed_expansion,
+            status="confirmed" if body.confirm else None,
+            expected_version=body.expected_version,
+        )
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/confirm",
+        response_model=ResearchScope,
+    )
+    async def confirm_research_scope(
+        scope_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+        expected_version: Annotated[int, Query(ge=1)],
+    ) -> ResearchScope:
+        access = literature_access(principal)
+        scope = container.literature_repository.get_scope(access, scope_id)
+        if scope.status == "confirmed":
+            if scope.scope_version != expected_version:
+                raise LiteratureConflictError("research scope version changed")
+            return scope
+        return container.literature_repository.transition_scope_status(
+            access,
+            scope_id,
+            "confirmed",
+            expected_version=expected_version,
+        )
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/ingest",
+        response_model=list[IngestionStatus],
+    )
+    async def ingest_research_scope(
+        scope_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> list[IngestionStatus]:
+        return await container.paper_ingestion.ingest_scope(
+            literature_access(principal),
+            scope_id,
+        )
+
+    @api.put(
+        "/api/research/scopes/{scope_id}/papers/{paper_id}/pdf",
+        response_model=IngestionStatus,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def upload_research_paper_pdf(
+        scope_id: str,
+        paper_id: str,
+        request: Request,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> IngestionStatus:
+        payload, filename = await read_pdf_upload(request)
+        try:
+            return container.paper_ingestion.upload_pdf(
+                literature_access(principal),
+                scope_id,
+                paper_id,
+                payload,
+                filename=filename,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @api.get(
+        "/api/research/scopes/{scope_id}/ingestion",
+        response_model=list[IngestionStatus],
+    )
+    async def get_research_scope_ingestion(
+        scope_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+        version: Annotated[int | None, Query(ge=1)] = None,
+    ) -> list[IngestionStatus]:
+        return container.literature_repository.list_ingestion_statuses(
+            literature_access(principal),
+            scope_id,
+            version=version,
+        )
+
+    @api.post(
+        "/api/research/evidence/search",
+        response_model=ScopeEvidenceResult,
+    )
+    async def search_research_evidence(
+        body: EvidenceSearchRequest,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ScopeEvidenceResult:
+        return container.scope_evidence.search(
+            literature_access(principal),
+            body,
+        )
+
+    @api.get(
+        "/api/research/scopes/{scope_id}/evidence",
+        response_model=list[EvidenceCard],
+    )
+    async def list_research_evidence(
+        scope_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+        version: Annotated[int | None, Query(ge=1)] = None,
+        paper_id: Annotated[str | None, Query(max_length=240)] = None,
+    ) -> list[EvidenceCard]:
+        return container.literature_repository.list_evidence(
+            literature_access(principal),
+            scope_id,
+            version=version,
+            paper_id=paper_id,
+        )
+
+    @api.get(
+        "/api/research/scopes/{scope_id}/evidence/{evidence_id}",
+        response_model=ResearchEvidence,
+    )
+    async def read_research_evidence(
+        scope_id: str,
+        evidence_id: str,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ResearchEvidence:
+        try:
+            return container.scope_evidence.read_evidence(
+                literature_access(principal),
+                scope_id,
+                evidence_id,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Evidence not found") from exc
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/claims/verify",
+        response_model=CitationVerification,
+    )
+    async def verify_research_claim(
+        scope_id: str,
+        body: CitationVerifyCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> CitationVerification:
+        access = literature_access(principal)
+        try:
+            result = container.scope_evidence.verify_citation(
+                access,
+                scope_id,
+                body.claim,
+                body.evidence_ids,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Evidence not found") from exc
+        scope = container.literature_repository.get_scope(access, scope_id)
+        evidence_by_id = {
+            card.evidence_id: card
+            for card in container.literature_repository.list_evidence(
+                access,
+                scope.scope_id,
+                version=scope.scope_version,
+            )
+        }
+        container.literature_repository.save_claims(
+            access,
+            [
+                ClaimRecord(
+                    claim_id=body.claim_id or f"claim-{uuid4()}",
+                    claim_text=body.claim,
+                    scope_id=scope.scope_id,
+                    scope_version=scope.scope_version,
+                    paper_ids=list(
+                        dict.fromkeys(
+                            card.paper_id
+                            for evidence_id in body.evidence_ids
+                            if (card := evidence_by_id[evidence_id]).paper_id
+                        )
+                    ),
+                    evidence_ids=body.evidence_ids,
+                    risk_level=body.risk_level,
+                    citation_status="verified" if result.verified else "unsupported",
+                    verification_status="verified" if result.verified else "needs_review",
+                )
+            ],
+        )
+        return result
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/expansion-requests",
+        response_model=ScopeExpansionRequest,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def request_scope_expansion(
+        scope_id: str,
+        body: ScopeExpansionCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ScopeExpansionRequest:
+        access = literature_access(principal)
+        scope = container.literature_repository.get_scope(access, scope_id)
+        if scope.status != "ready":
+            raise HTTPException(status_code=409, detail="Scope must be ready")
+        if not scope.allowed_expansion:
+            raise HTTPException(status_code=409, detail="Scope expansion is disabled")
+        request = container.literature_repository.request_expansion(
+            access,
+            ScopeExpansionRequest(
+                scope_id=scope_id,
+                requested_by=body.requested_by,
+                reason=body.reason,
+                proposed_paper_ids=body.proposed_paper_ids,
+            ),
+        )
+        container.literature_repository.transition_scope_status(
+            access,
+            scope_id,
+            "expansion_requested",
+            expected_version=scope.scope_version,
+        )
+        return request
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/expansion-requests/{expansion_id}/decision",
+        response_model=ResearchScope,
+    )
+    async def decide_scope_expansion(
+        scope_id: str,
+        expansion_id: str,
+        body: ScopeExpansionDecision,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> ResearchScope:
+        access = literature_access(principal)
+        scope = container.literature_repository.get_scope(access, scope_id)
+        if scope.status != "expansion_requested":
+            raise HTTPException(status_code=409, detail="Scope has no pending expansion")
+        decision = container.literature_repository.decide_expansion(
+            access,
+            expansion_id,
+            approve=body.approve,
+            expected_scope_id=scope_id,
+        )
+        if not body.approve:
+            return container.literature_repository.transition_scope_status(
+                access,
+                scope_id,
+                "ready",
+                expected_version=scope.scope_version,
+            )
+        return container.literature_repository.update_scope(
+            access,
+            scope_id,
+            selected_paper_ids=list(
+                dict.fromkeys([*scope.selected_paper_ids, *decision.proposed_paper_ids])
+            ),
+            excluded_paper_ids=[
+                paper_id
+                for paper_id in scope.excluded_paper_ids
+                if paper_id not in set(decision.proposed_paper_ids)
+            ],
+            status="confirmed",
+            expected_version=scope.scope_version,
+        )
+
+    @api.get("/api/research/audit", response_model=list[dict[str, object]])
+    async def list_research_audit(
+        principal: Annotated[Principal, Depends(_principal)],
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict[str, object]]:
+        return container.literature_repository.list_audit_events(
+            literature_access(principal),
+            limit=limit,
+        )
 
     @api.post("/api/memory", response_model=MemorySummary, status_code=status.HTTP_201_CREATED)
     async def create_memory(
@@ -1290,6 +2162,8 @@ def create_app(
         principal: Annotated[Principal, Depends(_principal)],
         idempotency_key: Annotated[str, Depends(_idempotency_key)],
     ) -> ReviewCaseDetail:
+        if body.kind == CaseKind.RESEARCH_SURVEY:
+            validated_case_scope(principal, body.submission)
         coordinator = review_coordinator(principal)
         review_case = coordinator.create_draft(
             kind=body.kind,
@@ -1299,6 +2173,47 @@ def create_app(
             idempotency_key=idempotency_key,
         )
         _index_review_case_evidence(knowledge, review_case)
+        return review_detail(
+            principal,
+            review_case.case_id,
+            coordinator=coordinator,
+        )
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/agent-run",
+        response_model=ReviewCaseDetail,
+        status_code=status.HTTP_201_CREATED,
+    )
+    async def create_research_agent_run(
+        scope_id: str,
+        body: ResearchAgentRunCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+        idempotency_key: Annotated[str, Depends(_idempotency_key)],
+    ) -> ReviewCaseDetail:
+        access = literature_access(principal)
+        scope = container.literature_repository.get_scope(access, scope_id)
+        if scope.status != "ready":
+            raise HTTPException(status_code=409, detail="ResearchScope must be ready")
+        coordinator = review_coordinator(principal)
+        review_case = coordinator.create_draft(
+            kind=CaseKind.RESEARCH_SURVEY,
+            title=body.title,
+            submission=CaseSubmission(
+                request_summary=scope.user_intent,
+                business_justification=body.context,
+                attributes={
+                    "research_scope_id": scope.scope_id,
+                    "research_scope_version": scope.scope_version,
+                    "selected_paper_ids": list(scope.selected_paper_ids),
+                },
+            ),
+            survey_depth=body.survey_depth,
+            idempotency_key=idempotency_key,
+        )
+        coordinator.submit_and_start(
+            review_case.case_id,
+            idempotency_key=idempotency_key,
+        )
         return review_detail(
             principal,
             review_case.case_id,

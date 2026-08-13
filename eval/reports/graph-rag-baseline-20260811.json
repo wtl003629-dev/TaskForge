@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "experiment": "local_evidence_graph_feature_rerank",
+  "created_at": "2026-08-11",
+  "status": "frozen_before_graph_feature_rerank",
+  "purpose": "P0 baseline for candidate-preserving graph reranking",
+  "metrics_definition": {
+    "recall_at_10": "full-evidence recall over all gold evidence IDs",
+    "candidate_recall_at_50": "fraction of gold evidence IDs present in the frozen Candidate@50 pool",
+    "candidate_set_invariant": "P2 graph reranking may reorder candidates but may not add or remove them"
+  },
+  "scenarios": {
+    "qasper_long_document": {
+      "dataset": "QASPER",
+      "split_tuning": "qasper-train-tuning-200-v1",
+      "split_validation": "qasper-train-validation-200-v1",
+      "base_stage": "qdrant_qasper_dense_rerank",
+      "dense_model": "BAAI/bge-small-en-v1.5",
+      "reranker_model": "Xenova/ms-marco-MiniLM-L-6-v2",
+      "candidate_k": 50,
+      "rerank_top_k": 20,
+      "tuning": {
+        "recall_at_10": 0.7340616883116883,
+        "candidate_recall_at_50": 0.9737554112554112,
+        "ndcg_at_10": 0.5108429626548255,
+        "p95_ms": 549.5927
+      },
+      "validation": {
+        "recall_at_10": 0.7223055555555555,
+        "candidate_recall_at_50": 0.9626666666666667,
+        "paired_recall_ci_95": [
+          0.03791666666666667,
+          0.13377916666666664
+        ],
+        "p95_ms": 693.2396
+      },
+      "source_reports": [
+        "eval/reports/qasper-rerank-topn-20260811.json",
+        "eval/reports/qasper-validation-rerank-top20-20260811.json"
+      ]
+    },
+    "tatqa_table": {
+      "dataset": "TAT-QA",
+      "split": "provided-context retained-capability gate",
+      "base_stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf",
+      "recall_at_10": 0.9901960784313726,
+      "minimum_floor": 0.98
+    },
+    "multihop_cross_document": {
+      "dataset": "MultiHop-RAG",
+      "split": "locked retained-capability gate",
+      "base_stage": "bm25_source_coverage_anchor_rrf",
+      "recall_at_10": 0.9198717948717948,
+      "candidate_recall_at_50": 0.9893162393162394,
+      "minimum_floor": 0.90
+    },
+    "pdf_route": {
+      "dataset": "synthetic PDF",
+      "split": "12-case layout/security smoke",
+      "base_stage": "bm25_table_router",
+      "recall_at_10": 1.0,
+      "minimum_floor": 1.0
+    }
+  },
+  "frozen_invariants": {
+    "dataset_hash_and_case_ids": true,
+    "tenant_acl_version_filters": true,
+    "candidate_k": 50,
+    "top_k": [
+      1,
+      5,
+      10
+    ],
+    "evidence_character_budget": 16000,
+    "graph_hop_limit": 0,
+    "graph_feature_rerank": false,
+    "remote_graph_database": false,
+    "live_model_api": false
+  },
+  "promotion_targets": {
+    "qasper_validation_recall_at_10": 0.75,
+    "qasper_validation_ndcg_delta": 0.02,
+    "qasper_candidate_recall_at_50_minimum": 0.9626666666666667,
+    "tatqa_recall_at_10_minimum": 0.98,
+    "multihop_recall_at_10_minimum": 0.90,
+    "pdf_recall_at_10_minimum": 1.0,
+    "acl_violations_maximum": 0,
+    "graph_route_p95_ms_maximum": 1200.0
+  }
+}

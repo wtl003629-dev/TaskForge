@@ -199,6 +199,7 @@ def _pdf_knowledge_chunks(
     version_order: int,
     acl: tuple[str, ...],
 ) -> list[KnowledgeChunk]:
+    blocks_by_id = {block.block_id: block for block in document.blocks}
     stored_ids = [
         hashlib.sha256(
             (
@@ -210,6 +211,17 @@ def _pdf_knowledge_chunks(
     ]
     result: list[KnowledgeChunk] = []
     for index, (chunk, chunk_id) in enumerate(zip(document.chunks, stored_ids, strict=True)):
+        chunk_blocks = [
+            blocks_by_id[block_id]
+            for block_id in chunk.block_ids
+            if block_id in blocks_by_id
+        ]
+        block_types = sorted({block.kind for block in chunk_blocks})
+        table_rows = [
+            [list(row) for row in block.table_rows]
+            for block in chunk_blocks
+            if block.kind == "table"
+        ]
         provenance = [
             {
                 "block_id": item.block_id,
@@ -239,6 +251,15 @@ def _pdf_knowledge_chunks(
                     "chunk_index": index,
                     "pages": list(chunk.pages),
                     "block_ids": list(chunk.block_ids),
+                    "block_types": block_types,
+                    "kind": (
+                        "table"
+                        if block_types == ["table"]
+                        else "mixed"
+                        if "table" in block_types
+                        else "paragraph"
+                    ),
+                    "table_rows": table_rows,
                     "provenance": provenance,
                     "heading": chunk.heading,
                     "previous_chunk_id": stored_ids[index - 1] if index > 0 else None,

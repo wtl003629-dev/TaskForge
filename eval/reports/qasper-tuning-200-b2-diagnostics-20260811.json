@@ -1,0 +1,1562 @@
+{
+  "candidate_k": 50,
+  "cases": [
+    {
+      "case_id": "qasper:1602.01595:7065e6140dbaffadebe62c9c9d3863ca0f829d52",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1602.01595:b0fd686183b056ea3f63a7ab494620df1d598c24",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1606.06361:11ed8c4d98a4e8994990edba54319efe9c6745f2",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1608.06378:0fd7d12711dfe0e35467a7ee6525127378a1bacb",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1608.06378:a53683d1a0647c80a4398ff8f4a03e11c0929be2",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1609.00081:f01aa192d97fa3cc36b6e316355dc5da0e9b97dc",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1609.04186:7aae4533dbf097992f23fb2e0574ec5c891ca236",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 47,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1609.04186:f268b70b08bd0436de5310e390ca5f38f7636612",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 47,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.00253:0a7ac8eccbc286e0ab55bc5949f3f8d2ea2d1a60",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 48,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.00253:45bd22f2cfb62a5f79ec3c771c8324b963567cc0",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 48,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.00253:e84e80067b3343d136fd75300691c8b3d3efbdac",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 48,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.02686:05238d1fad2128403577822aa4822ef8ca9570ac",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.02686:54415efa91566d5d7135fa23bce3840d41a6389e",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.02686:dcd22abfc9e7211925c0393adc30dbd4711a9f88",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.02686:fb381a59732474dc71a413e25cac37e239547b55",
+      "failure": "candidate_missing",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.05907:a381ba83a08148ce0324b48b8ff35128e66f580a",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 23,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1704.05907:edb068df4ffbd73b379590762125990fcd317862",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 23,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1705.07368:1949d84653562fa9e83413796ae55980ab7318f2",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 41,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1705.07368:4c71ed7d30ee44cf85ffbd7756b985e32e8e07da",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 41,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1705.07368:7ee660927e2b202376849e489faa7341518adaf9",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 41,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1705.07368:c7d99e66c4ab555fe3d616b15a5048f3fe1f3f0e",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 41,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1705.07368:f6380c60e2eb32cb3a9d3bca17cf4dc5ae584eca",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 41,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1706.07179:082c88e132b4f1bf68abdc3a21ac4af180de1113",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 15,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1706.07179:43b4f7eade7a9bcfaf9cc0edba921a41d6036e9c",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 15,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1706.07179:60fd7ef7986a5752b31d3bd12bbc7da6843547a4",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 15,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1706.07179:74091e10f596428135b0ab06008608e09c051565",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 15,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1706.07179:a75861e6dd72d69fdf77ebd81c78d26c6f7d0864",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 15,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1708.00111:0a92352839b549d07ac3f4cb997b8dc83f64ba6f",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 39,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1708.00111:242f96142116cf9ff763e97aecd54e22cb1c8b5a",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 39,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1708.00111:5cc937c2dcb8fd4683cb2298d047f27a05e16d43",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 39,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1708.00111:fcd0bd2db39898ee4f444ae970b80ea4d1d9b054",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 39,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1708.04120:094ce2f912aa3ced9eb97b171745d38f58f946dd",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 25,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1709.05411:65e6a1cc2590b139729e7e44dce6d9af5dd2c3b5",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 28,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1710.01507:acc8d9918d19c212ec256181e51292f2957b37d7",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 40,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.00609:2e6b7afaf14871ed6db674782b93709910020b06",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.00609:5d22746b3004c5e90ea714b24bf8bc7b4d15bd88",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.00609:d2e409031f4512375dd5cecec639c7373025f277",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.02121:056fc821d1ec1e8ca5dc958d14ea389857b1a299",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.02121:480e10e5a1b9c0ae9f7763b7611eeae9e925096b",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1712.03547:9ac923be6ada1ba2aa20ad62b0a3e593bb94e085",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1801.09030:3c362bfa11c60bad6c7ea83f8753d427cda77de0",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1801.09030:5d5a571ff04a5fdd656ca87f6525a60e917d6558",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1803.03664:2b78052314cb730824836ea69bc968df7964b4e4",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.00520:3efc0981e7f959d916aa8bb32ab1c347b8474ff8",
+      "failure": "covered_top10",
+      "relevant_count": 6,
+      "retrieved_candidate_count": 23,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.02233:dc28ac845602904c2522f5349374153f378c42d3",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 47,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.09301:c2553166463b7b5ae4d9786f0446eb06a90af458",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 20,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.10686:2bc0bb7d3688fdd2267c582ca593e2ce72718a91",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 36,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.10686:7d5ba230522df1890619dedcfb310160958223c1",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 36,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.10686:8c073b7ea8cb5cc54d7fecb8f4bf88c1fb621b19",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 36,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1804.10686:a48cc6d3d322a7b159ff40ec162a541bf74321eb",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 36,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1806.02908:c3a9732599849ba4a9f07170ce1e50867cf7d7bf",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1806.02908:c47f593a5b92abc2e3c536fe2baaca226913688b",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1807.08666:1a06b7a2097ebbad0afc787ea0756db6af3dadf4",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 27,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1807.08666:f748cb05becc60e7d47d34f4c5f94189bc184d33",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 27,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.05902:330f2cdeab689670b68583fc4125f5c0b26615a8",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.05902:c87b2dd5c439d5e68841a705dd81323ec0d64c97",
+      "failure": "covered_top10",
+      "relevant_count": 12,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.05902:f7789313a804e41fcbca906a4e5cf69039eeef9f",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.09409:8a1d4ed00d31c1f1cb05bc9d5e4f05fe87b0e5a4",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.09409:b5d6357d3a9e3d5fdf9b344ae96cddd11a407875",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1808.09409:f33a21c6a9c75f0479ffdbb006c40e0739134716",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.01570:4d4739682d540878a94d8227412e9e1ec1bb3d39",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.01570:864b5c1fe8c744f80a55e87421b29d6485b7efd0",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.01570:fd80a7162fde83077ed82ae41d521d774f74340a",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.10254:235c156d9c2adc895c9113f53c60f2dd8df45834",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.10254:657edbf39c500b2446edb9cca18de2912c628b7d",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.10254:9257c578ee19a7d93e2fba866be7b0bf1142c393",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1810.10254:fa2ffc6b4b046e17bc41e199855c4941673e2caf",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1811.01399:69a7a6675c59a4c5fb70006523b9fe0f01ca415c",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1812.07023:6472f9d0a385be81e0970be91795b1b97aa5a9cf",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1901.00570:524abe0ab77db168d5b2f0b68dba0982ac5c1d8e",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 49,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1901.00570:7b2bf0c1a24a2aa01d49f3c7e1bdc7401162c116",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 49,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1902.00330:0481a8edf795768d062c156875d20b8fb656432c",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1902.00330:dad8cc543a87534751f9f9e308787e1af06f0627",
+      "failure": "covered_top10",
+      "relevant_count": 7,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1903.03467:0d6d5b6c00551dd0d2519f117ea81d1e9e8785ec",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1903.03467:2fea3c955ff78220b2c31a8ad1322bc77f6706f8",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1903.03467:da068b20988883bc324e55c073fb9c1a5c39be33",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1903.03467:edcde2b675cf8a362a63940b2bbdf02c150fe01f",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1903.03467:faa4f28a2f2968cecb770d9379ab2cfcaaf5cfab",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 21,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.10238:4146e1d8f79902c0bc034695998b724515b6ac81",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.10238:42394c54a950bae8cebecda9de68ee78de69dc0d",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.11901:07d7652ad4a0ec92e6b44847a17c378b0d9f57f5",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.11901:2348d68e065443f701d8052018c18daa4ecc120e",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.11901:4547818a3bbb727c4bb4a76554b5a5a7b5c5fedb",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1905.11901:9f3444c9fb2e144465d63abf58520cddd4165a01",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1906.01946:1a7d2ade16149630c0028339a816fcafa8192408",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 33,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1906.06448:311a7fa62721e82265f4e0689b4adc05f6b74215",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1906.06448:82bcacad668351c0f81bd841becb2dbf115f000e",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1906.06448:c0a11ba0f6bbb4c69b5a0d4ae9d18e86a4a8f354",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1906.06448:dfc393ba10ec4af5a17e5957fcbafdffdb1a6443",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1907.04380:2fd8688c8f475ab43edaf5d189567f8799b018e1",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1907.05403:14eb2b89ba39e56c52954058b6b799a49d1b74bf",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1907.10738:b34c60eb4738e0439523bcc679fe0fe70ceb8bde",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.05763:5e41516a27c587aa2f80dba8cf4c3f616174099b",
+      "failure": "covered_top10",
+      "relevant_count": 7,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.05763:8ea664a72e6d6eca73c1b3e1f75a72a677474ab1",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 29,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.06379:42be49b883eba268e3dbc5c3ff4631442657dcbb",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.06379:8d4f0815f8a23fe45c298c161fc7a27f3bb0d338",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.06379:a6665074b067abb2676d5464f36b2cb07f6919d3",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1908.06379:b0fbd4b0f02b877a0d3df1d8ccc47d90dd49147c",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00154:1165fb0b400ec1c521c1aef7a4e590f76fee1279",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00154:7358a1ce2eae380af423d4feeaa67d2bd23ae9dd",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00154:c45a160d31ca8eddbfea79907ec8e59f543aab86",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00154:f2c5da398e601e53f9f545947f61de5f40ede1ee",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00279:5787ac3e80840fe4cf7bfae7e8983fa6644d6220",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00279:6b9310b577c6232e3614a1612cbbbb17067b3886",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00279:d484a71e23d128f146182dccc30001df35cdf93f",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00338:12eba1598dca14db64dbc8b73484639363a4618e",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00338:4e468ce13b7f6ac05371c62c08c3cec1cd760517",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00338:58ad7e8f7190e2a4f1588cae9a7842c56b37694d",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00338:827c58f6cab6c6fe7a6c43bdc71150b61ba0eed4",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00361:3fb4334e5a4702acd44bd24eb1831bb7e9b98d31",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00361:a9acd1af4a869c17b95ec489cdb1ba7d76715ea4",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00430:e574f0f733fb98ecef3c64044004aa7a320439be",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00574:94c5f5b1eb8414ad924c3568cedd81dc35f29c48",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 32,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.00574:9595bf228c9e859b0dc745e6c74070be2468d2cf",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 32,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.03464:6147846520a3dc05b230241f2ad6d411d614e24c",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.06434:54fa5196d0e6d5e84955548f4ef51bfd9b707a32",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.06434:82a28c1ed7988513d5984f6dcacecb7e90f64792",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.06434:a997fc1a62442fd80d1873cd29a9092043f025ad",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.06434:d4a6f5034345036dbc2d4e634a8504f79d42ca69",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 31,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.08103:18d8b52b4409c718bf1cc90ce9e013206034bbd9",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.09986:56a3c9bd74c6573abce3805177cdebf941db0b71",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.09986:65461516098ed63c45a567648e8e47c38ea7e58a",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.09986:73cd785d474bae7af974802715ef7ba5468d9139",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.09986:8a94766f8251fa0bce0e09e5c69ce05761811a62",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.09986:92d09654011d424cfef5691eec28ee934f88d954",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 46,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.11189:a2a66726a5dca53af58aafd8494c4de833a06f14",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.11189:bfa3776c30cb30e0088e185a5908e5172df79236",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1909.11189:ee87608419e4807b9b566681631a8cd72197a71a",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 19,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1910.06701:81669c550d32d756f516dab5d2b76ff5f21c0f36",
+      "failure": "covered_top10",
+      "relevant_count": 11,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1910.08987:06776b8dfd1fe27b5376ae44436b367a71ff9912",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 26,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1910.08987:f1831b2e96ff8ef65b8fde8b4c2ee3e04b7ac4bf",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 26,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1910.12129:14e259a312e653f8fc0d52ca5325b43c3bdfb968",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1910.12129:e93b4a15b54d139b768d5913fb5fd1aed8ab25da",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.00069:3c3b4797e2b21e2c31cf117ad9e52f327721790f",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.00069:5c90e1ed208911dbcae7e760a553e912f8c237a5",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.00069:a7d72f308444616a0befc8db7ad388b3216e2143",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.00069:f6496b8d09911cdf3a9b72aec0b0be6232a6dba1",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.01680:2d47cdf2c1e0c64c73518aead1b94e0ee594b7a5",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.01680:5efa19058f815494b72c44d746c157e9403f726e",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.01680:71f135be79341e61c28c3150b1822d0c4d0ca8d6",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.01680:cb8e2069218e30c643013c20e93ebe23525d9f55",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.01680:dcdcd977f18206da3ff8ad0ffb14f7bc5e126c7d",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 35,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03154:317a6f211ecf48c58f008c12fbd5d41901db3e36",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03154:6d9fbd42b54313cfdc2665809886330f209e9286",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03154:a726046eec1e2efa5fe3926963863bf755e64682",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03310:222b2469eede9a0448e0226c6c742e8c91522af3",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03310:66125cfdf11d3bf8e59728428e02021177142c3a",
+      "failure": "covered_top10",
+      "relevant_count": 4,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03310:6f8386ad64dce3a20bc75165c5c7591df8f419cf",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.03310:81dc39ee6cdacf90d5f0f62134bf390a29146c65",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 42,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.08829:0fec9da2bc80a12a7a6d6600b9ecf3e122732b60",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.08829:2480dfe2d996afef840a81bd920aeb9c26e5b31d",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.08829:346f10ddb34503dfba72b0e49afcdf6a08ecacfa",
+      "failure": "candidate_missing",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.08829:5499527beadb7f5dd908bd659cad83d6a81119bd",
+      "failure": "candidate_missing",
+      "relevant_count": 7,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.11698:26012f57cba21ba44b9a9f7ed8b1ed9e8ee7625d",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 38,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.11698:7d4fad6367f28c67ad22487094489680c45f5062",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 38,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.11698:ac3c88ace59bf75788370062db139f60499c2056",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 38,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1911.11698:bd26a6d5d8b68d62e1b6eaf974796f3c34a839c4",
+      "failure": "covered_top10",
+      "relevant_count": 5,
+      "retrieved_candidate_count": 38,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.00159:515e10a71d78ccd9c7dc93cd942924a4c85d3a30",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.00864:572458399a45fd392c3a4e07ce26dcff2ad5a07d",
+      "failure": "covered_top10",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:016b59daa84269a93ce821070f4f5c1a71752a8a",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:18482658e0756d69e39a77f8fcb5912545a72b9b",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:2d536961c6e1aec9f8491e41e383dc0aac700e0a",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:771b373d09e6eb50a74fffbf72d059ad44e73ab0",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:9d336c4c725e390b6eba8bb8fe148997135ee981",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:a3d83c2a1b98060d609e7ff63e00112d36ce2607",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:aeda22ae760de7f5c0212dad048e4984cd613162",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.01673:d5fa26a2b7506733f3fa0973e2fe3fc1bbd1a12d",
+      "failure": "candidate_missing",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.02481:347e86893e8002024c2d10f618ca98e14689675f",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.02481:cbf1137912a47262314c94d36ced3232d5fa1926",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.09152:1c68d18b4b65c4d75dc199d2043079490f6310f8",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:1912.09152:601f96770726a0063faf9bacd5db01c4af5add1f",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.00137:3b745f086fb5849e7ce7ce2c02ccbde7cfdedda5",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.00137:4b8257cdd9a60087fa901da1f4250e7d910896df",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.00137:4debd7926941f1a02266b1a7be2df8ba6e79311a",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.00137:637aa32a34b20b4b0f1b5dfa08ef4e0e5ed33d52",
+      "failure": "covered_top10",
+      "relevant_count": 2,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.00137:abc5836c54fc2ac8465aee5a83b9c0f86c6fd6f5",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.02943:010e3793eb1342225857d3f95e147d8f8467192a",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 20,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2001.06785:32e78ca99ba8b8423d4b21c54cd5309cb92191fc",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 32,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.02758:544b68f6f729e5a62c2461189682f9e4307a05c6",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 23,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.08899:8ec94313ea908b6462e1f5ee809a977a7b6bdf01",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.08899:f052444f3b3bf61a3f226645278b780ebd7774db",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.11268:67ee7a53aa57ce0d0bc1a20d41b64cb20303f4b7",
+      "failure": "covered_top10",
+      "relevant_count": 5,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.11268:7eb3852677e9d1fb25327ba014d2ed292184210c",
+      "failure": "covered_top10",
+      "relevant_count": 5,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2002.11268:9ae084e76095194135cd602b2cdb5fb53f2935c1",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2003.01769:7dce1b64c0040500951c864fce93d1ad7a1809bc",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2003.01769:e1b36927114969f3b759cba056cfb3756de474e4",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 30,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2003.07758:7011b26ffc54769897e4859e4932aeddfab82c9f",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2003.07758:86cd1228374721db67c0653f2052b1ada6009641",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.01694:9299fe72f19c1974564ea60278e03a423eb335dc",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.01694:a93d4aa89ac3abbd08d725f3765c4f1bed35c889",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.01694:bc473c5bd0e1a8be9b2037aa7006fd68217c3f47",
+      "failure": "covered_top10",
+      "relevant_count": 6,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.01694:c1429f7fed5a4dda11ac7d9643f97af87a83508b",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 3,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.01694:cc5d8e12f6aecf6a5f305e2f8b3a0c67f49801a9",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.03329:694dd76a37ad9e8083c546e9bd083c5c3b65695c",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 14,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.03788:018ef092ffc356a2c0e970ae64ad3c2cf8443288",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.03788:de4e180f49ff187abc519d01eff14ebcd8149cad",
+      "failure": "top10_ranking_failure",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 43,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.04315:19cdce39e8265e7806212eeee2fd55f8ef2f3d47",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 11,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.04315:1b046ec7f0e1a33e77078bedef7e83c5c07b61de",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 11,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.04315:5774e019101415a43e0b5a780179fd897fc013fd",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 11,
+      "retrieved_top10_count": 10
+    },
+    {
+      "case_id": "qasper:2004.04696:3f5f74c39a560b5d916496e05641783c58af2c5d",
+      "failure": "covered_top10",
+      "relevant_count": 1,
+      "retrieved_candidate_count": 50,
+      "retrieved_top10_count": 10
+    }
+  ],
+  "counts": {
+    "candidate_missing": 4,
+    "covered_top10": 141,
+    "cross_section_evidence": 26,
+    "evidence_alignment_failure": 0,
+    "evidence_truncated_or_fragmented": 7,
+    "lexical_mismatch": 9,
+    "long_evidence_case": 7,
+    "multi_evidence_case": 60,
+    "same_section_multiple_evidence": 34,
+    "title_abstract_section_dependency": 10,
+    "top10_ranking_failure": 55,
+    "vocabulary_mismatch": 9
+  },
+  "dataset": "QASPER",
+  "dataset_sha256": "c99b487807d246bdd0aeee187b354ada9b2d097fd8582ee66c877022c3e05c47",
+  "locked_split_id": "qasper-train-tuning-200-v1",
+  "rates": {
+    "candidate_missing": 0.02,
+    "covered_top10": 0.705,
+    "cross_section_evidence": 0.13,
+    "evidence_alignment_failure": 0.0,
+    "evidence_truncated_or_fragmented": 0.035,
+    "lexical_mismatch": 0.045,
+    "long_evidence_case": 0.035,
+    "multi_evidence_case": 0.3,
+    "same_section_multiple_evidence": 0.17,
+    "title_abstract_section_dependency": 0.05,
+    "top10_ranking_failure": 0.275,
+    "vocabulary_mismatch": 0.045
+  },
+  "representative_case_ids": {
+    "candidate_missing": [
+      "qasper:1704.02686:fb381a59732474dc71a413e25cac37e239547b55",
+      "qasper:1911.08829:346f10ddb34503dfba72b0e49afcdf6a08ecacfa",
+      "qasper:1911.08829:5499527beadb7f5dd908bd659cad83d6a81119bd",
+      "qasper:1912.01673:d5fa26a2b7506733f3fa0973e2fe3fc1bbd1a12d"
+    ],
+    "covered_top10": [
+      "qasper:1602.01595:b0fd686183b056ea3f63a7ab494620df1d598c24",
+      "qasper:1606.06361:11ed8c4d98a4e8994990edba54319efe9c6745f2",
+      "qasper:1608.06378:0fd7d12711dfe0e35467a7ee6525127378a1bacb",
+      "qasper:1608.06378:a53683d1a0647c80a4398ff8f4a03e11c0929be2",
+      "qasper:1609.00081:f01aa192d97fa3cc36b6e316355dc5da0e9b97dc",
+      "qasper:1609.04186:7aae4533dbf097992f23fb2e0574ec5c891ca236",
+      "qasper:1704.00253:0a7ac8eccbc286e0ab55bc5949f3f8d2ea2d1a60",
+      "qasper:1704.00253:e84e80067b3343d136fd75300691c8b3d3efbdac",
+      "qasper:1704.02686:05238d1fad2128403577822aa4822ef8ca9570ac",
+      "qasper:1704.05907:a381ba83a08148ce0324b48b8ff35128e66f580a"
+    ],
+    "cross_section_evidence": [
+      "qasper:1609.04186:7aae4533dbf097992f23fb2e0574ec5c891ca236",
+      "qasper:1705.07368:4c71ed7d30ee44cf85ffbd7756b985e32e8e07da",
+      "qasper:1705.07368:f6380c60e2eb32cb3a9d3bca17cf4dc5ae584eca",
+      "qasper:1712.00609:d2e409031f4512375dd5cecec639c7373025f277",
+      "qasper:1712.03547:9ac923be6ada1ba2aa20ad62b0a3e593bb94e085",
+      "qasper:1804.09301:c2553166463b7b5ae4d9786f0446eb06a90af458",
+      "qasper:1804.10686:7d5ba230522df1890619dedcfb310160958223c1",
+      "qasper:1808.05902:c87b2dd5c439d5e68841a705dd81323ec0d64c97",
+      "qasper:1903.03467:da068b20988883bc324e55c073fb9c1a5c39be33",
+      "qasper:1903.03467:edcde2b675cf8a362a63940b2bbdf02c150fe01f"
+    ],
+    "evidence_alignment_failure": [],
+    "evidence_truncated_or_fragmented": [
+      "qasper:1705.07368:f6380c60e2eb32cb3a9d3bca17cf4dc5ae584eca",
+      "qasper:1801.09030:5d5a571ff04a5fdd656ca87f6525a60e917d6558",
+      "qasper:1902.00330:0481a8edf795768d062c156875d20b8fb656432c",
+      "qasper:1909.00338:827c58f6cab6c6fe7a6c43bdc71150b61ba0eed4",
+      "qasper:1911.01680:dcdcd977f18206da3ff8ad0ffb14f7bc5e126c7d",
+      "qasper:1912.02481:347e86893e8002024c2d10f618ca98e14689675f",
+      "qasper:2002.08899:f052444f3b3bf61a3f226645278b780ebd7774db"
+    ],
+    "lexical_mismatch": [
+      "qasper:1704.05907:a381ba83a08148ce0324b48b8ff35128e66f580a",
+      "qasper:1705.07368:1949d84653562fa9e83413796ae55980ab7318f2",
+      "qasper:1906.06448:c0a11ba0f6bbb4c69b5a0d4ae9d18e86a4a8f354",
+      "qasper:1911.00069:a7d72f308444616a0befc8db7ad388b3216e2143",
+      "qasper:1911.03154:6d9fbd42b54313cfdc2665809886330f209e9286",
+      "qasper:1912.00159:515e10a71d78ccd9c7dc93cd942924a4c85d3a30",
+      "qasper:1912.01673:771b373d09e6eb50a74fffbf72d059ad44e73ab0",
+      "qasper:1912.01673:9d336c4c725e390b6eba8bb8fe148997135ee981",
+      "qasper:1912.02481:cbf1137912a47262314c94d36ced3232d5fa1926"
+    ],
+    "long_evidence_case": [
+      "qasper:1705.07368:f6380c60e2eb32cb3a9d3bca17cf4dc5ae584eca",
+      "qasper:1801.09030:5d5a571ff04a5fdd656ca87f6525a60e917d6558",
+      "qasper:1902.00330:0481a8edf795768d062c156875d20b8fb656432c",
+      "qasper:1909.00338:827c58f6cab6c6fe7a6c43bdc71150b61ba0eed4",
+      "qasper:1911.01680:dcdcd977f18206da3ff8ad0ffb14f7bc5e126c7d",
+      "qasper:1912.02481:347e86893e8002024c2d10f618ca98e14689675f",
+      "qasper:2002.08899:f052444f3b3bf61a3f226645278b780ebd7774db"
+    ],
+    "multi_evidence_case": [
+      "qasper:1602.01595:b0fd686183b056ea3f63a7ab494620df1d598c24",
+      "qasper:1608.06378:0fd7d12711dfe0e35467a7ee6525127378a1bacb",
+      "qasper:1609.04186:7aae4533dbf097992f23fb2e0574ec5c891ca236",
+      "qasper:1704.00253:0a7ac8eccbc286e0ab55bc5949f3f8d2ea2d1a60",
+      "qasper:1704.02686:fb381a59732474dc71a413e25cac37e239547b55",
+      "qasper:1705.07368:4c71ed7d30ee44cf85ffbd7756b985e32e8e07da",
+      "qasper:1705.07368:7ee660927e2b202376849e489faa7341518adaf9",
+      "qasper:1705.07368:f6380c60e2eb32cb3a9d3bca17cf4dc5ae584eca",
+      "qasper:1706.07179:60fd7ef7986a5752b31d3bd12bbc7da6843547a4",
+      "qasper:1708.00111:242f96142116cf9ff763e97aecd54e22cb1c8b5a"
+    ],
+    "same_section_multiple_evidence": [
+      "qasper:1602.01595:b0fd686183b056ea3f63a7ab494620df1d598c24",
+      "qasper:1608.06378:0fd7d12711dfe0e35467a7ee6525127378a1bacb",
+      "qasper:1704.00253:0a7ac8eccbc286e0ab55bc5949f3f8d2ea2d1a60",
+      "qasper:1704.02686:fb381a59732474dc71a413e25cac37e239547b55",
+      "qasper:1705.07368:7ee660927e2b202376849e489faa7341518adaf9",
+      "qasper:1706.07179:60fd7ef7986a5752b31d3bd12bbc7da6843547a4",
+      "qasper:1708.00111:242f96142116cf9ff763e97aecd54e22cb1c8b5a",
+      "qasper:1709.05411:65e6a1cc2590b139729e7e44dce6d9af5dd2c3b5",
+      "qasper:1804.00520:3efc0981e7f959d916aa8bb32ab1c347b8474ff8",
+      "qasper:1804.10686:2bc0bb7d3688fdd2267c582ca593e2ce72718a91"
+    ],
+    "title_abstract_section_dependency": [
+      "qasper:1602.01595:7065e6140dbaffadebe62c9c9d3863ca0f829d52",
+      "qasper:1704.02686:54415efa91566d5d7135fa23bce3840d41a6389e",
+      "qasper:1704.02686:fb381a59732474dc71a413e25cac37e239547b55",
+      "qasper:1704.05907:a381ba83a08148ce0324b48b8ff35128e66f580a",
+      "qasper:1705.07368:c7d99e66c4ab555fe3d616b15a5048f3fe1f3f0e",
+      "qasper:1909.00154:1165fb0b400ec1c521c1aef7a4e590f76fee1279",
+      "qasper:1911.00069:a7d72f308444616a0befc8db7ad388b3216e2143",
+      "qasper:1912.00159:515e10a71d78ccd9c7dc93cd942924a4c85d3a30",
+      "qasper:1912.01673:9d336c4c725e390b6eba8bb8fe148997135ee981",
+      "qasper:2004.01694:a93d4aa89ac3abbd08d725f3765c4f1bed35c889"
+    ],
+    "top10_ranking_failure": [
+      "qasper:1602.01595:7065e6140dbaffadebe62c9c9d3863ca0f829d52",
+      "qasper:1609.04186:f268b70b08bd0436de5310e390ca5f38f7636612",
+      "qasper:1704.00253:45bd22f2cfb62a5f79ec3c771c8324b963567cc0",
+      "qasper:1704.02686:54415efa91566d5d7135fa23bce3840d41a6389e",
+      "qasper:1704.02686:dcd22abfc9e7211925c0393adc30dbd4711a9f88",
+      "qasper:1705.07368:1949d84653562fa9e83413796ae55980ab7318f2",
+      "qasper:1705.07368:c7d99e66c4ab555fe3d616b15a5048f3fe1f3f0e",
+      "qasper:1706.07179:a75861e6dd72d69fdf77ebd81c78d26c6f7d0864",
+      "qasper:1708.00111:5cc937c2dcb8fd4683cb2298d047f27a05e16d43",
+      "qasper:1708.00111:fcd0bd2db39898ee4f444ae970b80ea4d1d9b054"
+    ],
+    "vocabulary_mismatch": [
+      "qasper:1704.05907:a381ba83a08148ce0324b48b8ff35128e66f580a",
+      "qasper:1705.07368:1949d84653562fa9e83413796ae55980ab7318f2",
+      "qasper:1906.06448:c0a11ba0f6bbb4c69b5a0d4ae9d18e86a4a8f354",
+      "qasper:1911.00069:a7d72f308444616a0befc8db7ad388b3216e2143",
+      "qasper:1911.03154:6d9fbd42b54313cfdc2665809886330f209e9286",
+      "qasper:1912.00159:515e10a71d78ccd9c7dc93cd942924a4c85d3a30",
+      "qasper:1912.01673:771b373d09e6eb50a74fffbf72d059ad44e73ab0",
+      "qasper:1912.01673:9d336c4c725e390b6eba8bb8fe148997135ee981",
+      "qasper:1912.02481:cbf1137912a47262314c94d36ced3232d5fa1926"
+    ]
+  },
+  "run_dir": ".taskforge\\eval-runs\\qasper-train-tuning-200-b2-dense-v6-20260811",
+  "schema_version": "1.0",
+  "stage": "qdrant_qasper_dense",
+  "top_k": 10,
+  "total_cases": 200
+}

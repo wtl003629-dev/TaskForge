@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "taskforge-paper": {
+      "type": "stdio",
+      "command": ".venv/Scripts/python.exe",
+      "args": [
+        "scripts/run_research_mcp.py",
+        "--transport",
+        "stdio",
+        "--tenant",
+        "local",
+        "--user",
+        "researcher"
+      ]
+    }
+  }
+}

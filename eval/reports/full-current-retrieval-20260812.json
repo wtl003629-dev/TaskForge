@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-12",
+  "suite": "full-current-retrieval",
+  "total_cases": 414,
+  "scenarios": [
+    {
+      "scenario": "MultiHop-RAG",
+      "dataset_cases": 100,
+      "case_count": 100,
+      "stage": "lexical_bm25",
+      "run_id": "327775660ea9b0cdd826",
+      "recall_at_1": 0.3041666666666667,
+      "recall_at_5": 0.7008333333333333,
+      "recall_at_10": 0.8208333333333333,
+      "candidate_recall_at_50": 0.9691666666666667,
+      "p50_ms": 63.9261,
+      "p95_ms": 142.5439,
+      "missing_predictions": 0,
+      "run_dir": ".taskforge/eval-runs/full-current-multihop-bm25-20260812"
+    },
+    {
+      "scenario": "TaskForge-Synthetic-PDF-v1",
+      "dataset_cases": 12,
+      "case_count": 12,
+      "stage": "bm25_table_router",
+      "run_id": "4698483f2e42a68d3dc6",
+      "recall_at_1": 0.875,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "candidate_recall_at_50": 1.0,
+      "p50_ms": 0.259,
+      "p95_ms": 0.3917,
+      "missing_predictions": 0,
+      "run_dir": ".taskforge/eval-runs/full-current-pdf-20260812"
+    },
+    {
+      "scenario": "QASPER",
+      "dataset_cases": 200,
+      "case_count": 200,
+      "stage": "qdrant_qasper_dense",
+      "run_id": "1020a9251dd98719af59",
+      "recall_at_1": 0.16813095238095235,
+      "recall_at_5": 0.45439502164502166,
+      "recall_at_10": 0.6281688311688312,
+      "candidate_recall_at_50": 0.9737554112554112,
+      "p50_ms": 3.6615,
+      "p95_ms": 4.407,
+      "missing_predictions": 0,
+      "run_dir": ".taskforge/eval-runs/full-current-qasper-20260812"
+    },
+    {
+      "scenario": "TAT-QA",
+      "dataset_cases": 102,
+      "case_count": 102,
+      "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf",
+      "run_id": "40ac01da5214b2f44c15",
+      "recall_at_1": 0.39705882352941174,
+      "recall_at_5": 0.5980392156862745,
+      "recall_at_10": 0.6715686274509803,
+      "candidate_recall_at_50": 0.8088235294117647,
+      "p50_ms": 129.9333,
+      "p95_ms": 167.165,
+      "missing_predictions": 0,
+      "run_dir": ".taskforge/eval-runs/full-current-tatqa-20260812"
+    }
+  ],
+  "notes": [
+    "Metrics are from fresh runs under current code and pinned local caches.",
+    "TAT-QA and MultiHop runs are degraded_nonsemantic; QASPER uses BAAI/bge-small-en-v1.5 semantic dense cache; PDF is synthetic and degraded_nonsemantic.",
+    "Recall values are full_evidence_recall_at_k; Candidate@50 is the k=50 value.",
+    "MultiHop learned reranker attempt exceeded command timeout and was not promoted; the reported MultiHop run is fresh lexical_bm25 baseline."
+  ],
+  "multihop_rerank_comparison": {
+    "dataset_cases": 100,
+    "stage": "lexical_bm25_rerank",
+    "run_id": "1358fc090c3ad6a7ac63",
+    "recall_at_1": 0.2833333333333333,
+    "recall_at_5": 0.5708333333333333,
+    "recall_at_10": 0.7516666666666667,
+    "candidate_recall_at_50": 0.9716666666666667,
+    "p50_ms": 4379.3702,
+    "p95_ms": 5239.8988,
+    "missing_predictions": 0,
+    "run_dir": ".taskforge/eval-runs/full-current-multihop-rerank-20260812",
+    "comparison_note": "Cross-encoder rerank did not improve Recall@10 over fresh lexical_bm25 baseline (0.8208333) and increased p50 latency from 63.9261 ms to 4379.3702 ms."
+  }
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rag-original",
+    "query": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "expected_arxiv_id": "2005.11401",
+    "year_from": 2019,
+    "year_to": 2021
+  },
+  {
+    "id": "dpr",
+    "query": "Dense Passage Retrieval for Open-Domain Question Answering",
+    "expected_arxiv_id": "2004.04906",
+    "year_from": 2019,
+    "year_to": 2021
+  },
+  {
+    "id": "react",
+    "query": "ReAct Synergizing Reasoning and Acting in Language Models",
+    "expected_arxiv_id": "2210.03629",
+    "year_from": 2022,
+    "year_to": 2023
+  },
+  {
+    "id": "self-rag",
+    "query": "Self-RAG Learning to Retrieve Generate and Critique through Self-Reflection",
+    "expected_arxiv_id": "2310.11511",
+    "year_from": 2023,
+    "year_to": 2024
+  },
+  {
+    "id": "lost-in-the-middle",
+    "query": "Lost in the Middle How Language Models Use Long Contexts",
+    "expected_arxiv_id": "2307.03172",
+    "year_from": 2023,
+    "year_to": 2024
+  },
+  {
+    "id": "colbert",
+    "query": "ColBERT Efficient and Effective Passage Search via Contextualized Late Interaction over BERT",
+    "expected_arxiv_id": "2004.12832",
+    "year_from": 2019,
+    "year_to": 2021
+  }
+]

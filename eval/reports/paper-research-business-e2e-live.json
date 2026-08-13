@@ -1,0 +1,206 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "paper_research_business_e2e_live_model",
+  "created_at": "2026-08-12T12:04:05.198458+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-v4-flash",
+  "live_external_model_requests": true,
+  "live_scholarly_provider_requests": true,
+  "discovery": {
+    "raw_candidates": 200,
+    "paper_count": 20,
+    "provider_reports": [
+      {
+        "provider": "semantic_scholar",
+        "query_count": 5,
+        "result_count": 20,
+        "request_count": 13,
+        "cache_hits": 0,
+        "elapsed_ms": 12596.68959999999,
+        "failure": "query-12e7a340-5630-4a38-a67b-8ec2e0ac32fa: ProviderError: semantic_scholar request failed; query-ce89a2c6-2387-4b89-992a-529682120157: ProviderError: semantic_scholar request failed; query-d879480a-1e72-48e5-b317-a2f519d7e47b: ProviderError: semantic_scholar request failed; query-9f621027-6fc7-4374-8621-e37eee3172d1: ProviderError: semantic_scholar request failed"
+      },
+      {
+        "provider": "openalex",
+        "query_count": 5,
+        "result_count": 80,
+        "request_count": 7,
+        "cache_hits": 0,
+        "elapsed_ms": 11505.17359999958,
+        "failure": "query-ce89a2c6-2387-4b89-992a-529682120157: ProviderError: openalex request failed"
+      },
+      {
+        "provider": "arxiv",
+        "query_count": 5,
+        "result_count": 100,
+        "request_count": 5,
+        "cache_hits": 0,
+        "elapsed_ms": 1748.5061999996105,
+        "failure": null
+      }
+    ],
+    "selected_paper_ids": [
+      "paper-c478530005d3f8fe373fa765015d94ce",
+      "paper-5054457ef84fda305f89494374a297f6"
+    ]
+  },
+  "scope": {
+    "scope_id": "scope-3a41663c-f0b2-4697-891b-d50cb7e62140",
+    "scope_version": 1,
+    "selected_paper_count": 2,
+    "status_before_ingestion": "confirmed"
+  },
+  "ingestion": [
+    {
+      "protocol": "research.ingestion_status.v1",
+      "job_id": "paper-ingestion-8622232e-1fdb-41ab-95d9-678b0f676f43",
+      "scope_id": "scope-3a41663c-f0b2-4697-891b-d50cb7e62140",
+      "paper_id": "paper-c478530005d3f8fe373fa765015d94ce",
+      "status": "indexed",
+      "evidence_count": 146,
+      "error": null,
+      "updated_at": "2026-08-12T12:02:32.999846Z"
+    },
+    {
+      "protocol": "research.ingestion_status.v1",
+      "job_id": "paper-ingestion-1dd2af96-0318-49db-9167-0f23f54245f4",
+      "scope_id": "scope-3a41663c-f0b2-4697-891b-d50cb7e62140",
+      "paper_id": "paper-5054457ef84fda305f89494374a297f6",
+      "status": "indexed",
+      "evidence_count": 82,
+      "error": null,
+      "updated_at": "2026-08-12T12:02:19.936351Z"
+    }
+  ],
+  "bounded_retrieval": {
+    "retrieval_rounds": 2,
+    "routed_intent": "cross_paper_comparison",
+    "evidence_count": 10,
+    "scope_escape_count": 0,
+    "confidence": {
+      "protocol": "research.retrieval_confidence.v1",
+      "top_score": 0.857042270531401,
+      "top1_top2_margin": 0.058856598016781114,
+      "query_term_coverage": 0.6153846153846154,
+      "entity_coverage": 0.6153846153846154,
+      "numeric_constraint_coverage": 1.0,
+      "source_coverage": 0.5,
+      "section_match": 1.0,
+      "citation_ready_count": 10,
+      "scope_paper_coverage": 0.5,
+      "sufficient": false,
+      "reasons": [
+        "not enough selected papers are represented"
+      ]
+    }
+  },
+  "multi_agent": {
+    "case_id": "641cbd70-4eda-5e1b-a747-41be2e61baa3",
+    "case_status": "waiting_human_review",
+    "attempt_count": 5,
+    "role_count": 4,
+    "protocols": [
+      "research.planner_handoff.v1",
+      "research.evaluator_handoff.v1",
+      "research.writer_handoff.v1",
+      "research.critic_handoff.v1"
+    ],
+    "all_structured_protocols_present": true,
+    "unique_evidence_ref_count": 10,
+    "structured_handoff_chars": 9462,
+    "estimated_handoff_tokens": 2366,
+    "usage": {
+      "input_tokens": 51355,
+      "output_tokens": 10831,
+      "total_tokens": 62186
+    },
+    "roles": [
+      {
+        "role_id": "retrieval_planner",
+        "status": "failed",
+        "runtime_status": "failed",
+        "tool_success_count": 0,
+        "tool_failure_count": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "structured_handoff_chars": 0,
+        "research_protocol": null,
+        "evidence_ref_count": 0
+      },
+      {
+        "role_id": "retrieval_planner",
+        "status": "succeeded",
+        "runtime_status": "completed",
+        "tool_success_count": 1,
+        "tool_failure_count": 0,
+        "input_tokens": 2230,
+        "output_tokens": 438,
+        "total_tokens": 2668,
+        "structured_handoff_chars": 1146,
+        "research_protocol": "research.planner_handoff.v1",
+        "evidence_ref_count": 0
+      },
+      {
+        "role_id": "source_evaluator",
+        "status": "succeeded",
+        "runtime_status": "completed",
+        "tool_success_count": 2,
+        "tool_failure_count": 0,
+        "input_tokens": 11551,
+        "output_tokens": 1088,
+        "total_tokens": 12639,
+        "structured_handoff_chars": 1850,
+        "research_protocol": "research.evaluator_handoff.v1",
+        "evidence_ref_count": 10
+      },
+      {
+        "role_id": "synthesis_writer",
+        "status": "succeeded",
+        "runtime_status": "completed",
+        "tool_success_count": 3,
+        "tool_failure_count": 0,
+        "input_tokens": 21048,
+        "output_tokens": 2185,
+        "total_tokens": 23233,
+        "structured_handoff_chars": 4302,
+        "research_protocol": "research.writer_handoff.v1",
+        "evidence_ref_count": 3
+      },
+      {
+        "role_id": "critical_reviewer",
+        "status": "succeeded",
+        "runtime_status": "completed",
+        "tool_success_count": 3,
+        "tool_failure_count": 0,
+        "input_tokens": 16526,
+        "output_tokens": 7120,
+        "total_tokens": 23646,
+        "structured_handoff_chars": 2164,
+        "research_protocol": "research.critic_handoff.v1",
+        "evidence_ref_count": 2
+      }
+    ]
+  },
+  "claims": {
+    "proves": [
+      "live scholarly discovery request path executed",
+      "ResearchScope-bound evidence retrieval executed",
+      "four configured Agent roles completed through the runtime"
+    ],
+    "does_not_prove": [
+      "production reliability or provider SLA",
+      "answer-quality generalization beyond this smoke case",
+      "a 40 percent total-token reduction without a paired legacy live run"
+    ]
+  },
+  "state_dir": "D:\\my-coding\\TaskForge\\.taskforge\\eval-runs\\paper-research-e2e-live-20260812T120200Z",
+  "token_comparison": {
+    "baseline_report": "D:\\my-coding\\TaskForge\\eval\\reports\\paper-research-business-e2e-prebudget-live.json",
+    "same_task_and_model": true,
+    "baseline_total_tokens": 212874,
+    "current_total_tokens": 62186,
+    "absolute_reduction": 150688,
+    "reduction_rate": 0.707874,
+    "target_at_most_90000": true
+  }
+}

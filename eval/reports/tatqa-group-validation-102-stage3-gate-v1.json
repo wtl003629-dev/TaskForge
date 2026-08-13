@@ -1,0 +1,173 @@
+{
+  "baseline": {
+    "artifact_sha256": {
+      "metrics.json": "3a67d268e69e587b2119a936e1b3e8eecd67a6f42d8ae53777e5220539f205a8",
+      "predictions.jsonl": "d2d72bf50782418e8e066606eb45430bfdd1ff2f428305a2176d0d89ed6f68ec"
+    },
+    "label": "bm25",
+    "run_id": "99b761158b1361828f6b",
+    "stage": "lexical_bm25"
+  },
+  "bootstrap": {
+    "confidence": 0.95,
+    "repetitions": 10000,
+    "seed": 20260809
+  },
+  "candidates": [
+    {
+      "artifact_sha256": {
+        "metrics.json": "23e2e4ab167e84b9cef6d9c55871d63de59847e486fce5709da8807731c0dc4b",
+        "predictions.jsonl": "7253b18324163c643d32d11fc65b9196923062e7b28fdd67abd37bdb21ded8b1"
+      },
+      "category_failures": [],
+      "checks": {
+        "bootstrap_ci": true,
+        "candidate_candidate_recall_floor": true,
+        "candidate_recall_at_candidate_k": true,
+        "candidate_recall_floor": true,
+        "category_non_regression": true,
+        "latency": true,
+        "metadata": true,
+        "recall_at_10": true,
+        "security": true
+      },
+      "label": "pair",
+      "metadata_errors": [],
+      "metrics": {
+        "baseline_candidate_recall": 0.7450980392156863,
+        "baseline_p95_ms": 74.206,
+        "baseline_raw_candidate_counts": {
+          "python_bm25": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          }
+        },
+        "baseline_recall_at_10": 0.5735294117647058,
+        "candidate_candidate_recall": 0.8088235294117647,
+        "candidate_p95_ms": 221.7183,
+        "candidate_raw_candidate_counts": {
+          "fused": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "numeric_scan": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "parent_child": {
+            "max": 50,
+            "mean": 33.08620689655172,
+            "min": 21
+          },
+          "query_aware_lineage_closure": {
+            "max": 12,
+            "mean": 11.689655172413794,
+            "min": 8
+          },
+          "query_plan": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "query_plan_default": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "structured_lineage_candidate": {
+            "max": 2,
+            "mean": 0.5571428571428572,
+            "min": 0
+          },
+          "structured_lineage_pair_rerank": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "tatqa_structured_arithmetic": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "tatqa_structured_count": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          },
+          "tatqa_structured_multi_span": {
+            "max": 50,
+            "mean": 50.0,
+            "min": 50
+          }
+        },
+        "candidate_recall_at_10": 0.6715686274509803,
+        "candidate_recall_ci_95": [
+          0.0,
+          0.12745098039215685
+        ],
+        "candidate_recall_delta": 0.06372549019607843,
+        "categories": {
+          "arithmetic": {
+            "baseline_recall_at_10": 0.48717948717948717,
+            "candidate_recall_at_10": 0.6410256410256411,
+            "cases": 39,
+            "delta": 0.1538461538461539
+          },
+          "count": {
+            "baseline_recall_at_10": 0.4375,
+            "candidate_recall_at_10": 0.6875,
+            "cases": 8,
+            "delta": 0.25
+          },
+          "multi-span": {
+            "baseline_recall_at_10": 0.5,
+            "candidate_recall_at_10": 0.6153846153846154,
+            "cases": 13,
+            "delta": 0.11538461538461542
+          },
+          "table": {
+            "baseline_recall_at_10": 0.475,
+            "candidate_recall_at_10": 0.5,
+            "cases": 20,
+            "delta": 0.025000000000000022
+          },
+          "text": {
+            "baseline_recall_at_10": 0.9090909090909091,
+            "candidate_recall_at_10": 0.9090909090909091,
+            "cases": 22,
+            "delta": 0.0
+          }
+        },
+        "ndcg_delta": 0.09797896986613511,
+        "p95_ratio": 2.9878756434789637,
+        "recall_ci_95": [
+          0.04411764705882353,
+          0.16176470588235295
+        ],
+        "recall_delta": 0.09803921568627451
+      },
+      "passed": true,
+      "run_id": "15a6a460bdb928ee7cb8",
+      "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+    }
+  ],
+  "gate": "retrieval_promotion",
+  "passed": true,
+  "require_identical_retrieval": false,
+  "schema_version": "1.0",
+  "thresholds": {
+    "max_candidate_drop": 0.0,
+    "max_category_degradation": 0.03,
+    "max_p95_ms": 300.0,
+    "max_p95_ratio": 3.5,
+    "max_recall_drop": 0.0,
+    "min_candidate_recall_at_10": null,
+    "min_candidate_recall_at_candidate_k": null,
+    "min_category_cases": 8,
+    "min_recall_delta": 0.03,
+    "require_nonnegative_ci_lower": true
+  }
+}

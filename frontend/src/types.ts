@@ -342,3 +342,120 @@ export interface ReviewDecisionInput {
   rationale: string
   evidenceRefIds: string[]
 }
+
+export type PaperVerification =
+  | 'provider_verified'
+  | 'cross_source_verified'
+  | 'metadata_partial'
+  | 'unverified'
+
+export interface PaperCard {
+  paperId: string
+  title: string
+  authors: string[]
+  abstract: string
+  shortDescription: string
+  year?: number
+  venue?: string
+  doi?: string
+  arxivId?: string
+  sourceUrls: string[]
+  citationCount?: number
+  relevanceScore: number
+  relevanceReason: string
+  verificationStatus: PaperVerification
+  fullTextStatus: string
+}
+
+export interface LiteratureProviderReport {
+  provider: string
+  queryCount: number
+  resultCount: number
+  requestCount: number
+  cacheHits: number
+  elapsedMs: number
+  failure?: string
+}
+
+export interface LiteratureDiscoveryResult {
+  requestId: string
+  papers: PaperCard[]
+  providers: LiteratureProviderReport[]
+  totalRawCandidates: number
+  queryRewriteApplied: boolean
+}
+
+export interface LiteratureSearchInput {
+  requestId: string
+  conversationId: string
+  query: string
+  researchQuestions: string[]
+  yearFrom?: number
+  yearTo?: number
+  requiredTerms: string[]
+  excludedTerms: string[]
+  resultLimit: number
+}
+
+export interface ResearchScope {
+  scopeId: string
+  requestId: string
+  conversationId: string
+  selectedPaperIds: string[]
+  excludedPaperIds: string[]
+  userIntent: string
+  allowedExpansion: boolean
+  scopeVersion: number
+  status: string
+  createdAt: string
+  confirmedAt?: string
+}
+
+export interface IngestionStatus {
+  jobId: string
+  scopeId: string
+  paperId: string
+  status: string
+  evidenceCount: number
+  error?: string
+  updatedAt: string
+}
+
+export interface ResearchEvidenceCard {
+  evidenceId: string
+  scopeId?: string
+  scopeVersion?: number
+  paperId?: string
+  chunkId?: string
+  source: string
+  title?: string
+  section?: string
+  page?: string
+  evidenceType: string
+  snippet: string
+  score: number
+  retrievalSources: string[]
+  verificationStatus: string
+}
+
+export interface RetrievalConfidence {
+  topScore: number
+  queryTermCoverage: number
+  sourceCoverage: number
+  citationReadyCount: number
+  scopePaperCoverage: number
+  sufficient: boolean
+  reasons: string[]
+}
+
+export interface ScopeEvidenceResult {
+  scopeId: string
+  scopeVersion: number
+  query: string
+  routedIntent: string
+  rewrittenQuery?: string
+  retrievalRounds: number
+  activatedOperators: string[]
+  evidence: ResearchEvidenceCard[]
+  confidence: RetrievalConfidence
+}

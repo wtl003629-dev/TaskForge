@@ -6,10 +6,15 @@ import type {
   CreateReviewCaseInput,
   CreateRunInput,
   Evidence,
+  IngestionStatus,
+  LiteratureDiscoveryResult,
+  LiteratureProviderReport,
+  LiteratureSearchInput,
   McpServerSummary,
   MetricsSnapshot,
   OperationJob,
   PendingApproval,
+  PaperCard,
   ReviewCase,
   ReviewCaseAuditEvent,
   ReviewCaseDetail,
@@ -25,9 +30,13 @@ import type {
   ReviewRecommendation,
   ReviewRoleRun,
   ReviewSubmission,
+  ResearchEvidenceCard,
+  ResearchScope,
+  RetrievalConfidence,
   RunRecord,
   RunStep,
   SkillPack,
+  ScopeEvidenceResult,
   ToolCall,
 } from './types'
 
@@ -1028,6 +1037,293 @@ export async function decideReviewCase(
         rationale: input.rationale,
         evidence_ref_ids: input.evidenceRefIds,
       }),
+    }),
+  )
+}
+
+function normalizePaperCard(value: unknown): PaperCard {
+  const item = asRecord(value)
+  return {
+    paperId: text(item.paper_id),
+    title: text(item.title ?? item.canonical_title, 'Untitled paper'),
+    authors: stringArray(item.authors),
+    abstract: text(item.abstract),
+    shortDescription: text(item.short_description),
+    year: numberValue(item.year),
+    venue: text(item.venue) || undefined,
+    doi: text(item.doi) || undefined,
+    arxivId: text(item.arxiv_id) || undefined,
+    sourceUrls: stringArray(item.source_urls),
+    citationCount: numberValue(item.citation_count),
+    relevanceScore: numberValue(item.relevance_score) ?? 0,
+    relevanceReason: text(item.relevance_reason),
+    verificationStatus: (text(item.verification_status, 'unverified')) as PaperCard['verificationStatus'],
+    fullTextStatus: text(item.full_text_status, 'not_requested'),
+  }
+}
+
+function normalizeProviderReport(value: unknown): LiteratureProviderReport {
+  const item = asRecord(value)
+  return {
+    provider: text(item.provider, 'unknown'),
+    queryCount: numberValue(item.query_count) ?? 0,
+    resultCount: numberValue(item.result_count) ?? 0,
+    requestCount: numberValue(item.request_count) ?? 0,
+    cacheHits: numberValue(item.cache_hits) ?? 0,
+    elapsedMs: numberValue(item.elapsed_ms) ?? 0,
+    failure: text(item.failure) || undefined,
+  }
+}
+
+function normalizeDiscovery(value: unknown): LiteratureDiscoveryResult {
+  const item = asRecord(value)
+  return {
+    requestId: text(item.request_id),
+    papers: asArray(item.papers).map(normalizePaperCard),
+    providers: asArray(item.provider_reports).map(normalizeProviderReport),
+    totalRawCandidates: numberValue(item.total_raw_candidates) ?? 0,
+    queryRewriteApplied: Boolean(item.query_rewrite_applied),
+  }
+}
+
+function normalizeResearchScope(value: unknown): ResearchScope {
+  const item = asRecord(value)
+  return {
+    scopeId: text(item.scope_id),
+    requestId: text(item.request_id),
+    conversationId: text(item.conversation_id),
+    selectedPaperIds: stringArray(item.selected_paper_ids),
+    excludedPaperIds: stringArray(item.excluded_paper_ids),
+    userIntent: text(item.user_intent),
+    allowedExpansion: Boolean(item.allowed_expansion),
+    scopeVersion: numberValue(item.scope_version) ?? 1,
+    status: text(item.status),
+    createdAt: text(item.created_at),
+    confirmedAt: text(item.confirmed_at) || undefined,
+  }
+}
+
+function normalizeIngestion(value: unknown): IngestionStatus {
+  const item = asRecord(value)
+  return {
+    jobId: text(item.job_id),
+    scopeId: text(item.scope_id),
+    paperId: text(item.paper_id),
+    status: text(item.status),
+    evidenceCount: numberValue(item.evidence_count) ?? 0,
+    error: text(item.error) || undefined,
+    updatedAt: text(item.updated_at),
+  }
+}
+
+function normalizeResearchEvidence(value: unknown): ResearchEvidenceCard {
+  const item = asRecord(value)
+  return {
+    evidenceId: text(item.evidence_id),
+    scopeId: text(item.scope_id) || undefined,
+    scopeVersion: numberValue(item.scope_version),
+    paperId: text(item.paper_id) || undefined,
+    chunkId: text(item.chunk_id) || undefined,
+    source: text(item.source),
+    title: text(item.title) || undefined,
+    section: text(item.section) || undefined,
+    page: text(item.page) || undefined,
+    evidenceType: text(item.evidence_type, 'paragraph'),
+    snippet: text(item.snippet),
+    score: numberValue(item.score) ?? 0,
+    retrievalSources: stringArray(item.retrieval_sources),
+    verificationStatus: text(item.verification_status, 'unread'),
+  }
+}
+
+function normalizeConfidence(value: unknown): RetrievalConfidence {
+  const item = asRecord(value)
+  return {
+    topScore: numberValue(item.top_score) ?? 0,
+    queryTermCoverage: numberValue(item.query_term_coverage) ?? 0,
+    sourceCoverage: numberValue(item.source_coverage) ?? 0,
+    citationReadyCount: numberValue(item.citation_ready_count) ?? 0,
+    scopePaperCoverage: numberValue(item.scope_paper_coverage) ?? 0,
+    sufficient: Boolean(item.sufficient),
+    reasons: stringArray(item.reasons),
+  }
+}
+
+function normalizeScopeEvidence(value: unknown): ScopeEvidenceResult {
+  const item = asRecord(value)
+  return {
+    scopeId: text(item.scope_id),
+    scopeVersion: numberValue(item.scope_version) ?? 1,
+    query: text(item.query),
+    routedIntent: text(item.routed_intent),
+    rewrittenQuery: text(item.rewritten_query) || undefined,
+    retrievalRounds: numberValue(item.retrieval_rounds) ?? 1,
+    activatedOperators: stringArray(item.activated_operators),
+    evidence: asArray(item.evidence).map(normalizeResearchEvidence),
+    confidence: normalizeConfidence(item.confidence),
+  }
+}
+
+export async function searchLiterature(
+  input: LiteratureSearchInput,
+): Promise<LiteratureDiscoveryResult> {
+  return normalizeDiscovery(
+    await request('/literature/search', {
+      method: 'POST',
+      body: JSON.stringify({
+        conversation_id: input.conversationId,
+        request: {
+          request_id: input.requestId,
+          query: input.query,
+          research_questions: input.researchQuestions,
+          year_from: input.yearFrom,
+          year_to: input.yearTo,
+          required_terms: input.requiredTerms,
+          excluded_terms: input.excludedTerms,
+          result_limit: input.resultLimit,
+        },
+      }),
+    }),
+  )
+}
+
+export async function expandLiterature(
+  requestId: string,
+  seedPaperIds: string[],
+): Promise<LiteratureDiscoveryResult> {
+  return normalizeDiscovery(
+    await request('/literature/expand-citations', {
+      method: 'POST',
+      body: JSON.stringify({
+        request_id: requestId,
+        seed_paper_ids: seedPaperIds,
+        include_references: true,
+        include_citations: true,
+        per_seed_limit: 10,
+        total_limit: 50,
+      }),
+    }),
+  )
+}
+
+export async function createResearchScope(input: {
+  requestId: string
+  conversationId: string
+  selectedPaperIds: string[]
+  excludedPaperIds: string[]
+  userIntent: string
+  allowedExpansion: boolean
+}): Promise<ResearchScope> {
+  return normalizeResearchScope(
+    await request('/research/scopes', {
+      method: 'POST',
+      body: JSON.stringify({
+        request_id: input.requestId,
+        conversation_id: input.conversationId,
+        selected_paper_ids: input.selectedPaperIds,
+        excluded_paper_ids: input.excludedPaperIds,
+        user_intent: input.userIntent,
+        allowed_expansion: input.allowedExpansion,
+        confirm: true,
+      }),
+    }),
+  )
+}
+
+export async function ingestResearchScope(scopeId: string): Promise<IngestionStatus[]> {
+  return asArray(
+    await request(`/research/scopes/${encodeURIComponent(scopeId)}/ingest`, {
+      method: 'POST',
+    }),
+  ).map(normalizeIngestion)
+}
+
+export async function uploadResearchPaperPdf(
+  scopeId: string,
+  paperId: string,
+  file: File,
+): Promise<IngestionStatus> {
+  return normalizeIngestion(
+    await request(
+      `/research/scopes/${encodeURIComponent(scopeId)}/papers/${encodeURIComponent(paperId)}/pdf`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/pdf',
+          'X-Filename': encodeURIComponent(file.name),
+        },
+        body: file,
+      },
+    ),
+  )
+}
+
+export async function uploadResearchPdfDirect(input: {
+  conversationId: string
+  userIntent: string
+  title?: string
+  file: File
+}): Promise<{ scope: ResearchScope; paper: PaperCard; upload: IngestionStatus }> {
+  const query = new URLSearchParams({
+    conversation_id: input.conversationId,
+    user_intent: input.userIntent,
+  })
+  if (input.title?.trim()) query.set('title', input.title.trim())
+  const raw = asRecord(
+    await request(`/research/uploads?${query.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/pdf',
+        'X-Filename': encodeURIComponent(input.file.name),
+      },
+      body: input.file,
+    }),
+  )
+  return {
+    scope: normalizeResearchScope(raw.scope),
+    paper: normalizePaperCard(raw.paper),
+    upload: normalizeIngestion(raw.upload),
+  }
+}
+
+export async function getResearchScope(scopeId: string): Promise<ResearchScope> {
+  return normalizeResearchScope(
+    await request(`/research/scopes/${encodeURIComponent(scopeId)}`),
+  )
+}
+
+export async function searchResearchEvidence(input: {
+  scopeId: string
+  scopeVersion: number
+  query: string
+  intent: string
+}): Promise<ScopeEvidenceResult> {
+  return normalizeScopeEvidence(
+    await request('/research/evidence/search', {
+      method: 'POST',
+      body: JSON.stringify({
+        scope_id: input.scopeId,
+        scope_version: input.scopeVersion,
+        query: input.query,
+        intent: input.intent,
+        top_k: 10,
+        candidate_k: 50,
+        mode: 'rigorous',
+      }),
+    }),
+  )
+}
+
+export async function createResearchAgentRun(
+  scopeId: string,
+  title: string,
+  context: string,
+): Promise<ReviewCaseDetail> {
+  return normalizeReviewDetail(
+    await request(`/research/scopes/${encodeURIComponent(scopeId)}/agent-run`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': createClientCommandKey('research-agent-run') },
+      body: JSON.stringify({ title, context, survey_depth: 'rigorous' }),
     }),
   )
 }

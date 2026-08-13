@@ -1,0 +1,176 @@
+{
+  "cleaning_audit": {
+    "path": "D:/my-coding/TaskForge/eval/reports/tatqa-train-table-cleaning-audit-v2.json",
+    "sha256": "f8afb999cda108c55262049499fb2d41bb21c6e1c5c8ee7c61367ee50748a2ab",
+    "source_sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69"
+  },
+  "decision": "keep_opt_in_not_default",
+  "experiment": "tatqa_coordinate_preserving_table_cleaning",
+  "limitations": [
+    "No hidden split was opened.",
+    "Latency is one warm offline run per arm and is not a statistical benchmark.",
+    "Weak operand recall is diagnostic, not official TAT-QA cell recall."
+  ],
+  "pairs": [
+    {
+      "candidate": {
+        "metrics": {
+          "by_category_recall_at_10": {
+            "arithmetic": 0.6410256410256411,
+            "count": 0.6875,
+            "multi-span": 0.6153846153846154,
+            "table": 0.5,
+            "text": 0.9090909090909091
+          },
+          "candidate_recall_at_50": 0.8088235294117647,
+          "cell_recall_at_10": 0.6805555555555556,
+          "missing_predictions": 0,
+          "ndcg_at_10": 0.5526130222222886,
+          "p95_ms": 164.3188,
+          "recall_at_10": 0.6715686274509803,
+          "row_recall_at_10": 0.6805555555555556,
+          "weak_operand_recall_at_10": 0.6498503130856073
+        },
+        "path": "D:/my-coding/TaskForge/.taskforge/eval-runs/tatqa-validation-102-global-pair-cleaning-candidate-v2",
+        "run_id": "99981d26041dee26407a"
+      },
+      "checks": {
+        "candidate_non_regression": true,
+        "category_non_regression": true,
+        "cell_non_regression": true,
+        "latency_ratio": true,
+        "measurable_quality_gain": false,
+        "recall_non_regression": true,
+        "row_non_regression": true,
+        "zero_missing_predictions": true
+      },
+      "context_mode": "global_discovery",
+      "control": {
+        "metrics": {
+          "by_category_recall_at_10": {
+            "arithmetic": 0.6410256410256411,
+            "count": 0.6875,
+            "multi-span": 0.6153846153846154,
+            "table": 0.5,
+            "text": 0.9090909090909091
+          },
+          "candidate_recall_at_50": 0.8088235294117647,
+          "cell_recall_at_10": 0.6805555555555556,
+          "missing_predictions": 0,
+          "ndcg_at_10": 0.5526130222222886,
+          "p95_ms": 154.557,
+          "recall_at_10": 0.6715686274509803,
+          "row_recall_at_10": 0.6805555555555556,
+          "weak_operand_recall_at_10": 0.6523641391288449
+        },
+        "path": "D:/my-coding/TaskForge/.taskforge/eval-runs/tatqa-validation-102-global-pair-cleaning-control-v2",
+        "run_id": "705ec949f3676781038a"
+      },
+      "deltas": {
+        "by_category_recall_at_10": {
+          "arithmetic": 0.0,
+          "count": 0.0,
+          "multi-span": 0.0,
+          "table": 0.0,
+          "text": 0.0
+        },
+        "candidate_recall_at_50": 0.0,
+        "cell_recall_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "p95_ratio": 1.06315986982149,
+        "recall_at_10": 0.0,
+        "row_recall_at_10": 0.0,
+        "weak_operand_recall_at_10": -0.002513826043237688
+      },
+      "promotion_eligible": false,
+      "retrieved_id_rankings_changed": 35,
+      "safe_to_keep_optional": true
+    },
+    {
+      "candidate": {
+        "metrics": {
+          "by_category_recall_at_10": {
+            "arithmetic": 1.0,
+            "count": 1.0,
+            "multi-span": 1.0,
+            "table": 1.0,
+            "text": 0.9545454545454546
+          },
+          "candidate_recall_at_50": 0.9901960784313726,
+          "cell_recall_at_10": 0.9861111111111112,
+          "missing_predictions": 0,
+          "ndcg_at_10": 0.910998527700172,
+          "p95_ms": 30.1146,
+          "recall_at_10": 0.9901960784313726,
+          "row_recall_at_10": 0.988425925925926,
+          "weak_operand_recall_at_10": 0.7761904761904762
+        },
+        "path": "D:/my-coding/TaskForge/.taskforge/eval-runs/tatqa-validation-102-provided-pair-cleaning-candidate-v2",
+        "run_id": "0863c68bc6c5e0165b27"
+      },
+      "checks": {
+        "candidate_non_regression": true,
+        "category_non_regression": true,
+        "cell_non_regression": true,
+        "latency_ratio": true,
+        "measurable_quality_gain": false,
+        "recall_non_regression": true,
+        "row_non_regression": true,
+        "zero_missing_predictions": true
+      },
+      "context_mode": "provided_hybrid_context",
+      "control": {
+        "metrics": {
+          "by_category_recall_at_10": {
+            "arithmetic": 1.0,
+            "count": 1.0,
+            "multi-span": 1.0,
+            "table": 1.0,
+            "text": 0.9545454545454546
+          },
+          "candidate_recall_at_50": 0.9901960784313726,
+          "cell_recall_at_10": 0.9861111111111112,
+          "missing_predictions": 0,
+          "ndcg_at_10": 0.910998527700172,
+          "p95_ms": 32.198,
+          "recall_at_10": 0.9901960784313726,
+          "row_recall_at_10": 0.988425925925926,
+          "weak_operand_recall_at_10": 0.7761904761904762
+        },
+        "path": "D:/my-coding/TaskForge/.taskforge/eval-runs/tatqa-validation-102-provided-pair-cleaning-control-v2",
+        "run_id": "6e2a4d2f6133b8e0a869"
+      },
+      "deltas": {
+        "by_category_recall_at_10": {
+          "arithmetic": 0.0,
+          "count": 0.0,
+          "multi-span": 0.0,
+          "table": 0.0,
+          "text": 0.0
+        },
+        "candidate_recall_at_50": 0.0,
+        "cell_recall_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "p95_ratio": 0.9352941176470588,
+        "recall_at_10": 0.0,
+        "row_recall_at_10": 0.0,
+        "weak_operand_recall_at_10": 0.0
+      },
+      "promotion_eligible": false,
+      "retrieved_id_rankings_changed": 0,
+      "safe_to_keep_optional": true
+    }
+  ],
+  "promotion_eligible": false,
+  "safe_to_keep_optional": true,
+  "schema_version": "1.0",
+  "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf",
+  "thresholds": {
+    "max_candidate_drop": 0.01,
+    "max_category_drop": 0.03,
+    "max_p95_ratio": 1.2,
+    "max_recall_drop": 0.01,
+    "max_row_or_cell_drop": 0.03,
+    "measurable_gain": "Recall@10 or Candidate@50 >= +0.005, or row/cell Recall@10 >= +0.01"
+  }
+}

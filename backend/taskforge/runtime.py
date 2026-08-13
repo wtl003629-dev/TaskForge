@@ -207,8 +207,14 @@ class AgentRuntime:
                         task=task,
                     )
                 )
-                tools = await self._schemas(profile)
-                provider_context = self._provider_context(assembled, state)
+                tools = await self._schemas(profile, state)
+                provider_context = self._provider_context(
+                    assembled,
+                    state,
+                    compact_tool_trajectory=bool(
+                        profile.metadata.get("compact_tool_trajectory", False)
+                    ),
+                )
             except Exception as exc:
                 return await self._fail_model_step(
                     state,
@@ -265,6 +271,36 @@ class AgentRuntime:
             step.status = StepStatus.COMPLETED
             step.safe_summary = f"host processed {len(step.tool_results)} tool result(s)"
             step.finished_at = utc_now()
+            raw_terminal_tools = profile.metadata.get("terminal_tools", ())
+            terminal_tools = {
+                str(name)
+                for name in raw_terminal_tools
+                if isinstance(name, str) and name
+            } if isinstance(raw_terminal_tools, Sequence) and not isinstance(
+                raw_terminal_tools, (str, bytes)
+            ) else set()
+            accepted_terminal = next(
+                (
+                    request.name
+                    for request in turn.tool_requests
+                    if request.name in terminal_tools
+                    and any(
+                        result.call_id == request.call_id and result.ok
+                        for result in step.tool_results
+                    )
+                ),
+                None,
+            )
+            if accepted_terminal is not None:
+                state = _state_update(
+                    state,
+                    status=RunStatus.COMPLETED,
+                    final_answer=f"Host accepted {accepted_terminal} receipt.",
+                    error=None,
+                    pending_approval=None,
+                )
+                await self._save(state)
+                return state
             await self._save(state)
 
         error = RunError(
@@ -295,29 +331,162 @@ class AgentRuntime:
     async def _schemas(
         self,
         profile: AgentProfile,
+        state: RunState,
     ) -> list[Mapping[str, Any]]:
         schemas = await _await_if_needed(self.registry.list_specs(profile))
         if isinstance(schemas, (str, bytes)) or not isinstance(schemas, Sequence):
             raise TypeError("registry.list_specs must return a sequence")
-        return [deepcopy(dict(schema)) for schema in schemas]
+        raw_limits = profile.metadata.get("tool_call_limits", {})
+        limits = raw_limits if isinstance(raw_limits, Mapping) else {}
+        available: list[Mapping[str, Any]] = []
+        for schema in schemas:
+            name = str(schema.get("name", "")) if isinstance(schema, Mapping) else ""
+            raw_limit = limits.get(name)
+            if isinstance(raw_limit, int) and raw_limit >= 0:
+                if self._tool_use_count(state, name) >= raw_limit:
+                    continue
+            available.append(deepcopy(dict(schema)))
+        return available
 
-    def _provider_context(self, assembled: Any, state: RunState) -> dict[str, Any]:
+    @staticmethod
+    def _tool_use_count(state: RunState, name: str) -> int:
+        return sum(
+            1
+            for step in state.steps
+            if step.model_turn is not None
+            for item in step.model_turn.tool_requests
+            if item.name == name and item.call_id in state.receipts
+        )
+
+    @staticmethod
+    def _compact_research_output(output: Any) -> dict[str, Any] | Any:
+        """Return a small receipt for old research tool results.
+
+        The durable ``RunState`` still contains the complete tool result.  A
+        receipt is only the provider-facing projection used on later turns;
+        the model can call ``paper_read`` when it needs the authoritative
+        passage again.
+        """
+
+        if not isinstance(output, Mapping):
+            return output
+        tool = str(output.get("_tool", ""))
+        # ``_tool`` is injected by the caller and removed from the receipt.
+        if tool == "paper_search" or "evidence" in output:
+            evidence = output.get("evidence", [])
+            ids = [
+                item.get("evidence_id")
+                for item in evidence
+                if isinstance(item, Mapping) and isinstance(item.get("evidence_id"), str)
+            ] if isinstance(evidence, Sequence) and not isinstance(evidence, (str, bytes)) else []
+            coverage = output.get("coverage")
+            coverage_receipt: dict[str, Any] = {}
+            if isinstance(coverage, Mapping):
+                coverage_receipt = {
+                    key: coverage.get(key)
+                    for key in (
+                        "covered_requirement_indices",
+                        "source_count",
+                        "citation_ready_count",
+                    )
+                    if key in coverage
+                }
+                gaps = coverage.get("gaps")
+                if isinstance(gaps, Sequence) and not isinstance(gaps, (str, bytes)):
+                    coverage_receipt["gap_count"] = len(gaps)
+            return {
+                "receipt_type": "research.search.v1",
+                "query": output.get("query"),
+                "evidence_ids": ids,
+                "result_count": len(ids),
+                "candidate_count": output.get("candidate_count"),
+                "retrieval_rounds": output.get("retrieval_rounds"),
+                "activated_operators": output.get("activated_operators", []),
+                "coverage": coverage_receipt,
+            }
+        if tool == "paper_read" or "chunk_id" in output and "text" in output:
+            return {
+                "receipt_type": "research.read.v1",
+                "evidence_id": output.get("evidence_id"),
+                "chunk_id": output.get("chunk_id"),
+                "source": output.get("source"),
+                "section": output.get("section"),
+                "version": output.get("version"),
+                "text_available": bool(output.get("text")),
+            }
+        if tool == "citation_verify" or "token_coverage" in output:
+            return {
+                "receipt_type": "research.citation.v1",
+                "verified": output.get("verified"),
+                "evidence_ids": output.get("evidence_ids", []),
+                "resolved_evidence_ids": output.get("resolved_evidence_ids", []),
+                "missing_evidence_ids": output.get("missing_evidence_ids", []),
+                "token_coverage": output.get("token_coverage"),
+            }
+        return output
+
+    def _provider_context(
+        self,
+        assembled: Any,
+        state: RunState,
+        *,
+        compact_tool_trajectory: bool = False,
+    ) -> dict[str, Any]:
         trajectory: list[dict[str, Any]] = []
         for step in state.steps:
             if step.model_turn is None:
                 continue
+            # Keep the immediately preceding observation intact for the next
+            # model turn. Older steps are replay context and can be projected
+            # to compact receipts without losing durable audit data.
+            is_historical = compact_tool_trajectory and step.index < len(state.steps) - 1
+            tool_requests = [
+                request.model_dump(mode="json")
+                for request in step.model_turn.tool_requests
+            ]
+            tool_results = []
+            for result in step.tool_results:
+                if not is_historical:
+                    tool_results.append(result.model_dump(mode="json"))
+                    continue
+                output = result.output
+                request = next(
+                    (
+                        item
+                        for item in step.model_turn.tool_requests
+                        if item.call_id == result.call_id
+                    ),
+                    None,
+                )
+                if request is not None and request.name in {
+                    "paper_search",
+                    "paper_read",
+                    "citation_verify",
+                }:
+                    output = self._compact_research_output(
+                        {"_tool": request.name, **output}
+                    ) if isinstance(output, Mapping) else output
+                tool_results.append(
+                    {
+                        "call_id": result.call_id,
+                        "ok": result.ok,
+                        "output": output,
+                        "error": result.error,
+                        "metadata": result.metadata,
+                    }
+                )
             trajectory.append(
                 {
                     "step": step.index,
-                    "assistant_text": step.model_turn.assistant_text,
+                    "assistant_text": (
+                        step.model_turn.assistant_text[:800]
+                        if compact_tool_trajectory
+                        and isinstance(step.model_turn.assistant_text, str)
+                        else step.model_turn.assistant_text
+                    ),
                     "provider_response_id": step.model_turn.provider_response_id,
-                    "tool_requests": [
-                        request.model_dump(mode="json")
-                        for request in step.model_turn.tool_requests
-                    ],
-                    "tool_results": [
-                        result.model_dump(mode="json") for result in step.tool_results
-                    ],
+                    "tool_requests": tool_requests,
+                    "tool_results": tool_results,
                 }
             )
         return {

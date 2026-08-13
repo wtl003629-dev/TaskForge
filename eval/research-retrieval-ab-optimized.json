@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "dataset": "D:\\my-coding\\TaskForge\\eval\\research-retrieval-cases.json",
+  "dataset_sha256": "a28708b28048b417b5128f53135cbcf45481349ba7761ea6257b2c9fcf3f5510",
+  "summary": {
+    "routed": {
+      "mean_recall_at_10": 1.0
+    },
+    "unified": {
+      "mean_recall_at_10": 1.0
+    },
+    "adaptive": {
+      "mean_recall_at_10": 1.0
+    }
+  },
+  "rows": [
+    {
+      "id": "method",
+      "query": "retrieval augmented generation method",
+      "gold_evidence_ids": [
+        "paper-a:method"
+      ],
+      "routed": {
+        "evidence_ids": [
+          "paper-a:method"
+        ],
+        "elapsed_ms": 1.1059999997087289,
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0
+      },
+      "unified": {
+        "evidence_ids": [
+          "paper-a:method"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 2.2578000025532674
+      },
+      "adaptive": {
+        "evidence_ids": [
+          "paper-a:method"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 0.6905999980517663
+      }
+    },
+    {
+      "id": "table",
+      "query": "what is the recall value in the table",
+      "gold_evidence_ids": [
+        "paper-a:table"
+      ],
+      "routed": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "elapsed_ms": 0.8132000002660789,
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0
+      },
+      "unified": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 0.7603999983984977
+      },
+      "adaptive": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 1.3036000018473715
+      }
+    },
+    {
+      "id": "comparison",
+      "query": "compare recall across papers",
+      "gold_evidence_ids": [
+        "paper-a:table",
+        "paper-b:result"
+      ],
+      "routed": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "elapsed_ms": 0.45220000174595043,
+        "hit_count": 2,
+        "gold_count": 2,
+        "recall_at_10": 1.0
+      },
+      "unified": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "hit_count": 2,
+        "gold_count": 2,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 1.0469999979250133
+      },
+      "adaptive": {
+        "evidence_ids": [
+          "paper-a:table",
+          "paper-b:result",
+          "paper-a:method"
+        ],
+        "hit_count": 2,
+        "gold_count": 2,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 0.7070999999996275
+      }
+    },
+    {
+      "id": "layout",
+      "query": "what is reported on page 7",
+      "gold_evidence_ids": [
+        "paper-a:table"
+      ],
+      "routed": {
+        "evidence_ids": [
+          "paper-a:table"
+        ],
+        "elapsed_ms": 0.4096000011486467,
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0
+      },
+      "unified": {
+        "evidence_ids": [
+          "paper-a:table"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 0.6346000009216368
+      },
+      "adaptive": {
+        "evidence_ids": [
+          "paper-a:table"
+        ],
+        "hit_count": 1,
+        "gold_count": 1,
+        "recall_at_10": 1.0,
+        "activated_operators": [],
+        "elapsed_ms": 1.0172000002057757
+      }
+    }
+  ]
+}

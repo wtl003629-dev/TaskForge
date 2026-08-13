@@ -1,0 +1,214 @@
+{
+  "baseline": {
+    "artifact_sha256": {
+      "metrics.json": "ba20cb788caf309aa1f3754430136e04ac5318d1b5f82772a9a5ede72f378fc6",
+      "predictions.jsonl": "91dd2a3bf42b74a05eece5ae8503d2710218ee4ec4902e50dcd2dfb0f3854d9e"
+    },
+    "label": "before",
+    "run_id": "0a5a64cd8df8112c02ea",
+    "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+  },
+  "bootstrap": {
+    "confidence": 0.95,
+    "repetitions": 10000,
+    "seed": 20260809
+  },
+  "candidates": [
+    {
+      "artifact_sha256": {
+        "metrics.json": "361df01e671ebe27ce86a21badfc84f60f2f0446327aaef8f871f90e1cd3295a",
+        "predictions.jsonl": "0ec3253853f05bad765545711bef8b65771d090373f2ec602f1b322807deed8c"
+      },
+      "category_failures": [],
+      "checks": {
+        "bootstrap_ci": true,
+        "candidate_candidate_recall_floor": true,
+        "candidate_recall_at_candidate_k": true,
+        "candidate_recall_floor": true,
+        "category_non_regression": true,
+        "identical_retrieval": true,
+        "latency": true,
+        "metadata": true,
+        "recall_at_10": true,
+        "security": true
+      },
+      "label": "hit-aligned",
+      "metadata_errors": [],
+      "metrics": {
+        "baseline_candidate_recall": 0.9901960784313726,
+        "baseline_p95_ms": 36.7846,
+        "baseline_raw_candidate_counts": {
+          "fused": {
+            "max": 14,
+            "mean": 5.793103448275862,
+            "min": 3
+          },
+          "numeric_scan": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "parent_child": {
+            "max": 14,
+            "mean": 5.793103448275862,
+            "min": 3
+          },
+          "query_aware_lineage_closure": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "query_plan": {
+            "max": 10,
+            "mean": 4.017241379310345,
+            "min": 0
+          },
+          "query_plan_default": {
+            "max": 13,
+            "mean": 5.409090909090909,
+            "min": 1
+          },
+          "structured_lineage_candidate": {
+            "max": 1,
+            "mean": 0.02857142857142857,
+            "min": 0
+          },
+          "tatqa_structured_arithmetic": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "tatqa_structured_count": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "tatqa_structured_multi_span": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          }
+        },
+        "baseline_recall_at_10": 0.9901960784313726,
+        "candidate_candidate_recall": 0.9901960784313726,
+        "candidate_p95_ms": 49.434,
+        "candidate_raw_candidate_counts": {
+          "fused": {
+            "max": 14,
+            "mean": 5.793103448275862,
+            "min": 3
+          },
+          "numeric_scan": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "parent_child": {
+            "max": 14,
+            "mean": 5.793103448275862,
+            "min": 3
+          },
+          "query_aware_lineage_closure": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "query_plan": {
+            "max": 10,
+            "mean": 4.017241379310345,
+            "min": 0
+          },
+          "query_plan_default": {
+            "max": 13,
+            "mean": 5.409090909090909,
+            "min": 1
+          },
+          "structured_lineage_candidate": {
+            "max": 1,
+            "mean": 0.02857142857142857,
+            "min": 0
+          },
+          "tatqa_structured_arithmetic": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "tatqa_structured_count": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "tatqa_structured_multi_span": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          }
+        },
+        "candidate_recall_at_10": 0.9901960784313726,
+        "candidate_recall_ci_95": [
+          0.0,
+          0.0
+        ],
+        "candidate_recall_delta": 0.0,
+        "categories": {
+          "arithmetic": {
+            "baseline_recall_at_10": 1.0,
+            "candidate_recall_at_10": 1.0,
+            "cases": 39,
+            "delta": 0.0
+          },
+          "count": {
+            "baseline_recall_at_10": 1.0,
+            "candidate_recall_at_10": 1.0,
+            "cases": 8,
+            "delta": 0.0
+          },
+          "multi-span": {
+            "baseline_recall_at_10": 1.0,
+            "candidate_recall_at_10": 1.0,
+            "cases": 13,
+            "delta": 0.0
+          },
+          "table": {
+            "baseline_recall_at_10": 1.0,
+            "candidate_recall_at_10": 1.0,
+            "cases": 20,
+            "delta": 0.0
+          },
+          "text": {
+            "baseline_recall_at_10": 0.9545454545454546,
+            "candidate_recall_at_10": 0.9545454545454546,
+            "cases": 22,
+            "delta": 0.0
+          }
+        },
+        "ndcg_delta": 0.0,
+        "p95_ratio": 1.3438776009525726,
+        "recall_ci_95": [
+          0.0,
+          0.0
+        ],
+        "recall_delta": 0.0
+      },
+      "passed": true,
+      "run_id": "f858a2a79b7b3e9388c9",
+      "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"
+    }
+  ],
+  "gate": "retrieval_promotion",
+  "passed": true,
+  "require_identical_retrieval": true,
+  "schema_version": "1.0",
+  "thresholds": {
+    "max_candidate_drop": 0.01,
+    "max_category_degradation": 0.03,
+    "max_p95_ms": null,
+    "max_p95_ratio": 2.0,
+    "max_recall_drop": 0.01,
+    "min_candidate_recall_at_10": null,
+    "min_candidate_recall_at_candidate_k": null,
+    "min_category_cases": 10,
+    "min_recall_delta": 0.0,
+    "require_nonnegative_ci_lower": true
+  }
+}

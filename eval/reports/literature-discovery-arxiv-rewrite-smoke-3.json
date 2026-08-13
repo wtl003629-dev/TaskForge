@@ -1,0 +1,573 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "open_literature_discovery",
+  "metric_boundary": "Paper-level known-item discovery over open providers; these metrics are not bounded passage Recall@10 or Candidate@50.",
+  "live_external_requests": true,
+  "created_at": "2026-08-12T13:10:10.277995+00:00",
+  "dataset": "eval\\literature-discovery-benchmark-100.json",
+  "dataset_sha256": "afd16815da7cc606da874cfeeeea6f33950309495b481f3eae43dc25d19dac31",
+  "configuration": {
+    "providers": [
+      "arxiv"
+    ],
+    "results_per_query": 50,
+    "provider_query_limits": {
+      "semantic_scholar": 2,
+      "openalex": 2,
+      "arxiv": 1,
+      "crossref": 2
+    },
+    "dense_model": "BAAI/bge-small-en-v1.5",
+    "query_rewrite_model": "deepseek-v4-flash",
+    "semantic_scholar_key_configured": false,
+    "openalex_key_configured": false,
+    "qrel_used_for_candidate_generation": false
+  },
+  "case_count": 3,
+  "target_paper_count": 56,
+  "summary": {
+    "evaluation_valid": false,
+    "paper_recall_at_20": 0.14938271604938272,
+    "paper_recall_at_50": 0.1617283950617284,
+    "paper_recall_at_20_micro": 0.14285714285714285,
+    "paper_recall_at_50_micro": 0.16071428571428573,
+    "precision_at_10": 0.06666666666666667,
+    "ndcg_at_10": 0.06279813320684507,
+    "known_item_hit_at_5": 0.3333333333333333,
+    "known_item_hit_at_10": 0.6666666666666666,
+    "mrr_at_20": 0.18903318903318903,
+    "provider_failure_count": 0,
+    "raw_candidate_count": 150,
+    "deduplicated_result_count": 113,
+    "deduplication_reduction": 0.2466666666666667,
+    "duplicate_paper_rate": 0.0,
+    "unverifiable_paper_rate": 0.0,
+    "arxiv_target_resolution_rate": 1.0,
+    "provider_failure_case_success_rate": 1.0,
+    "provider_status": {
+      "arxiv": {
+        "case_count": 3,
+        "successful_case_count": 3,
+        "success_rate": 1.0,
+        "request_count": 4,
+        "result_count": 150
+      }
+    },
+    "semantic_provider_success_rate": 0.0,
+    "arxiv_provider_success_rate": 1.0,
+    "query_rewrite_success_rate": 1.0,
+    "query_rewrite_request_count": 3,
+    "query_rewrite_prompt_tokens": 531,
+    "query_rewrite_completion_tokens": 127
+  },
+  "by_query_type": {
+    "real_scholar": {
+      "case_count": 3,
+      "paper_recall_at_20": 0.14938271604938272,
+      "paper_recall_at_50": 0.1617283950617284,
+      "precision_at_10": 0.06666666666666667,
+      "ndcg_at_10": 0.06279813320684507
+    }
+  },
+  "rows": [
+    {
+      "id": "RealScholarQuery_0",
+      "query": "Give me papers which show that using a smaller dataset in large language model pre-training can result in better models than using bigger datasets.",
+      "query_type": "real_scholar",
+      "target_count": 9,
+      "target_ranks": {
+        "2309.04564": null,
+        "2402.09668": 7,
+        "2107.06499": null,
+        "2307.08701": null,
+        "2305.02301": null,
+        "2402.04333": null,
+        "2210.10951": null,
+        "2305.12816": null,
+        "2409.17312": null
+      },
+      "paper_recall_at_20": 0.1111111111111111,
+      "paper_recall_at_50": 0.1111111111111111,
+      "relevant_at_20_count": 1,
+      "relevant_at_50_count": 1,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 0.07834851647149513,
+      "hit_at_5": false,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.14285714285714285,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 37,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 2,
+          "cache_hits": 0,
+          "elapsed_ms": 6675.225499999215,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "JiuZhang3.0: Efficiently Improving Mathematical Reasoning by Training Small Data Synthesis Models",
+          "arxiv_id": "2405.14365",
+          "resolved_arxiv_id": "2405.14365",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5390013420270144
+        },
+        {
+          "rank": 2,
+          "title": "A Survey of LLM $\\times$ DATA",
+          "arxiv_id": "2505.18458",
+          "resolved_arxiv_id": "2505.18458",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5179318294809313
+        },
+        {
+          "rank": 3,
+          "title": "Beyond QA Pairs: Assessing Parameter-Efficient Fine-Tuning for Fact Embedding in LLMs",
+          "arxiv_id": "2503.01131",
+          "resolved_arxiv_id": "2503.01131",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49220387294120593
+        },
+        {
+          "rank": 4,
+          "title": "Exploring LLM Capabilities in Extracting DCAT-Compatible Metadata for Data Cataloging",
+          "arxiv_id": "2507.05282",
+          "resolved_arxiv_id": "2507.05282",
+          "doi": "10.5220/0013458500003967",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4819826797093807
+        },
+        {
+          "rank": 5,
+          "title": "Ultra-FineWeb: Efficient Data Filtering and Verification for High-Quality LLM Training Data",
+          "arxiv_id": "2505.05427",
+          "resolved_arxiv_id": "2505.05427",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4816695913436573
+        },
+        {
+          "rank": 6,
+          "title": "Optimizing LLMs with Direct Preferences: A Data Efficiency Perspective",
+          "arxiv_id": "2410.16586",
+          "resolved_arxiv_id": "2410.16586",
+          "doi": "10.1145/3673791.3698411",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48033104114565983
+        },
+        {
+          "rank": 7,
+          "title": "How to Train Data-Efficient LLMs",
+          "arxiv_id": "2402.09668",
+          "resolved_arxiv_id": "2402.09668",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4765897604608271
+        },
+        {
+          "rank": 8,
+          "title": "Importance-Aware Data Selection for Efficient LLM Instruction Tuning",
+          "arxiv_id": "2511.07074",
+          "resolved_arxiv_id": "2511.07074",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4764151355367766
+        },
+        {
+          "rank": 9,
+          "title": "TPI-LLM: Serving 70B-scale LLMs Efficiently on Low-resource Edge Devices",
+          "arxiv_id": "2410.00531",
+          "resolved_arxiv_id": "2410.00531",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4726414062404321
+        },
+        {
+          "rank": 10,
+          "title": "Improving LLM-Powered EDA Assistants with RAFT",
+          "arxiv_id": "2506.06500",
+          "resolved_arxiv_id": "2506.06500",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47206351153372117
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_1",
+      "query": "Give me papers that share some insights about how large language models gain in-context learning capability in the process of pre-training.\n",
+      "query_type": "real_scholar",
+      "target_count": 27,
+      "target_ranks": {
+        "2306.15063": null,
+        "2310.10616": null,
+        "2205.05055": null,
+        "2310.17086": null,
+        "2212.10559": null,
+        "2310.10638": null,
+        "2305.09137": null,
+        "2212.07677": null,
+        "2310.08540": null,
+        "2312.03002": null,
+        "2305.12766": null,
+        "2402.15607": null,
+        "2405.11751": 11,
+        "2305.17040": null,
+        "2402.01258": null,
+        "2111.02080": null,
+        "2305.19420": null,
+        "2409.09281": null,
+        "2306.04637": 27,
+        "2306.15091": null,
+        "2210.05675": null,
+        "2005.14165": null,
+        "2406.14022": null,
+        "2311.08360": null,
+        "2303.07895": null,
+        "2303.07971": null,
+        "2402.12530": null
+      },
+      "paper_recall_at_20": 0.037037037037037035,
+      "paper_recall_at_50": 0.07407407407407407,
+      "relevant_at_20_count": 1,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.09090909090909091,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 43,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 1676.2980000003154,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Toward Understanding In-context vs. In-weight Learning",
+          "arxiv_id": "2410.23042",
+          "resolved_arxiv_id": "2410.23042",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5523285671037549
+        },
+        {
+          "rank": 2,
+          "title": "The Cost of Down-Scaling Language Models: Fact Recall Deteriorates before In-Context Learning",
+          "arxiv_id": "2310.04680",
+          "resolved_arxiv_id": "2310.04680",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5264191162282297
+        },
+        {
+          "rank": 3,
+          "title": "ICLR: In-Context Learning of Representations",
+          "arxiv_id": "2501.00070",
+          "resolved_arxiv_id": "2501.00070",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5231408529186095
+        },
+        {
+          "rank": 4,
+          "title": "ICLEval: Evaluating In-Context Learning Ability of Large Language Models",
+          "arxiv_id": "2406.14955",
+          "resolved_arxiv_id": "2406.14955",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5124584662548434
+        },
+        {
+          "rank": 5,
+          "title": "Context parroting: A simple but tough-to-beat baseline for foundation models in scientific machine learning",
+          "arxiv_id": "2505.11349",
+          "resolved_arxiv_id": "2505.11349",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5109338480296073
+        },
+        {
+          "rank": 6,
+          "title": "MetaVL: Transferring In-Context Learning Ability From Language Models to Vision-Language Models",
+          "arxiv_id": "2306.01311",
+          "resolved_arxiv_id": "2306.01311",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49044977704734166
+        },
+        {
+          "rank": 7,
+          "title": "Are Emergent Abilities in Large Language Models just In-Context Learning?",
+          "arxiv_id": "2309.01809",
+          "resolved_arxiv_id": "2309.01809",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48003336489283777
+        },
+        {
+          "rank": 8,
+          "title": "MGPATH: Vision-Language Model with Multi-Granular Prompt Learning for Few-Shot WSI Classification",
+          "arxiv_id": "2502.07409",
+          "resolved_arxiv_id": "2502.07409",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47952440545142017
+        },
+        {
+          "rank": 9,
+          "title": "Towards Better Understanding of In-Context Learning Ability from In-Context Uncertainty Quantification",
+          "arxiv_id": "2405.15115",
+          "resolved_arxiv_id": "2405.15115",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4792622448887336
+        },
+        {
+          "rank": 10,
+          "title": "In-context Learning Distillation: Transferring Few-shot Learning Ability of Pre-trained Language Models",
+          "arxiv_id": "2212.10670",
+          "resolved_arxiv_id": "2212.10670",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4776445451388434
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_2",
+      "query": "List all papers that use autoregressive transformer to generate videos.",
+      "query_type": "real_scholar",
+      "target_count": 20,
+      "target_ranks": {
+        "2312.14125": null,
+        "2206.04003": 15,
+        "2406.10981": 3,
+        "2402.15391": null,
+        "2107.09240": null,
+        "2006.10704": 17,
+        "2209.07143": 13,
+        "2405.15223": null,
+        "1912.12180": null,
+        "2104.14806": null,
+        "2212.06026": 20,
+        "2210.02396": null,
+        "2203.09457": null,
+        "2203.15836": 18,
+        "2205.15868": null,
+        "2207.09814": null,
+        "2104.10157": null,
+        "2402.14797": null,
+        "2406.09455": null,
+        "1906.02634": null
+      },
+      "paper_recall_at_20": 0.3,
+      "paper_recall_at_50": 0.3,
+      "relevant_at_20_count": 6,
+      "relevant_at_50_count": 6,
+      "precision_at_10": 0.1,
+      "ndcg_at_10": 0.11004588314904008,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 33,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 4263.57520000056,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "MaskCRT: Masked Conditional Residual Transformer for Learned Video Compression",
+          "arxiv_id": "2312.15829",
+          "resolved_arxiv_id": "2312.15829",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6278767512253639
+        },
+        {
+          "rank": 2,
+          "title": "Recurrent Autoregressive Diffusion: Global Memory Meets Local Attention",
+          "arxiv_id": "2511.12940",
+          "resolved_arxiv_id": "2511.12940",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5643858933468444
+        },
+        {
+          "rank": 3,
+          "title": "ViD-GPT: Introducing GPT-style Autoregressive Generation in Video Diffusion Models",
+          "arxiv_id": "2406.10981",
+          "resolved_arxiv_id": "2406.10981",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5402053747855395
+        },
+        {
+          "rank": 4,
+          "title": "An Empirical Study of Autoregressive Pre-training from Videos",
+          "arxiv_id": "2501.05453",
+          "resolved_arxiv_id": "2501.05453",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5384617134366071
+        },
+        {
+          "rank": 5,
+          "title": "Video In-context Learning: Autoregressive Transformers are Zero-Shot Video Imitators",
+          "arxiv_id": "2407.07356",
+          "resolved_arxiv_id": "2407.07356",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5211774903051076
+        },
+        {
+          "rank": 6,
+          "title": "Stable Video Infinity: Infinite-Length Video Generation with Error Recycling",
+          "arxiv_id": "2510.09212",
+          "resolved_arxiv_id": "2510.09212",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5041120767336423
+        },
+        {
+          "rank": 7,
+          "title": "From Slow Bidirectional to Fast Autoregressive Video Diffusion Models",
+          "arxiv_id": "2412.07772",
+          "resolved_arxiv_id": "2412.07772",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5002263509962052
+        },
+        {
+          "rank": 8,
+          "title": "ACDiT: Interpolating Autoregressive Conditional Modeling and Diffusion Transformer",
+          "arxiv_id": "2412.07720",
+          "resolved_arxiv_id": "2412.07720",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4959096158629068
+        },
+        {
+          "rank": 9,
+          "title": "Video Prediction of Dynamic Physical Simulations With Pixel-Space Spatiotemporal Transformers",
+          "arxiv_id": "2510.20807",
+          "resolved_arxiv_id": "2510.20807",
+          "doi": "10.1109/tnnls.2025.3585949",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48249051833084833
+        },
+        {
+          "rank": 10,
+          "title": "Fast Autoregressive Video Generation with Diagonal Decoding",
+          "arxiv_id": "2503.14070",
+          "resolved_arxiv_id": "2503.14070",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4756295578799813
+        }
+      ]
+    }
+  ],
+  "quality_gate": {
+    "passed": false,
+    "checks": {
+      "evaluation_valid": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 0.0,
+        "passed": false
+      },
+      "paper_recall_at_20": {
+        "operator": ">=",
+        "target": 0.8,
+        "actual": 0.14938271604938272,
+        "passed": false
+      },
+      "paper_recall_at_50": {
+        "operator": ">=",
+        "target": 0.9,
+        "actual": 0.1617283950617284,
+        "passed": false
+      },
+      "precision_at_10": {
+        "operator": ">=",
+        "target": 0.6,
+        "actual": 0.06666666666666667,
+        "passed": false
+      },
+      "ndcg_at_10": {
+        "operator": ">=",
+        "target": 0.7,
+        "actual": 0.06279813320684507,
+        "passed": false
+      },
+      "arxiv_target_resolution_rate": {
+        "operator": ">=",
+        "target": 0.98,
+        "actual": 1.0,
+        "passed": true
+      },
+      "duplicate_paper_rate": {
+        "operator": "<=",
+        "target": 0.02,
+        "actual": 0.0,
+        "passed": true
+      },
+      "unverifiable_paper_rate": {
+        "operator": "==",
+        "target": 0.0,
+        "actual": 0.0,
+        "passed": true
+      },
+      "provider_failure_case_success_rate": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 1.0,
+        "passed": true
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "description": "Four-scenario regression gate for the QASPER B2 candidate. QASPER uses the document-disjoint 200-case tuning split; other routes retain their existing controls.",
+  "scenarios": [
+    {
+      "name": "table_numeric_provided_context",
+      "baseline": {"label": "tatqa-provided-bm25-control", "path": "../.taskforge/eval-runs/retained-tatqa-provided-102-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "tatqa-provided-structured-pair", "path": "../.taskforge/eval-runs/retained-tatqa-provided-102-20260811", "stage": "bm25_tatqa_query_plan_parent_scan_closure_table_profile_lineage_pair_rerank_rrf"},
+      "policy": {"min_recall_delta": 0.01, "min_candidate_recall_at_10": 0.98, "min_candidate_recall_at_candidate_k": 0.98, "max_category_degradation": 0.03, "max_p95_ratio": 4.0, "max_p95_ms": 200.0}
+    },
+    {
+      "name": "qasper_long_document_b2",
+      "baseline": {"label": "qasper-B0-BM25", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b0-provided-v4-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "qasper-B2-real-dense", "path": "../.taskforge/eval-runs/qasper-train-tuning-200-b2-dense-v6-20260811", "stage": "qdrant_qasper_dense"},
+      "policy": {"profile": "general_text", "min_recall_delta": 0.0, "min_candidate_recall_at_candidate_k": 0.50, "max_category_degradation": 0.03, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "identifiable_cross_document_coverage",
+      "baseline": {"label": "multihop-bm25-control", "path": "../.taskforge/eval-runs/retained-multihop-heldout-100-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "multihop-source-coverage-anchor", "path": "../.taskforge/eval-runs/retained-multihop-heldout-100-20260811", "stage": "bm25_source_coverage_anchor_rrf"},
+      "policy": {"profile": "cross_document", "min_recall_delta": 0.05, "min_candidate_recall_at_10": 0.90, "min_candidate_recall_at_candidate_k": 0.98, "max_category_degradation": 0.03, "max_p95_ratio": 3.0, "max_p95_ms": 250.0}
+    },
+    {
+      "name": "pdf_ingestion_and_table_route_smoke",
+      "baseline": {"label": "synthetic-pdf-bm25", "path": "../.taskforge/eval-runs/retained-synthetic-pdf-20260811", "stage": "lexical_bm25"},
+      "candidate": {"label": "synthetic-pdf-table-router", "path": "../.taskforge/eval-runs/retained-synthetic-pdf-20260811", "stage": "bm25_table_router"},
+      "policy": {"min_candidate_recall_at_10": 1.0, "min_candidate_recall_at_candidate_k": 1.0, "max_p95_ratio": 1.2, "max_p95_ms": 10.0}
+    }
+  ]
+}

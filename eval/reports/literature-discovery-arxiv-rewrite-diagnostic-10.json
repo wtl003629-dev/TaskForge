@@ -1,0 +1,1647 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "open_literature_discovery",
+  "metric_boundary": "Paper-level known-item discovery over open providers; these metrics are not bounded passage Recall@10 or Candidate@50.",
+  "live_external_requests": true,
+  "created_at": "2026-08-12T13:09:30.757139+00:00",
+  "dataset": "eval\\literature-discovery-benchmark-100.json",
+  "dataset_sha256": "afd16815da7cc606da874cfeeeea6f33950309495b481f3eae43dc25d19dac31",
+  "configuration": {
+    "providers": [
+      "arxiv"
+    ],
+    "results_per_query": 50,
+    "provider_query_limits": {
+      "semantic_scholar": 2,
+      "openalex": 2,
+      "arxiv": 1,
+      "crossref": 2
+    },
+    "dense_model": "BAAI/bge-small-en-v1.5",
+    "query_rewrite_model": "deepseek-v4-flash",
+    "semantic_scholar_key_configured": false,
+    "openalex_key_configured": false,
+    "qrel_used_for_candidate_generation": false
+  },
+  "case_count": 10,
+  "target_paper_count": 252,
+  "summary": {
+    "evaluation_valid": false,
+    "paper_recall_at_20": 0.06049076371657016,
+    "paper_recall_at_50": 0.06884477529638819,
+    "paper_recall_at_20_micro": 0.03571428571428571,
+    "paper_recall_at_50_micro": 0.047619047619047616,
+    "precision_at_10": 0.05,
+    "ndcg_at_10": 0.05950631001135189,
+    "known_item_hit_at_5": 0.2,
+    "known_item_hit_at_10": 0.2,
+    "mrr_at_20": 0.10581709956709957,
+    "provider_failure_count": 0,
+    "raw_candidate_count": 459,
+    "deduplicated_result_count": 382,
+    "deduplication_reduction": 0.16775599128540308,
+    "duplicate_paper_rate": 0.0,
+    "unverifiable_paper_rate": 0.0,
+    "arxiv_target_resolution_rate": 1.0,
+    "provider_failure_case_success_rate": 1.0,
+    "provider_status": {
+      "arxiv": {
+        "case_count": 10,
+        "successful_case_count": 10,
+        "success_rate": 1.0,
+        "request_count": 12,
+        "result_count": 459
+      }
+    },
+    "semantic_provider_success_rate": 0.0,
+    "arxiv_provider_success_rate": 1.0,
+    "query_rewrite_success_rate": 0.1,
+    "query_rewrite_request_count": 10,
+    "query_rewrite_prompt_tokens": 2576,
+    "query_rewrite_completion_tokens": 2393
+  },
+  "by_query_type": {
+    "real_scholar": {
+      "case_count": 10,
+      "paper_recall_at_20": 0.06049076371657016,
+      "paper_recall_at_50": 0.06884477529638819,
+      "precision_at_10": 0.05,
+      "ndcg_at_10": 0.05950631001135189
+    }
+  },
+  "rows": [
+    {
+      "id": "RealScholarQuery_0",
+      "query": "Give me papers which show that using a smaller dataset in large language model pre-training can result in better models than using bigger datasets.",
+      "query_type": "real_scholar",
+      "target_count": 9,
+      "target_ranks": {
+        "2309.04564": null,
+        "2402.09668": null,
+        "2107.06499": null,
+        "2307.08701": null,
+        "2305.02301": 14,
+        "2402.04333": null,
+        "2210.10951": null,
+        "2305.12816": null,
+        "2409.17312": null
+      },
+      "paper_recall_at_20": 0.1111111111111111,
+      "paper_recall_at_50": 0.1111111111111111,
+      "relevant_at_20_count": 1,
+      "relevant_at_50_count": 1,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.07142857142857142,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 44,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 3,
+          "cache_hits": 0,
+          "elapsed_ms": 8449.709399999847,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Dataset Distillation via Curriculum Data Synthesis in Large Data Era",
+          "arxiv_id": "2311.18838",
+          "resolved_arxiv_id": "2311.18838",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5619763525407929
+        },
+        {
+          "rank": 2,
+          "title": "Palm: A Culturally Inclusive and Linguistically Diverse Dataset for Arabic LLMs",
+          "arxiv_id": "2503.00151",
+          "resolved_arxiv_id": "2503.00151",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5212651610154336
+        },
+        {
+          "rank": 3,
+          "title": "Tiny Titans: Can Smaller Large Language Models Punch Above Their Weight in the Real World for Meeting Summarization?",
+          "arxiv_id": "2402.00841",
+          "resolved_arxiv_id": "2402.00841",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5126037011187996
+        },
+        {
+          "rank": 4,
+          "title": "When Ensembling Smaller Models is More Efficient than Single Large Models",
+          "arxiv_id": "2005.00570",
+          "resolved_arxiv_id": "2005.00570",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5125412512169096
+        },
+        {
+          "rank": 5,
+          "title": "MessIRve: A Large-Scale Spanish Information Retrieval Dataset",
+          "arxiv_id": "2409.05994",
+          "resolved_arxiv_id": "2409.05994",
+          "doi": "10.18653/v1/2025.emnlp-main.1412",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4992090755377343
+        },
+        {
+          "rank": 6,
+          "title": "On Inter-dataset Code Duplication and Data Leakage in Large Language Models",
+          "arxiv_id": "2401.07930",
+          "resolved_arxiv_id": "2401.07930",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4988578181312723
+        },
+        {
+          "rank": 7,
+          "title": "EEG-DLite: Dataset Distillation for Efficient Large EEG Model Training",
+          "arxiv_id": "2512.12210",
+          "resolved_arxiv_id": "2512.12210",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4970493363712728
+        },
+        {
+          "rank": 8,
+          "title": "Teddy: Efficient Large-Scale Dataset Distillation via Taylor-Approximated Matching",
+          "arxiv_id": "2410.07579",
+          "resolved_arxiv_id": "2410.07579",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4966983956963538
+        },
+        {
+          "rank": 9,
+          "title": "Investigating Retrieval-Augmented Generation in Quranic Studies: A Study of 13 Open-Source Large Language Models",
+          "arxiv_id": "2503.16581",
+          "resolved_arxiv_id": "2503.16581",
+          "doi": "10.14569/ijacsa.2025.01602134",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49571262864928034
+        },
+        {
+          "rank": 10,
+          "title": "Can Small and Reasoning Large Language Models Score Journal Articles for Research Quality and Do Averaging and Few-shot Help?",
+          "arxiv_id": "2510.22389",
+          "resolved_arxiv_id": "2510.22389",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4940107819689361
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_1",
+      "query": "Give me papers that share some insights about how large language models gain in-context learning capability in the process of pre-training.\n",
+      "query_type": "real_scholar",
+      "target_count": 27,
+      "target_ranks": {
+        "2306.15063": null,
+        "2310.10616": null,
+        "2205.05055": null,
+        "2310.17086": null,
+        "2212.10559": null,
+        "2310.10638": null,
+        "2305.09137": null,
+        "2212.07677": null,
+        "2310.08540": null,
+        "2312.03002": null,
+        "2305.12766": null,
+        "2402.15607": null,
+        "2405.11751": null,
+        "2305.17040": null,
+        "2402.01258": null,
+        "2111.02080": null,
+        "2305.19420": null,
+        "2409.09281": null,
+        "2306.04637": null,
+        "2306.15091": null,
+        "2210.05675": null,
+        "2005.14165": null,
+        "2406.14022": null,
+        "2311.08360": null,
+        "2303.07895": null,
+        "2303.07971": null,
+        "2402.12530": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 44,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 2165.311599999768,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Enhancing Human-Like Responses in Large Language Models",
+          "arxiv_id": "2501.05032",
+          "resolved_arxiv_id": "2501.05032",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6576984230644407
+        },
+        {
+          "rank": 2,
+          "title": "Is Self-knowledge and Action Consistent or Not: Investigating Large Language Model's Personality",
+          "arxiv_id": "2402.14679",
+          "resolved_arxiv_id": "2402.14679",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5268379491703077
+        },
+        {
+          "rank": 3,
+          "title": "Large Language Models Lack Understanding of Character Composition of Words",
+          "arxiv_id": "2405.11357",
+          "resolved_arxiv_id": "2405.11357",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5230354725172758
+        },
+        {
+          "rank": 4,
+          "title": "Making Large Language Models Better Reasoners with Alignment",
+          "arxiv_id": "2309.02144",
+          "resolved_arxiv_id": "2309.02144",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5019359424187236
+        },
+        {
+          "rank": 5,
+          "title": "How do language models learn facts? Dynamics, curricula and hallucinations",
+          "arxiv_id": "2503.21676",
+          "resolved_arxiv_id": "2503.21676",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5010850624075991
+        },
+        {
+          "rank": 6,
+          "title": "Self-Cognition in Large Language Models: An Exploratory Study",
+          "arxiv_id": "2407.01505",
+          "resolved_arxiv_id": "2407.01505",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49270708447303196
+        },
+        {
+          "rank": 7,
+          "title": "A Survey on Multimodal Large Language Models",
+          "arxiv_id": "2306.13549",
+          "resolved_arxiv_id": "2306.13549",
+          "doi": "10.1093/nsr/nwae403",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4915186173098252
+        },
+        {
+          "rank": 8,
+          "title": "Unmasking the Shadows of AI: Investigating Deceptive Capabilities in Large Language Models",
+          "arxiv_id": "2403.09676",
+          "resolved_arxiv_id": "2403.09676",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48962373965012446
+        },
+        {
+          "rank": 9,
+          "title": "Reinforcement Learning Meets Large Language Models: A Survey of Advancements and Applications Across the LLM Lifecycle",
+          "arxiv_id": "2509.16679",
+          "resolved_arxiv_id": "2509.16679",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.478742903715783
+        },
+        {
+          "rank": 10,
+          "title": "A Critical Review of Causal Reasoning Benchmarks for Large Language Models",
+          "arxiv_id": "2407.08029",
+          "resolved_arxiv_id": "2407.08029",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4781163569466219
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_2",
+      "query": "List all papers that use autoregressive transformer to generate videos.",
+      "query_type": "real_scholar",
+      "target_count": 20,
+      "target_ranks": {
+        "2312.14125": null,
+        "2206.04003": null,
+        "2406.10981": null,
+        "2402.15391": null,
+        "2107.09240": null,
+        "2006.10704": null,
+        "2209.07143": null,
+        "2405.15223": null,
+        "1912.12180": null,
+        "2104.14806": null,
+        "2212.06026": null,
+        "2210.02396": null,
+        "2203.09457": null,
+        "2203.15836": null,
+        "2205.15868": null,
+        "2207.09814": null,
+        "2104.10157": null,
+        "2402.14797": null,
+        "2406.09455": null,
+        "1906.02634": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 45,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 2,
+          "cache_hits": 0,
+          "elapsed_ms": 6341.382700000395,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "A Spark of Vision-Language Intelligence: 2-Dimensional Autoregressive Transformer for Efficient Finegrained Image Generation",
+          "arxiv_id": "2410.01912",
+          "resolved_arxiv_id": "2410.01912",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6624293895942986
+        },
+        {
+          "rank": 2,
+          "title": "Recurrent Autoregressive Diffusion: Global Memory Meets Local Attention",
+          "arxiv_id": "2511.12940",
+          "resolved_arxiv_id": "2511.12940",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5470550328651927
+        },
+        {
+          "rank": 3,
+          "title": "Generative Pre-Training for Speech with Autoregressive Predictive Coding",
+          "arxiv_id": "1910.12607",
+          "resolved_arxiv_id": "1910.12607",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5254285363903348
+        },
+        {
+          "rank": 4,
+          "title": "Randomized Autoregressive Visual Generation",
+          "arxiv_id": "2411.00776",
+          "resolved_arxiv_id": "2411.00776",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5203472139317403
+        },
+        {
+          "rank": 5,
+          "title": "DiTAR: Diffusion Transformer Autoregressive Modeling for Speech Generation",
+          "arxiv_id": "2502.03930",
+          "resolved_arxiv_id": "2502.03930",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5061346936774773
+        },
+        {
+          "rank": 6,
+          "title": "Probability Distributions Computed by Autoregressive Transformers",
+          "arxiv_id": "2510.27118",
+          "resolved_arxiv_id": "2510.27118",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5057547811856697
+        },
+        {
+          "rank": 7,
+          "title": "ACDiT: Interpolating Autoregressive Conditional Modeling and Diffusion Transformer",
+          "arxiv_id": "2412.07720",
+          "resolved_arxiv_id": "2412.07720",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4959096158629068
+        },
+        {
+          "rank": 8,
+          "title": "Pard: Permutation-Invariant Autoregressive Diffusion for Graph Generation",
+          "arxiv_id": "2402.03687",
+          "resolved_arxiv_id": "2402.03687",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4917793565274849
+        },
+        {
+          "rank": 9,
+          "title": "PASTA: Controllable Part-Aware Shape Generation with Autoregressive Transformers",
+          "arxiv_id": "2407.13677",
+          "resolved_arxiv_id": "2407.13677",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4892505526849757
+        },
+        {
+          "rank": 10,
+          "title": "Efficient Autoregressive Inference for Transformer Probabilistic Models",
+          "arxiv_id": "2510.09477",
+          "resolved_arxiv_id": "2510.09477",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4888751599634209
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_3",
+      "query": "I am looking for research papers on the construction of multimodal foundation models that support both visual and audio inputs. These models should be pre-trained on large-scale datasets, including visual, audio, and audio-visual data. Please exclude survey papers.",
+      "query_type": "real_scholar",
+      "target_count": 39,
+      "target_ranks": {
+        "2201.02639": null,
+        "2403.15377": null,
+        "2104.11178": null,
+        "2310.05863": 8,
+        "2304.08345": null,
+        "2305.18500": null,
+        "2211.11275": 7,
+        "2401.12264": null,
+        "2306.02858": null,
+        "2312.14125": null,
+        "2310.01852": null,
+        "2406.15704": null,
+        "1705.08168": null,
+        "2306.09093": null,
+        "2408.05211": null,
+        "2305.12311": null,
+        "2006.09199": null,
+        "2107.00249": null,
+        "2307.08581": null,
+        "2305.14381": null,
+        "2409.17692": null,
+        "2312.17172": null,
+        "2212.04408": null,
+        "2106.13043": null,
+        "2312.06720": null,
+        "2407.11895": null,
+        "2309.05519": null,
+        "2312.03700": null,
+        "2406.07476": null,
+        "2111.12993": null,
+        "2205.01818": null,
+        "2311.18775": null,
+        "2305.11172": null,
+        "2305.16355": null,
+        "2311.13435": null,
+        "2405.04883": null,
+        "2212.07525": null,
+        "2310.08884": null,
+        "2409.19132": 3
+      },
+      "paper_recall_at_20": 0.07692307692307693,
+      "paper_recall_at_50": 0.07692307692307693,
+      "relevant_at_20_count": 3,
+      "relevant_at_50_count": 3,
+      "precision_at_10": 0.3,
+      "ndcg_at_10": 0.2528410271851774,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 47,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": true,
+      "query_rewrite_failure": null,
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 4307.861799999955,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Learning Self-Supervised Audio-Visual Representations for Sound Recommendations",
+          "arxiv_id": "2412.07406",
+          "resolved_arxiv_id": "2412.07406",
+          "doi": "10.1007/978-3-030-90436-4_10",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.528688447703294
+        },
+        {
+          "rank": 2,
+          "title": "3D Audio-Visual Segmentation",
+          "arxiv_id": "2411.02236",
+          "resolved_arxiv_id": "2411.02236",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5197672572172336
+        },
+        {
+          "rank": 3,
+          "title": "From Vision to Audio and Beyond: A Unified Model for Audio-Visual Representation and Generation",
+          "arxiv_id": "2409.19132",
+          "resolved_arxiv_id": "2409.19132",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48822787435924336
+        },
+        {
+          "rank": 4,
+          "title": "Audio-Visual Representation Learning via Knowledge Distillation from Speech Foundation Models",
+          "arxiv_id": "2502.05766",
+          "resolved_arxiv_id": "2502.05766",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48177421075234306
+        },
+        {
+          "rank": 5,
+          "title": "AUREXA-SE: Audio-Visual Unified Representation Exchange Architecture with Cross-Attention and Squeezeformer for Speech Enhancement",
+          "arxiv_id": "2510.05295",
+          "resolved_arxiv_id": "2510.05295",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4792744375733069
+        },
+        {
+          "rank": 6,
+          "title": "Learning Speech Representations from Raw Audio by Joint Audiovisual Self-Supervision",
+          "arxiv_id": "2007.04134",
+          "resolved_arxiv_id": "2007.04134",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47336811412629776
+        },
+        {
+          "rank": 7,
+          "title": "VATLM: Visual-Audio-Text Pre-Training with Unified Masked Prediction for Speech Representation Learning",
+          "arxiv_id": "2211.11275",
+          "resolved_arxiv_id": "2211.11275",
+          "doi": "10.1109/tmm.2023.3275873",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47117786407005346
+        },
+        {
+          "rank": 8,
+          "title": "Fine-grained Audio-Visual Joint Representations for Multimodal Large Language Models",
+          "arxiv_id": "2310.05863",
+          "resolved_arxiv_id": "2310.05863",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47000747533738546
+        },
+        {
+          "rank": 9,
+          "title": "Audio-Visual Separation with Hierarchical Fusion and Representation Alignment",
+          "arxiv_id": "2510.07326",
+          "resolved_arxiv_id": "2510.07326",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4678827697955852
+        },
+        {
+          "rank": 10,
+          "title": "AV-SUPERB: A Multi-Task Evaluation Benchmark for Audio-Visual Representation Models",
+          "arxiv_id": "2309.10787",
+          "resolved_arxiv_id": "2309.10787",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46714819983973727
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_4",
+      "query": "Provide me with all papers that discuss reinforcement learning training for Large Language Model agent tasks.",
+      "query_type": "real_scholar",
+      "target_count": 43,
+      "target_ranks": {
+        "2401.14151": null,
+        "2403.04642": null,
+        "2310.18940": null,
+        "2306.03604": null,
+        "2402.19446": null,
+        "2303.11366": null,
+        "2302.06692": null,
+        "2406.05872": null,
+        "2404.18978": null,
+        "2302.00763": null,
+        "2112.09332": null,
+        "2302.02662": null,
+        "2401.06603": null,
+        "2311.05596": null,
+        "2402.06700": null,
+        "2401.00006": null,
+        "2402.19299": null,
+        "2310.00166": null,
+        "2312.08935": null,
+        "2307.02157": null,
+        "2404.18638": null,
+        "2405.15383": null,
+        "2402.02330": null,
+        "2303.00001": null,
+        "2309.17176": null,
+        "2310.17722": null,
+        "2308.13542": null,
+        "2310.12931": null,
+        "2304.04370": null,
+        "2308.02151": null,
+        "2310.20587": null,
+        "2309.17382": null,
+        "2307.09668": null,
+        "2307.11922": null,
+        "2305.14387": null,
+        "2209.14375": null,
+        "2402.12914": null,
+        "2305.08844": null,
+        "2301.12729": null,
+        "2104.07972": null,
+        "2402.16181": null,
+        "2307.04964": null,
+        "2405.14751": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 41,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 508.96429999920656,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Accelerating Training in Pommerman with Imitation and Reinforcement Learning",
+          "arxiv_id": "1911.04947",
+          "resolved_arxiv_id": "1911.04947",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6716888810319234
+        },
+        {
+          "rank": 2,
+          "title": "Causal-Paced Deep Reinforcement Learning",
+          "arxiv_id": "2507.02910",
+          "resolved_arxiv_id": "2507.02910",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.604376936747039
+        },
+        {
+          "rank": 3,
+          "title": "Pre-trained Word Embeddings for Goal-conditional Transfer Learning in Reinforcement Learning",
+          "arxiv_id": "2007.05196",
+          "resolved_arxiv_id": "2007.05196",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5510195293993547
+        },
+        {
+          "rank": 4,
+          "title": "Training Agents using Upside-Down Reinforcement Learning",
+          "arxiv_id": "1912.02877",
+          "resolved_arxiv_id": "1912.02877",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5493425392607597
+        },
+        {
+          "rank": 5,
+          "title": "Data Efficient Training for Reinforcement Learning with Adaptive Behavior Policy Sharing",
+          "arxiv_id": "2002.05229",
+          "resolved_arxiv_id": "2002.05229",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5193587117444105
+        },
+        {
+          "rank": 6,
+          "title": "End-to-End Reinforcement Learning for Torque Based Variable Height Hopping",
+          "arxiv_id": "2307.16676",
+          "resolved_arxiv_id": "2307.16676",
+          "doi": "10.1109/iros55552.2023.10342187",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.512500802993497
+        },
+        {
+          "rank": 7,
+          "title": "Learning to Navigate in Mazes with Novel Layouts using Abstract Top-down Maps",
+          "arxiv_id": "2412.12024",
+          "resolved_arxiv_id": "2412.12024",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5090698124511194
+        },
+        {
+          "rank": 8,
+          "title": "Robotic Manipulation Datasets for Offline Compositional Reinforcement Learning",
+          "arxiv_id": "2307.07091",
+          "resolved_arxiv_id": "2307.07091",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.507908982043963
+        },
+        {
+          "rank": 9,
+          "title": "Multi-view Disentanglement for Reinforcement Learning with Multiple Cameras",
+          "arxiv_id": "2404.14064",
+          "resolved_arxiv_id": "2404.14064",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5058963808194565
+        },
+        {
+          "rank": 10,
+          "title": "Reinforcement Learning Agent Training with Goals for Real World Tasks",
+          "arxiv_id": "2107.10390",
+          "resolved_arxiv_id": "2107.10390",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48993750876524655
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_5",
+      "query": "Papers that apply RLHF to address the hallucination problem in image and video description.",
+      "query_type": "real_scholar",
+      "target_count": 6,
+      "target_ranks": {
+        "2309.14525": null,
+        "2402.11411": 3,
+        "2402.06118": null,
+        "2312.10665": null,
+        "2311.10081": null,
+        "2312.00849": 2
+      },
+      "paper_recall_at_20": 0.3333333333333333,
+      "paper_recall_at_50": 0.3333333333333333,
+      "relevant_at_20_count": 2,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.2,
+      "ndcg_at_10": 0.34222207292834145,
+      "hit_at_5": true,
+      "hit_at_10": true,
+      "reciprocal_rank": 0.5,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 8,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 9,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 9,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 233.835299999555,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Benchmarking Hallucination in Large Language Models based on Unanswerable Math Word Problem",
+          "arxiv_id": "2403.03558",
+          "resolved_arxiv_id": "2403.03558",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6877386671939999
+        },
+        {
+          "rank": 2,
+          "title": "RLHF-V: Towards Trustworthy MLLMs via Behavior Alignment from Fine-grained Correctional Human Feedback",
+          "arxiv_id": "2312.00849",
+          "resolved_arxiv_id": "2312.00849",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6065452312813419
+        },
+        {
+          "rank": 3,
+          "title": "Aligning Modalities in Vision Large Language Models via Preference Fine-tuning",
+          "arxiv_id": "2402.11411",
+          "resolved_arxiv_id": "2402.11411",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.564953424592194
+        },
+        {
+          "rank": 4,
+          "title": "MM-PhyRLHF: Reinforcement Learning Framework for Multimodal Physics Question-Answering",
+          "arxiv_id": "2404.12926",
+          "resolved_arxiv_id": "2404.12926",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5606487077305401
+        },
+        {
+          "rank": 5,
+          "title": "Knowledge-Level Consistency Reinforcement Learning: Dual-Fact Alignment for Long-Form Factuality",
+          "arxiv_id": "2509.23765",
+          "resolved_arxiv_id": "2509.23765",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5427578664406922
+        },
+        {
+          "rank": 6,
+          "title": "Chain of Unit-Physics: A Primitive-Centric Approach to Scientific Code Synthesis",
+          "arxiv_id": "2512.01010",
+          "resolved_arxiv_id": "2512.01010",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5111885315178656
+        },
+        {
+          "rank": 7,
+          "title": "LLM Critics Help Catch LLM Bugs",
+          "arxiv_id": "2407.00215",
+          "resolved_arxiv_id": "2407.00215",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49364543741616124
+        },
+        {
+          "rank": 8,
+          "title": "From Accuracy to Impact: The Impact-Driven AI Framework (IDAIF) for Aligning Engineering Architecture with Theory of Change",
+          "arxiv_id": "2512.08449",
+          "resolved_arxiv_id": "2512.08449",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4622405627504339
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_6",
+      "query": "Papers that propose methods based on large language models and evaluate their performance through experiments on the HotPotQA dataset.",
+      "query_type": "real_scholar",
+      "target_count": 23,
+      "target_ranks": {
+        "2305.15064": null,
+        "2402.11166": null,
+        "2403.12393": null,
+        "2210.03629": null,
+        "2406.15319": null,
+        "2310.05915": null,
+        "2402.11924": null,
+        "2404.09129": null,
+        "2407.10245": null,
+        "2212.10509": null,
+        "2405.13021": null,
+        "2403.10131": null,
+        "2210.01296": null,
+        "2407.13101": null,
+        "2210.16865": null,
+        "2310.04406": null,
+        "2305.18323": null,
+        "2402.19350": null,
+        "2305.03130": null,
+        "2404.03414": null,
+        "2205.12650": null,
+        "2305.14323": null,
+        "2304.13007": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 44,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 0,
+          "cache_hits": 1,
+          "elapsed_ms": 79.94009999856644,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Enhancing Human-Like Responses in Large Language Models",
+          "arxiv_id": "2501.05032",
+          "resolved_arxiv_id": "2501.05032",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6725812749319406
+        },
+        {
+          "rank": 2,
+          "title": "Beneath the Surface: Unveiling Harmful Memes with Multimodal Reasoning Distilled from Large Language Models",
+          "arxiv_id": "2312.05434",
+          "resolved_arxiv_id": "2312.05434",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5769430749887065
+        },
+        {
+          "rank": 3,
+          "title": "Making Large Language Models Better Reasoners with Alignment",
+          "arxiv_id": "2309.02144",
+          "resolved_arxiv_id": "2309.02144",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5605390999787053
+        },
+        {
+          "rank": 4,
+          "title": "Large Language Models Lack Understanding of Character Composition of Words",
+          "arxiv_id": "2405.11357",
+          "resolved_arxiv_id": "2405.11357",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5387664233961252
+        },
+        {
+          "rank": 5,
+          "title": "Not All Experts are Equal: Efficient Expert Pruning and Skipping for Mixture-of-Experts Large Language Models",
+          "arxiv_id": "2402.14800",
+          "resolved_arxiv_id": "2402.14800",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5351697630586745
+        },
+        {
+          "rank": 6,
+          "title": "Is Self-knowledge and Action Consistent or Not: Investigating Large Language Model's Personality",
+          "arxiv_id": "2402.14679",
+          "resolved_arxiv_id": "2402.14679",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5317758023234405
+        },
+        {
+          "rank": 7,
+          "title": "Unraveling Arithmetic in Large Language Models: The Role of Algebraic Structures",
+          "arxiv_id": "2411.16260",
+          "resolved_arxiv_id": "2411.16260",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5280061993634592
+        },
+        {
+          "rank": 8,
+          "title": "Large Language Models Reasoning Abilities Under Non-Ideal Conditions After RL-Fine-Tuning",
+          "arxiv_id": "2508.04848",
+          "resolved_arxiv_id": "2508.04848",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5185857534699682
+        },
+        {
+          "rank": 9,
+          "title": "Classifying German Language Proficiency Levels Using Large Language Models",
+          "arxiv_id": "2512.06483",
+          "resolved_arxiv_id": "2512.06483",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5163260449248619
+        },
+        {
+          "rank": 10,
+          "title": "Can ChatGPT be Your Personal Medical Assistant?",
+          "arxiv_id": "2312.12006",
+          "resolved_arxiv_id": "2312.12006",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5162946273565897
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_7",
+      "query": "Show me research on the long video description. Here, long videos are defined as those with a duration of at least several minutes.",
+      "query_type": "real_scholar",
+      "target_count": 31,
+      "target_ranks": {
+        "2402.13250": 16,
+        "2406.14515": null,
+        "2405.16009": null,
+        "2201.10990": null,
+        "2310.04900": null,
+        "2407.15754": null,
+        "2204.02968": 35,
+        "2409.06299": null,
+        "2406.12846": null,
+        "2210.06031": null,
+        "2402.08268": null,
+        "2404.04346": null,
+        "1705.00754": null,
+        "2406.17880": null,
+        "2312.02051": null,
+        "2404.05726": null,
+        "2404.03384": null,
+        "2406.04264": null,
+        "2408.15542": null,
+        "2312.05269": null,
+        "2406.04325": null,
+        "2402.13546": null,
+        "2307.16449": null,
+        "2403.10517": null,
+        "2301.11507": null,
+        "2311.17043": null,
+        "2312.07395": null,
+        "2310.19773": null,
+        "2311.17435": null,
+        "2303.12060": null,
+        "2404.01297": null
+      },
+      "paper_recall_at_20": 0.03225806451612903,
+      "paper_recall_at_50": 0.06451612903225806,
+      "relevant_at_20_count": 1,
+      "relevant_at_50_count": 2,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0625,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 44,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 447.03389999995125,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "MAViS: A Multi-Agent Framework for Long-Sequence Video Storytelling",
+          "arxiv_id": "2508.08487",
+          "resolved_arxiv_id": "2508.08487",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6051536760802958
+        },
+        {
+          "rank": 2,
+          "title": "Distilling Vision-Language Models on Millions of Videos",
+          "arxiv_id": "2401.06129",
+          "resolved_arxiv_id": "2401.06129",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5498376081321837
+        },
+        {
+          "rank": 3,
+          "title": "Long-RVOS: A Comprehensive Benchmark for Long-term Referring Video Object Segmentation",
+          "arxiv_id": "2505.12702",
+          "resolved_arxiv_id": "2505.12702",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5334284088689668
+        },
+        {
+          "rank": 4,
+          "title": "StoryTeller: Improving Long Video Description through Global Audio-Visual Character Identification",
+          "arxiv_id": "2411.07076",
+          "resolved_arxiv_id": "2411.07076",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5329008717386479
+        },
+        {
+          "rank": 5,
+          "title": "VideoCLIP-XL: Advancing Long Description Understanding for Video CLIP Models",
+          "arxiv_id": "2410.00741",
+          "resolved_arxiv_id": "2410.00741",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5184226815839738
+        },
+        {
+          "rank": 6,
+          "title": "Video Storytelling: Textual Summaries for Events",
+          "arxiv_id": "1807.09418",
+          "resolved_arxiv_id": "1807.09418",
+          "doi": "10.1109/tmm.2019.2930041",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5074633154309954
+        },
+        {
+          "rank": 7,
+          "title": "Scanning Only Once: An End-to-end Framework for Fast Temporal Grounding in Long Videos",
+          "arxiv_id": "2303.08345",
+          "resolved_arxiv_id": "2303.08345",
+          "doi": "10.1109/iccv51070.2023.01266",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49636542686984764
+        },
+        {
+          "rank": 8,
+          "title": "Bidirectional Long-Short Term Memory for Video Description",
+          "arxiv_id": "1606.04631",
+          "resolved_arxiv_id": "1606.04631",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4907487852159648
+        },
+        {
+          "rank": 9,
+          "title": "MovieBench: A Hierarchical Movie Level Dataset for Long Video Generation",
+          "arxiv_id": "2411.15262",
+          "resolved_arxiv_id": "2411.15262",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48319462325207435
+        },
+        {
+          "rank": 10,
+          "title": "A Video is Worth 10,000 Words: Training and Benchmarking with Diverse Captions for Better Long Video Retrieval",
+          "arxiv_id": "2312.00115",
+          "resolved_arxiv_id": "2312.00115",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48193543561091157
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_8",
+      "query": "Do you know some papers about using reward shaping methods to train large language model agent.",
+      "query_type": "real_scholar",
+      "target_count": 15,
+      "target_ranks": {
+        "2401.07382": null,
+        "2308.02151": null,
+        "2303.00001": null,
+        "2205.13636": null,
+        "2402.00782": null,
+        "2308.12270": null,
+        "2306.01693": null,
+        "2401.10020": null,
+        "2404.11999": null,
+        "2405.15194": null,
+        "2310.00166": null,
+        "2409.12798": null,
+        "2405.14734": null,
+        "2312.08935": null,
+        "2302.06692": null
+      },
+      "paper_recall_at_20": 0.0,
+      "paper_recall_at_50": 0.0,
+      "relevant_at_20_count": 0,
+      "relevant_at_50_count": 0,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.0,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 34,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 936.0228999994433,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "From Reward Shaping to Q-Shaping: Achieving Unbiased Learning with LLM-Guided Knowledge",
+          "arxiv_id": "2410.01458",
+          "resolved_arxiv_id": "2410.01458",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.7032896836696146
+        },
+        {
+          "rank": 2,
+          "title": "Reward Shaping to Mitigate Reward Hacking in RLHF",
+          "arxiv_id": "2502.18770",
+          "resolved_arxiv_id": "2502.18770",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5184905440602051
+        },
+        {
+          "rank": 3,
+          "title": "Attention-Based Reward Shaping for Sparse and Delayed Rewards",
+          "arxiv_id": "2505.10802",
+          "resolved_arxiv_id": "2505.10802",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.499578905841211
+        },
+        {
+          "rank": 4,
+          "title": "Learning Explainable Dense Reward Shapes via Bayesian Optimization",
+          "arxiv_id": "2504.16272",
+          "resolved_arxiv_id": "2504.16272",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.49184072197675743
+        },
+        {
+          "rank": 5,
+          "title": "Reward prediction for representation learning and reward shaping",
+          "arxiv_id": "2105.03172",
+          "resolved_arxiv_id": "2105.03172",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4872917363663765
+        },
+        {
+          "rank": 6,
+          "title": "Reward Shaping Using Convolutional Neural Network",
+          "arxiv_id": "2210.16956",
+          "resolved_arxiv_id": "2210.16956",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4836523000696077
+        },
+        {
+          "rank": 7,
+          "title": "Shaping Explanations: Semantic Reward Modeling with Encoder-Only Transformers for GRPO",
+          "arxiv_id": "2509.13081",
+          "resolved_arxiv_id": "2509.13081",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4672384650717829
+        },
+        {
+          "rank": 8,
+          "title": "EAGER: Asking and Answering Questions for Automatic Reward Shaping in Language-guided RL",
+          "arxiv_id": "2206.09674",
+          "resolved_arxiv_id": "2206.09674",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46708243572167635
+        },
+        {
+          "rank": 9,
+          "title": "Zero-Shot LLMs in Human-in-the-Loop RL: Replacing Human Feedback for Reward Shaping",
+          "arxiv_id": "2503.22723",
+          "resolved_arxiv_id": "2503.22723",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.46335878241156747
+        },
+        {
+          "rank": 10,
+          "title": "Embedding Contextual Information through Reward Shaping in Multi-Agent Learning: A Case Study from Google Football",
+          "arxiv_id": "2303.15471",
+          "resolved_arxiv_id": "2303.15471",
+          "doi": "10.1109/icprs58416.2023.10179030",
+          "verification_status": "provider_verified",
+          "relevance_score": 0.45979958969267826
+        }
+      ]
+    },
+    {
+      "id": "RealScholarQuery_9",
+      "query": "Give me papers about how to rank search results by the use of LLM.",
+      "query_type": "real_scholar",
+      "target_count": 39,
+      "target_ranks": {
+        "2311.01555": null,
+        "2310.14122": null,
+        "2306.17563": null,
+        "2310.09497": null,
+        "2309.15088": null,
+        "2310.14408": null,
+        "2304.09542": 11,
+        "2305.08845": null,
+        "2406.11678": null,
+        "2301.10521": null,
+        "2407.02485": null,
+        "2403.19181": null,
+        "2406.00231": null,
+        "2406.13331": null,
+        "2305.02156": null,
+        "2404.11791": null,
+        "2406.18740": null,
+        "2406.00247": null,
+        "2404.18424": null,
+        "2405.20654": null,
+        "2407.00128": null,
+        "2312.02724": null,
+        "2312.02969": null,
+        "2401.06311": null,
+        "2305.13729": null,
+        "2402.17497": null,
+        "2312.15450": 16,
+        "2406.15657": null,
+        "2402.04853": 21,
+        "2309.06991": null,
+        "2403.18093": null,
+        "2310.07712": null,
+        "2310.08319": null,
+        "2309.07606": null,
+        "2305.02182": null,
+        "2402.10548": null,
+        "2409.17460": 25,
+        "2306.01599": null,
+        "2310.13243": null
+      },
+      "paper_recall_at_20": 0.05128205128205128,
+      "paper_recall_at_50": 0.10256410256410256,
+      "relevant_at_20_count": 2,
+      "relevant_at_50_count": 4,
+      "precision_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "hit_at_5": false,
+      "hit_at_10": false,
+      "reciprocal_rank": 0.09090909090909091,
+      "arxiv_target_resolution_rate": 1.0,
+      "paper_count": 31,
+      "duplicate_count": 0,
+      "unverifiable_paper_count": 0,
+      "raw_candidate_count": 50,
+      "cross_source_verified_count": 0,
+      "query_rewrite_applied": false,
+      "query_rewrite_failure": "query rewrite response has an invalid schema",
+      "provider_reports": [
+        {
+          "provider": "arxiv",
+          "query_count": 1,
+          "result_count": 50,
+          "request_count": 1,
+          "cache_hits": 0,
+          "elapsed_ms": 3492.274299998826,
+          "failure": null
+        }
+      ],
+      "top_results": [
+        {
+          "rank": 1,
+          "title": "Low-Rank Adapters Meet Neural Architecture Search for LLM Compression",
+          "arxiv_id": "2501.16372",
+          "resolved_arxiv_id": "2501.16372",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.6639084102834545
+        },
+        {
+          "rank": 2,
+          "title": "Personalized Search Via Neural Contextual Semantic Relevance Ranking",
+          "arxiv_id": "2309.05113",
+          "resolved_arxiv_id": "2309.05113",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5904745312988623
+        },
+        {
+          "rank": 3,
+          "title": "LLM-assisted Vector Similarity Search",
+          "arxiv_id": "2412.18819",
+          "resolved_arxiv_id": "2412.18819",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.51045875537401
+        },
+        {
+          "rank": 4,
+          "title": "LLM Performance Predictors are good initializers for Architecture Search",
+          "arxiv_id": "2310.16712",
+          "resolved_arxiv_id": "2310.16712",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.5066925686173535
+        },
+        {
+          "rank": 5,
+          "title": "Ranking Manipulation for Conversational Search Engines",
+          "arxiv_id": "2406.03589",
+          "resolved_arxiv_id": "2406.03589",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4959644732166624
+        },
+        {
+          "rank": 6,
+          "title": "Batched Self-Consistency Improves LLM Relevance Assessment and Ranking",
+          "arxiv_id": "2505.12570",
+          "resolved_arxiv_id": "2505.12570",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4874870205214562
+        },
+        {
+          "rank": 7,
+          "title": "Best Practices for Distilling Large Language Models into BERT for Web Search Ranking",
+          "arxiv_id": "2411.04539",
+          "resolved_arxiv_id": "2411.04539",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48519531966176344
+        },
+        {
+          "rank": 8,
+          "title": "Large Search Model: Redefining Search Stack in the Era of LLMs",
+          "arxiv_id": "2310.14587",
+          "resolved_arxiv_id": "2310.14587",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.48332765431258584
+        },
+        {
+          "rank": 9,
+          "title": "MixLM: High-Throughput and Effective LLM Ranking via Text-Embedding Mix-Interaction",
+          "arxiv_id": "2512.07846",
+          "resolved_arxiv_id": "2512.07846",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.47515538102387134
+        },
+        {
+          "rank": 10,
+          "title": "Path-Constrained Retrieval: A Structural Approach to Reliable LLM Agent Reasoning Through Graph-Scoped Semantic Search",
+          "arxiv_id": "2511.18313",
+          "resolved_arxiv_id": "2511.18313",
+          "doi": null,
+          "verification_status": "provider_verified",
+          "relevance_score": 0.4742810061700873
+        }
+      ]
+    }
+  ],
+  "quality_gate": {
+    "passed": false,
+    "checks": {
+      "evaluation_valid": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 0.0,
+        "passed": false
+      },
+      "paper_recall_at_20": {
+        "operator": ">=",
+        "target": 0.8,
+        "actual": 0.06049076371657016,
+        "passed": false
+      },
+      "paper_recall_at_50": {
+        "operator": ">=",
+        "target": 0.9,
+        "actual": 0.06884477529638819,
+        "passed": false
+      },
+      "precision_at_10": {
+        "operator": ">=",
+        "target": 0.6,
+        "actual": 0.05,
+        "passed": false
+      },
+      "ndcg_at_10": {
+        "operator": ">=",
+        "target": 0.7,
+        "actual": 0.05950631001135189,
+        "passed": false
+      },
+      "arxiv_target_resolution_rate": {
+        "operator": ">=",
+        "target": 0.98,
+        "actual": 1.0,
+        "passed": true
+      },
+      "duplicate_paper_rate": {
+        "operator": "<=",
+        "target": 0.02,
+        "actual": 0.0,
+        "passed": true
+      },
+      "unverifiable_paper_rate": {
+        "operator": "==",
+        "target": 0.0,
+        "actual": 0.0,
+        "passed": true
+      },
+      "provider_failure_case_success_rate": {
+        "operator": "==",
+        "target": 1.0,
+        "actual": 1.0,
+        "passed": true
+      }
+    }
+  }
+}

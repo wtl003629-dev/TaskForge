@@ -1,0 +1,99 @@
+{
+  "baseline": {
+    "artifact_sha256": {
+      "metrics.json": "779c242599bd2223c498e150519fad05018dc2cd242377389ac984b775416b09",
+      "predictions.jsonl": "c1652a39ce51649739d9ec27e95d1158ccc114c49b7c487e8aab3bff687e80b0"
+    },
+    "label": "QASPER validation B0",
+    "run_id": "507ec4b91bfa75e62710",
+    "stage": "lexical_bm25"
+  },
+  "bootstrap": {
+    "confidence": 0.95,
+    "repetitions": 2000,
+    "seed": 20260809
+  },
+  "candidates": [
+    {
+      "artifact_sha256": {
+        "metrics.json": "2bca63ac0cf80eaceec0020a662aab84a0e0f253eb78d9d8789c9e484a572c1b",
+        "predictions.jsonl": "8e3a0c8310bc4f0b93929704935e55e2f1dff86e45d02cbb8cf6f3b417573b61"
+      },
+      "category_failures": [],
+      "checks": {
+        "bootstrap_ci": false,
+        "candidate_candidate_recall_floor": true,
+        "candidate_recall_at_candidate_k": true,
+        "candidate_recall_floor": true,
+        "category_non_regression": true,
+        "latency": true,
+        "metadata": true,
+        "recall_at_10": true,
+        "security": true
+      },
+      "label": "QASPER validation B2",
+      "metadata_errors": [],
+      "metrics": {
+        "baseline_candidate_recall": 0.9023749999999999,
+        "baseline_p95_ms": 14.3595,
+        "baseline_raw_candidate_counts": {
+          "python_bm25": {
+            "max": 50,
+            "mean": 36.85,
+            "min": 1
+          }
+        },
+        "baseline_recall_at_10": 0.5966666666666667,
+        "candidate_candidate_recall": 0.9626666666666667,
+        "candidate_p95_ms": 10.9182,
+        "candidate_raw_candidate_counts": {
+          "in_memory_dense": {
+            "max": 50,
+            "mean": 42.82,
+            "min": 8
+          }
+        },
+        "candidate_recall_at_10": 0.6366666666666666,
+        "candidate_recall_ci_95": [
+          0.029024652777777785,
+          0.09494756944444444
+        ],
+        "candidate_recall_delta": 0.06029166666666667,
+        "categories": {
+          "text": {
+            "baseline_recall_at_10": 0.5966666666666667,
+            "candidate_recall_at_10": 0.6366666666666666,
+            "cases": 200,
+            "delta": 0.039999999999999925
+          }
+        },
+        "ndcg_delta": 0.06365092171511084,
+        "p95_ratio": 0.7603468087328946,
+        "recall_ci_95": [
+          -0.029451388888888874,
+          0.10944444444444444
+        ],
+        "recall_delta": 0.04
+      },
+      "passed": false,
+      "run_id": "2cc0380cca19c9fdfa09",
+      "stage": "qdrant_qasper_dense"
+    }
+  ],
+  "gate": "retrieval_promotion",
+  "passed": false,
+  "require_identical_retrieval": false,
+  "schema_version": "1.0",
+  "thresholds": {
+    "max_candidate_drop": 0.01,
+    "max_category_degradation": 0.03,
+    "max_p95_ms": 250.0,
+    "max_p95_ratio": 1.2,
+    "max_recall_drop": 0.01,
+    "min_candidate_recall_at_10": null,
+    "min_candidate_recall_at_candidate_k": null,
+    "min_category_cases": 10,
+    "min_recall_delta": 0.0,
+    "require_nonnegative_ci_lower": true
+  }
+}

@@ -1,0 +1,761 @@
+{
+  "contract": {
+    "coordinates": "original_zero_based_rows_and_columns",
+    "global_nonconsecutive_duplicates_removed": false,
+    "label_free": true,
+    "raw_rows_mutated": false,
+    "rules": [
+      "NFKC and whitespace normalization",
+      "empty-row removal",
+      "repeated-header removal",
+      "consecutive exact-duplicate folding",
+      "hierarchical header forward-fill and merge",
+      "missing-value normalization",
+      "parenthesized negative, percent, currency, and scale metadata"
+    ]
+  },
+  "schema_version": "1.0",
+  "source": {
+    "path": "D:/my-coding/TaskForge/.taskforge/eval-cache/tatqa_dataset_train.json",
+    "sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+    "size_bytes": 12845647
+  },
+  "structural_examples": [
+    {
+      "cleaned_rows": 8,
+      "original_rows": 10,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 0,
+        "repeated_header_rows_removed": 1
+      },
+      "table_uid": "b713a939-bb19-4246-9f11-5358b509c43b"
+    },
+    {
+      "cleaned_rows": 13,
+      "original_rows": 15,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "b48bb5fb-ea46-4a44-a39e-f2554719d158"
+    },
+    {
+      "cleaned_rows": 17,
+      "original_rows": 19,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16
+        ],
+        [
+          17
+        ],
+        [
+          18
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "76a0690c-ec65-44e7-b704-3c8bf986f825"
+    },
+    {
+      "cleaned_rows": 14,
+      "original_rows": 16,
+      "row_source_indices": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 2,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "08e2f3d7-5d4a-4590-9ff6-ba1b9276d568"
+    },
+    {
+      "cleaned_rows": 17,
+      "original_rows": 19,
+      "row_source_indices": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16
+        ],
+        [
+          17
+        ],
+        [
+          18
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 1
+      },
+      "table_uid": "b313dadb-5fa7-482e-bc6e-fce0f7ee2412"
+    },
+    {
+      "cleaned_rows": 24,
+      "original_rows": 25,
+      "row_source_indices": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16
+        ],
+        [
+          17
+        ],
+        [
+          18
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          21
+        ],
+        [
+          22
+        ],
+        [
+          23
+        ],
+        [
+          24
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "d8659ef0-577b-41f0-9133-7f44aedf6f13"
+    },
+    {
+      "cleaned_rows": 14,
+      "original_rows": 16,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 0,
+        "repeated_header_rows_removed": 1
+      },
+      "table_uid": "f77930d9-10f3-4ea3-8557-c6554fc9c823"
+    },
+    {
+      "cleaned_rows": 21,
+      "original_rows": 23,
+      "row_source_indices": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16
+        ],
+        [
+          17
+        ],
+        [
+          18
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          21
+        ],
+        [
+          22
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 1
+      },
+      "table_uid": "05c38b31-a20d-49c7-b4da-9d5d9aac6e53"
+    },
+    {
+      "cleaned_rows": 19,
+      "original_rows": 21,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          18
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 1,
+        "empty_rows_removed": 0,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "310ce8ba-2d58-4de3-9ce4-01f84cf304b4"
+    },
+    {
+      "cleaned_rows": 9,
+      "original_rows": 11,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 0,
+        "repeated_header_rows_removed": 1
+      },
+      "table_uid": "8c724c98-7efd-4e18-96b2-1f6104f5c6e1"
+    },
+    {
+      "cleaned_rows": 9,
+      "original_rows": 12,
+      "row_source_indices": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          11
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 2,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "4bad1490-d193-434d-ab2e-efff19cfaada"
+    },
+    {
+      "cleaned_rows": 23,
+      "original_rows": 24,
+      "row_source_indices": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          12
+        ],
+        [
+          13
+        ],
+        [
+          14
+        ],
+        [
+          15
+        ],
+        [
+          16
+        ],
+        [
+          17
+        ],
+        [
+          18
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          21
+        ],
+        [
+          22
+        ],
+        [
+          23
+        ]
+      ],
+      "structural_changes": {
+        "consecutive_duplicate_rows_folded": 0,
+        "empty_rows_removed": 1,
+        "repeated_header_rows_removed": 0
+      },
+      "table_uid": "bf654ee6-5db0-428c-9ccf-911c6eb61bef"
+    }
+  ],
+  "tables": 2201,
+  "tables_with_search_representation_changes": 1860,
+  "totals": {
+    "cleaned_rows": 19851,
+    "collapsed_whitespace_cells": 509,
+    "consecutive_duplicate_rows_folded": 1,
+    "currency_cells": 13354,
+    "empty_rows_removed": 14,
+    "header_depth": 3050,
+    "missing_cells_normalized": 9442,
+    "nonconsecutive_duplicate_rows_preserved": 111,
+    "normalized_unicode_cells": 59,
+    "numeric_cells_normalized": 44786,
+    "original_cells": 83201,
+    "original_rows": 20728,
+    "parenthesized_negative_cells": 5732,
+    "percent_cells": 3436,
+    "repeated_header_rows_removed": 13,
+    "scale_aware_cells": 45769
+  }
+}
