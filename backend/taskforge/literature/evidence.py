@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
+from typing import Literal
 
 from ..knowledge import AccessContext, tokenise
+from ..rag_experiment_profile import (
+    RAGExperimentProfile,
+    resolve_rag_experiment_profile,
+)
 from ..research_protocol import (
     EvidenceCard,
     EvidenceIntent,
@@ -20,6 +25,11 @@ from ..research_retrieval import (
     ResearchRetrievalService,
     ResearchSearchResult,
 )
+from .evidence_query_expander import (
+    EvidenceQueryExpander,
+    EvidenceQueryExpansionError,
+    protected_query_terms,
+)
 from .repository import LiteratureAccess, SQLiteLiteratureRepository
 
 _INTENT_TERMS: tuple[tuple[EvidenceIntent, frozenset[str]], ...] = (
@@ -31,18 +41,6 @@ _INTENT_TERMS: tuple[tuple[EvidenceIntent, frozenset[str]], ...] = (
     ("claim_verification", frozenset({"verify", "support", "evidence", "claim", "验证", "证据", "论断"})),
     ("related_work", frozenset({"related", "prior", "literature", "相关工作", "已有研究"})),
 )
-
-_REWRITE_HINTS: dict[EvidenceIntent, str] = {
-    "general_fact": "definition evidence conclusion",
-    "method_definition": "method algorithm architecture implementation",
-    "experimental_setup": "experimental setup dataset baseline hyperparameter",
-    "numeric_table": "table metric result value percentage",
-    "cross_paper_comparison": "comparison across papers similarities differences results",
-    "figure_or_layout": "figure caption page appendix layout",
-    "claim_verification": "supporting evidence result conclusion limitation",
-    "related_work": "related work prior method comparison",
-}
-
 
 def route_evidence_intent(query: str, declared: EvidenceIntent) -> EvidenceIntent:
     if declared != "general_fact":
@@ -61,18 +59,24 @@ class ScopeBoundEvidenceService:
         repository: SQLiteLiteratureRepository,
         retrieval: ResearchRetrievalService,
         *,
-        rewrite_enabled: bool = True,
+        experiment_profile: RAGExperimentProfile | None = None,
+        query_expander: EvidenceQueryExpander | None = None,
+        query_expansion_mode: Literal["original", "keyword", "synonym", "full"] = "original",
     ) -> None:
         self.repository = repository
         self.retrieval = retrieval
-        self.rewrite_enabled = bool(rewrite_enabled)
+        self.experiment_profile = experiment_profile or resolve_rag_experiment_profile(
+            "current"
+        )
+        self.query_expander = query_expander
+        self.query_expansion_mode = query_expansion_mode
 
     @staticmethod
     def _principal(access: LiteratureAccess) -> AccessContext:
         return AccessContext(tenant_id=access.tenant_id, user_id=access.user_id)
 
-    @staticmethod
     def _cards(
+        self,
         scope_id: str,
         scope_version: int,
         result: ResearchSearchResult,
@@ -87,12 +91,19 @@ class ScopeBoundEvidenceService:
                     scope_version=scope_version,
                     paper_id=paper_id,
                     chunk_id=item.chunk_id,
+                    rag_profile=self.experiment_profile.name,
+                    rag_ablation=self.experiment_profile.ablation,
                     source=item.source,
                     title=item.title,
                     section=item.section,
                     page=item.page,
-                    evidence_type="table" if "structured_table" in item.retrieval_sources else "paragraph",
-                    snippet=item.text[:500],
+                    evidence_type=item.evidence_type,
+                    visual_artifact_ids=list(item.visual_artifact_ids),
+                    visual_pending=item.visual_pending,
+                    snippet=item.text[:3_000],
+                    text_start=item.text_start,
+                    text_end=item.text_end,
+                    presentation_strategy=item.presentation_strategy,
                     score=item.score,
                     retrieval_sources=list(item.retrieval_sources),
                     verification_status="read",
@@ -156,25 +167,66 @@ class ScopeBoundEvidenceService:
             reasons.append("numeric constraints are not fully covered")
         if source_coverage < 1.0:
             reasons.append("not enough selected papers are represented")
-        if top_score < 0.005:
-            reasons.append("top retrieval score is too low")
+        protected = protected_query_terms(query)
+        entity_terms = tuple(
+            term
+            for term in protected
+            if not re.fullmatch(r"[-+]?\d+(?:[.,]\d+)*(?:%|[a-z]+)?", term)
+            and term
+            not in {
+                "not",
+                "no",
+                "without",
+                "except",
+                "exclude",
+                "excluding",
+                "never",
+                "neither",
+                "nor",
+                "less",
+                "more",
+                "before",
+                "after",
+                "versus",
+                "vs",
+                "compare",
+                "comparison",
+                "between",
+            }
+        )
+        entity_coverage = (
+            sum(term in evidence_text.casefold() for term in entity_terms)
+            / len(entity_terms)
+            if entity_terms
+            else 1.0
+        )
+        if entity_coverage < 1.0:
+            reasons.append("named entity constraints are not fully covered")
         if intent == "figure_or_layout" and not any(card.page for card in cards):
             reasons.append("page/layout provenance is missing")
+        if intent == "figure_or_layout" and not any(
+            card.evidence_type == "figure" for card in cards
+        ):
+            reasons.append("figure evidence is not represented")
+        unresolved_visual_count = sum(card.visual_pending for card in cards)
+        if unresolved_visual_count:
+            reasons.append("one or more retrieved visuals remain unparsed")
         return RetrievalConfidence(
             top_score=top_score,
             top1_top2_margin=margin,
             query_term_coverage=term_coverage,
-            entity_coverage=term_coverage,
+            entity_coverage=entity_coverage,
             numeric_constraint_coverage=numeric_coverage,
             source_coverage=source_coverage,
             section_match=section_match,
             citation_ready_count=len(cards),
             scope_paper_coverage=scope_coverage,
+            unresolved_visual_count=unresolved_visual_count,
             sufficient=not reasons,
             reasons=reasons,
         )
 
-    def search(
+    async def search(
         self,
         access: LiteratureAccess,
         request: EvidenceSearchRequest,
@@ -190,12 +242,32 @@ class ScopeBoundEvidenceService:
         filters = {
             "source_uris": tuple(f"paper://{paper_id}" for paper_id in scope.selected_paper_ids),
             "knowledge_base_ids": (
-                f"research-scope:{scope.scope_id}:v{scope.scope_version}",
+                self.experiment_profile.knowledge_base_id(
+                    f"research-scope:{scope.scope_id}:v{scope.scope_version}"
+                ),
             ),
         }
+        variants: tuple[str, ...] = ()
+        expansion_error: str | None = None
+        if self.query_expansion_mode != "original" and self.query_expander is not None:
+            try:
+                synonym, keyword = await self.query_expander.expand(
+                    request.query,
+                    intent,
+                )
+                variants = (
+                    (keyword,)
+                    if self.query_expansion_mode == "keyword"
+                    else (synonym,)
+                    if self.query_expansion_mode == "synonym"
+                    else (synonym, keyword)
+                )
+            except EvidenceQueryExpansionError as exc:
+                expansion_error = str(exc)
         first = self.retrieval.search(
             ResearchQuery(
                 query=request.query,
+                query_variants=variants,
                 top_k=request.top_k,
                 candidate_k=request.candidate_k,
                 mode=request.mode,
@@ -210,48 +282,59 @@ class ScopeBoundEvidenceService:
             selected_papers=scope.selected_paper_ids,
             intent=intent,
         )
-        rewritten_query: str | None = None
-        rounds = 1
+        rewritten_query = variants[0] if variants else None
+        rounds = first.retrieval_rounds
         operators = list(first.activated_operators)
-        if self.rewrite_enabled and not confidence.sufficient:
-            rounds = 2
-            hint = _REWRITE_HINTS[intent]
-            rewritten_query = f"{request.query[: 3_999 - len(hint)]} {hint}"
-            second = self.retrieval.search(
-                ResearchQuery(
-                    query=rewritten_query,
-                    top_k=request.top_k,
-                    candidate_k=request.candidate_k,
-                    mode="rigorous",
-                    **filters,
-                ),
-                self._principal(access),
-            )
-            cards = self._merge_cards(
-                cards,
-                self._cards(scope.scope_id, scope.scope_version, second),
-                request.top_k,
-            )
-            operators.extend(second.activated_operators)
-            confidence = self._confidence(
-                request.query,
-                cards,
-                selected_papers=scope.selected_paper_ids,
-                intent=intent,
-            )
         if cards:
             self.repository.save_evidence(access, cards)
         return ScopeEvidenceResult(
             scope_id=scope.scope_id,
             scope_version=scope.scope_version,
             query=request.query,
+            query_variants=list((request.query, *variants)),
+            query_expansion_error=expansion_error,
             routed_intent=intent,
             rewritten_query=rewritten_query,
             retrieval_rounds=rounds,
             activated_operators=list(dict.fromkeys(operators)),
             evidence=cards,
             confidence=confidence,
+            retrieval_traces=[first.trace] if first.trace is not None else [],
+            retrieval_route=first.retrieval_route,
         )
+
+    async def aclose(self) -> None:
+        close = getattr(self.query_expander, "aclose", None)
+        if callable(close):
+            await close()
+
+    def list_evidence(
+        self,
+        access: LiteratureAccess,
+        scope_id: str,
+        *,
+        scope_version: int | None = None,
+        paper_id: str | None = None,
+    ) -> list[EvidenceCard]:
+        """List only evidence produced by the active RAG profile.
+
+        Experimental cards can intentionally coexist with current cards in the
+        literature database.  Keeping this filter in the scope-bound service
+        prevents an API listing or later claim assembly from crossing that
+        profile boundary.
+        """
+
+        return [
+            card
+            for card in self.repository.list_evidence(
+                access,
+                scope_id,
+                version=scope_version,
+                paper_id=paper_id,
+            )
+            if card.rag_profile == self.experiment_profile.name
+            and card.rag_ablation == self.experiment_profile.ablation
+        ]
 
     def read_evidence(
         self,
@@ -264,10 +347,10 @@ class ScopeBoundEvidenceService:
         scope = self.repository.get_scope(access, scope_id, version=scope_version)
         cards = {
             card.evidence_id: card
-            for card in self.repository.list_evidence(
+            for card in self.list_evidence(
                 access,
                 scope.scope_id,
-                version=scope.scope_version,
+                scope_version=scope.scope_version,
             )
         }
         stored = cards.get(evidence_id)
@@ -291,10 +374,10 @@ class ScopeBoundEvidenceService:
         scope = self.repository.get_scope(access, scope_id, version=scope_version)
         allowed = {
             card.evidence_id: card
-            for card in self.repository.list_evidence(
+            for card in self.list_evidence(
                 access,
                 scope.scope_id,
-                version=scope.scope_version,
+                scope_version=scope.scope_version,
             )
         }
         if set(evidence_ids) - set(allowed):

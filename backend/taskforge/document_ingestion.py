@@ -491,10 +491,17 @@ def _heading_level(text: str) -> int | None:
         number = re.match(r"^(\d+(?:\.\d+)*)", text)
         return min(6, number.group(1).count(".") + 1) if number else 1
     letters = [character for character in text if character.isalpha()]
+    # ``str.islower`` is False for uncased scripts such as Chinese. Requiring
+    # every alphabetic character to have a case prevents ordinary CJK body
+    # lines from being mistaken for ALL-CAPS English headings.
+    cased_letters = [
+        character for character in letters if character.lower() != character.upper()
+    ]
     if (
         1 <= len(text) <= 100
         and letters
-        and all(not character.islower() for character in letters)
+        and len(cased_letters) == len(letters)
+        and all(not character.islower() for character in cased_letters)
         and text[-1:] not in _SENTENCE_END
     ):
         return 1

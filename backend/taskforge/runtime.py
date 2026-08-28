@@ -73,7 +73,7 @@ class PolicyEngine(Protocol):
 
 
 class CheckpointStore(Protocol):
-    def save(self, state: RunState) -> None:
+    def save(self, state: RunState, *, tenant_id: str | None = None) -> None:
         """Durably save one state version; implementations may also be async."""
 
 
@@ -173,7 +173,7 @@ class AgentRuntime:
                 status=RunStatus.RUNNING,
                 step_budget=profile.max_steps,
             )
-            await self._save(state)
+            await self._save(state, tenant_id=task.tenant_id)
         else:
             self._validate_resume_identity(task, profile, state)
             state = state.model_copy(deep=True)
@@ -195,7 +195,7 @@ class AgentRuntime:
                 raise ValueError("run has no pending approval")
             elif state.status == RunStatus.PENDING:
                 state = _state_update(state, status=RunStatus.RUNNING)
-                await self._save(state)
+                await self._save(state, tenant_id=task.tenant_id)
 
         while len(state.steps) < state.step_budget:
             step = StepRecord(index=len(state.steps))
@@ -221,6 +221,7 @@ class AgentRuntime:
                     step,
                     stage="runtime",
                     exc=exc,
+                    tenant_id=task.tenant_id,
                 )
 
             try:
@@ -240,6 +241,7 @@ class AgentRuntime:
                     step,
                     stage="provider",
                     exc=exc,
+                    tenant_id=task.tenant_id,
                 )
 
             step.model_turn = turn
@@ -255,7 +257,7 @@ class AgentRuntime:
                     error=None,
                     pending_approval=None,
                 )
-                await self._save(state)
+                await self._save(state, tenant_id=task.tenant_id)
                 return state
 
             state = await self._process_requests(
@@ -299,9 +301,9 @@ class AgentRuntime:
                     error=None,
                     pending_approval=None,
                 )
-                await self._save(state)
+                await self._save(state, tenant_id=task.tenant_id)
                 return state
-            await self._save(state)
+            await self._save(state, tenant_id=task.tenant_id)
 
         error = RunError(
             stage="runtime",
@@ -314,7 +316,7 @@ class AgentRuntime:
             error=error,
             pending_approval=None,
         )
-        await self._save(state)
+        await self._save(state, tenant_id=task.tenant_id)
         return state
 
     @staticmethod
@@ -510,7 +512,9 @@ class AgentRuntime:
             request = requests[request_index]
             receipt_or_error = self._existing_receipt(state, request)
             if isinstance(receipt_or_error, RunError):
-                return await self._fail_tool_step(state, step_index, receipt_or_error)
+                return await self._fail_tool_step(
+                    state, step_index, receipt_or_error, tenant_id=task.tenant_id
+                )
             if receipt_or_error is not None:
                 step.tool_results.append(receipt_or_error)
                 continue
@@ -545,7 +549,9 @@ class AgentRuntime:
                     code=exc.__class__.__name__,
                     message=_exception_message(exc),
                 )
-                return await self._fail_tool_step(state, step_index, error)
+                return await self._fail_tool_step(
+                    state, step_index, error, tenant_id=task.tenant_id
+                )
 
             if decision.requires_approval:
                 step.status = StepStatus.WAITING_APPROVAL
@@ -562,7 +568,7 @@ class AgentRuntime:
                     pending_approval=pending,
                     error=None,
                 )
-                await self._save(state)
+                await self._save(state, tenant_id=task.tenant_id)
                 return state
 
             if not decision.allowed:
@@ -622,7 +628,9 @@ class AgentRuntime:
                     code=exc.__class__.__name__,
                     message=_exception_message(exc),
                 )
-                return await self._fail_tool_step(state, step_index, error)
+                return await self._fail_tool_step(
+                    state, step_index, error, tenant_id=task.tenant_id
+                )
         result = self._record_receipt(state, request, result)
         state.steps[step_index].tool_results.append(result)
         self._collect_host_artifacts(state, result)
@@ -695,7 +703,9 @@ class AgentRuntime:
                         code=exc.__class__.__name__,
                         message=_exception_message(exc),
                     )
-                    return await self._fail_tool_step(state, step_index, error)
+                    return await self._fail_tool_step(
+                        state, step_index, error, tenant_id=task.tenant_id
+                    )
 
             if decision.allowed or decision.requires_approval:
                 state = await self._execute_request(
@@ -739,7 +749,7 @@ class AgentRuntime:
         step.status = StepStatus.COMPLETED
         step.safe_summary = f"host processed {len(step.tool_results)} tool result(s)"
         step.finished_at = utc_now()
-        await self._save(state)
+        await self._save(state, tenant_id=task.tenant_id)
         return state
 
     def _existing_receipt(
@@ -803,6 +813,8 @@ class AgentRuntime:
         state: RunState,
         step_index: int,
         error: RunError,
+        *,
+        tenant_id: str | None = None,
     ) -> RunState:
         step = state.steps[step_index]
         step.status = StepStatus.FAILED
@@ -815,7 +827,7 @@ class AgentRuntime:
             error=error,
             pending_approval=None,
         )
-        await self._save(state)
+        await self._save(state, tenant_id=tenant_id)
         return state
 
     async def _fail_model_step(
@@ -825,6 +837,7 @@ class AgentRuntime:
         *,
         stage: Literal["provider", "runtime"],
         exc: Exception,
+        tenant_id: str | None = None,
     ) -> RunState:
         error = RunError(
             stage=stage,
@@ -845,9 +858,19 @@ class AgentRuntime:
             error=error,
             pending_approval=None,
         )
-        await self._save(state)
+        await self._save(state, tenant_id=tenant_id)
         return state
 
-    async def _save(self, state: RunState) -> None:
+    async def _save(self, state: RunState, *, tenant_id: str | None = None) -> None:
         state.updated_at = utc_now()
-        await _await_if_needed(self.checkpoint.save(state.model_copy(deep=True)))
+        save = self.checkpoint.save
+        try:
+            accepts_tenant = "tenant_id" in inspect.signature(save).parameters
+        except (TypeError, ValueError):
+            accepts_tenant = True
+        result = (
+            save(state.model_copy(deep=True), tenant_id=tenant_id)
+            if accepts_tenant
+            else save(state.model_copy(deep=True))
+        )
+        await _await_if_needed(result)

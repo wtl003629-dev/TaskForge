@@ -576,15 +576,27 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
     transaction-local RLS tenant, and never interpolates identity into SQL.
     """
 
-    def __init__(self, connection: object, *, owns_connection: bool = False) -> None:
-        if connection is None:
-            raise ValueError("connection is required")
-        if not callable(getattr(connection, "cursor", None)):
-            raise TypeError("connection must provide cursor()")
-        if not callable(getattr(connection, "transaction", None)):
-            raise TypeError("connection must provide psycopg transaction()")
+    def __init__(
+        self,
+        connection: object | None = None,
+        *,
+        owns_connection: bool = False,
+        pool: object | None = None,
+        owns_pool: bool = True,
+    ) -> None:
+        if (connection is None) == (pool is None):
+            raise ValueError("exactly one of connection or pool is required")
+        if connection is not None:
+            if not callable(getattr(connection, "cursor", None)):
+                raise TypeError("connection must provide cursor()")
+            if not callable(getattr(connection, "transaction", None)):
+                raise TypeError("connection must provide psycopg transaction()")
+        if pool is not None and not callable(getattr(pool, "connection", None)):
+            raise TypeError("pool must provide connection()")
         self._connection = connection
+        self._pool = pool
         self._owns_connection = bool(owns_connection)
+        self._owns_pool = bool(owns_pool)
         self._closed = False
         self._lock = RLock()
 
@@ -595,7 +607,7 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
         *,
         connect_timeout: int = 5,
         application_name: str = "taskforge-context",
-    ) -> PostgresContextRepository:
+        ) -> PostgresContextRepository:
         cleaned_dsn = _safe_text(dsn, "dsn")
         cleaned_application = _safe_text(application_name, "application_name")
         if type(connect_timeout) is not int or not 1 <= connect_timeout <= 60:
@@ -617,6 +629,48 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
         )
         return cls(connection, owns_connection=True)
 
+    @classmethod
+    def connect_pool(
+        cls,
+        dsn: str,
+        *,
+        min_size: int = 1,
+        max_size: int = 8,
+        connect_timeout: int = 5,
+        application_name: str = "taskforge-context",
+    ) -> PostgresContextRepository:
+        """Open a psycopg connection pool for concurrent API/worker access."""
+
+        cleaned_dsn = _safe_text(dsn, "dsn")
+        cleaned_application = _safe_text(application_name, "application_name")
+        if type(min_size) is not int or type(max_size) is not int or not 1 <= min_size <= max_size <= 64:
+            raise ValueError("pool sizes must satisfy 1 <= min_size <= max_size <= 64")
+        if type(connect_timeout) is not int or not 1 <= connect_timeout <= 60:
+            raise ValueError("connect_timeout must be between 1 and 60 seconds")
+        try:
+            pool_module = importlib.import_module("psycopg_pool")
+            rows = importlib.import_module("psycopg.rows")
+        except (ImportError, ModuleNotFoundError) as exc:
+            raise PostgresDependencyError(
+                "PostgreSQL pool support requires the optional 'postgres' extra "
+                "(pip install taskforge-agent[postgres])"
+            ) from exc
+        pool = pool_module.ConnectionPool(
+            conninfo=cleaned_dsn,
+            min_size=min_size,
+            max_size=max_size,
+            timeout=connect_timeout,
+            kwargs={
+                "autocommit": False,
+                "row_factory": rows.dict_row,
+                "connect_timeout": connect_timeout,
+                "application_name": cleaned_application,
+            },
+            open=False,
+        )
+        pool.open(wait=True)
+        return cls(pool=pool, owns_pool=True)
+
     @property
     def owns_connection(self) -> bool:
         return self._owns_connection
@@ -625,12 +679,21 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
         with self._lock:
             if self._closed:
                 return
-            if self._owns_connection:
-                self._connection.close()  # type: ignore[attr-defined]
+            if self._pool is not None and self._owns_pool:
+                self._pool.close()  # type: ignore[attr-defined]
+            elif self._owns_connection and self._connection is not None:
+                self._connection.close()
             self._closed = True
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
         self.close()
+
+    @contextmanager
+    def transaction(self, access: PostgresContextAccess) -> Iterator[Any]:
+        """Expose one tenant-scoped transaction to backend-specific adapters."""
+
+        with self._transaction(access) as cursor:
+            yield cursor
 
     @contextmanager
     def _transaction(self, access: PostgresContextAccess) -> Iterator[Any]:
@@ -639,21 +702,36 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
         with self._lock:
             if self._closed:
                 raise PostgresContextError("repository is closed")
-            info = getattr(self._connection, "info", None)
-            status = getattr(info, "transaction_status", None)
-            status_name = getattr(status, "name", None)
-            # psycopg.pq.TransactionStatus.IDLE has numeric value 0.  Reject
-            # caller-owned connections already inside a transaction: a nested
-            # savepoint would otherwise let the tenant-local setting outlive
-            # this repository operation.
-            if status is not None and status != 0 and status_name != "IDLE":
-                raise PostgresContextError(
-                    "connection must be idle before a context operation"
-                )
-            with self._connection.transaction():  # type: ignore[attr-defined]
-                with self._connection.cursor() as cursor:  # type: ignore[attr-defined]
-                    cursor.execute(_SET_TENANT_SQL, {"tenant_id": access.tenant_id})
-                    yield cursor
+            if self._pool is not None:
+                with self._pool.connection() as connection:  # type: ignore[attr-defined]
+                    with self._connection_transaction(connection, access) as cursor:
+                        yield cursor
+                return
+            assert self._connection is not None
+            with self._connection_transaction(self._connection, access) as cursor:
+                yield cursor
+
+    @contextmanager
+    def _connection_transaction(
+        self,
+        connection: object,
+        access: PostgresContextAccess,
+    ) -> Iterator[Any]:
+        info = getattr(connection, "info", None)
+        status = getattr(info, "transaction_status", None)
+        status_name = getattr(status, "name", None)
+        # psycopg.pq.TransactionStatus.IDLE has numeric value 0.  Reject
+        # caller-owned connections already inside a transaction: a nested
+        # savepoint would otherwise let the tenant-local setting outlive
+        # this repository operation.
+        if status is not None and status != 0 and status_name != "IDLE":
+            raise PostgresContextError(
+                "connection must be idle before a context operation"
+            )
+        with connection.transaction():  # type: ignore[attr-defined]
+            with connection.cursor() as cursor:  # type: ignore[attr-defined]
+                cursor.execute(_SET_TENANT_SQL, {"tenant_id": access.tenant_id})
+                yield cursor
 
     def upsert_knowledge(
         self,
@@ -674,6 +752,41 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
             for values in parameters:
                 cursor.execute(_KNOWLEDGE_UPSERT_SQL, values)
         return len(parameters)
+
+    def replace_knowledge_version(
+        self,
+        chunks: Iterable[KnowledgeChunk],
+        access: PostgresContextAccess,
+    ) -> int:
+        """Atomically replace one tenant/document/version in PostgreSQL."""
+
+        materialised = list(chunks)
+        if not materialised:
+            raise ValueError("at least one chunk is required")
+        first = materialised[0]
+        identity = (first.tenant_id, first.logical_document_id, first.version)
+        if any(
+            (chunk.tenant_id, chunk.logical_document_id, chunk.version) != identity
+            for chunk in materialised
+        ):
+            raise ValueError("all chunks must belong to one tenant/document/version")
+        if identity[0] != access.tenant_id:
+            raise PermissionError("knowledge tenant does not match trusted access")
+        with self._transaction(access) as cursor:
+            cursor.execute(
+                "DELETE FROM taskforge.knowledge_chunks "
+                "WHERE tenant_id = %(tenant_id)s "
+                "AND COALESCE(document_id, source_uri) = %(document_id)s "
+                "AND version = %(version)s",
+                {
+                    "tenant_id": access.tenant_id,
+                    "document_id": identity[1],
+                    "version": identity[2],
+                },
+            )
+            for chunk in materialised:
+                cursor.execute(_KNOWLEDGE_UPSERT_SQL, _knowledge_parameters(chunk))
+        return len(materialised)
 
     def fetch_knowledge_candidates(
         self,
@@ -773,6 +886,60 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
             for values in parameters:
                 cursor.execute(_MEMORY_UPSERT_SQL, values)
         return len(parameters)
+
+    def forget_memory(
+        self,
+        memory_id: str,
+        access: PostgresContextAccess,
+        *,
+        now: datetime | None = None,
+    ) -> bool:
+        """CAS-delete a principal-owned non-shared memory item."""
+
+        instant = as_utc(now)
+        with self._transaction(access) as cursor:
+            cursor.execute(
+                """
+                SELECT tenant_id, memory_id, content, scope, scope_id,
+                       provenance_json, importance, created_at, updated_at,
+                       expires_at, tags_json, metadata_json
+                  FROM taskforge.memory_items
+                 WHERE tenant_id = %(tenant_id)s AND memory_id = %(memory_id)s
+                   AND (expires_at IS NULL OR expires_at > %(now)s)
+                """,
+                {"tenant_id": access.tenant_id, "memory_id": memory_id, "now": instant},
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return False
+            item = _row_to_memory(row)
+            if not item.is_deletable_by(
+                AccessContext(
+                    tenant_id=access.tenant_id,
+                    user_id=access.user_id,
+                    org_id=access.org_id,
+                    agent_id=access.agent_id,
+                    task_id=access.conversation_id,
+                ),
+                instant,
+            ):
+                return False
+            cursor.execute(
+                """
+                DELETE FROM taskforge.memory_items
+                 WHERE tenant_id = %(tenant_id)s AND memory_id = %(memory_id)s
+                   AND scope = %(scope)s AND scope_id = %(scope_id)s
+                   AND updated_at = %(updated_at)s
+                """,
+                {
+                    "tenant_id": access.tenant_id,
+                    "memory_id": memory_id,
+                    "scope": item.scope.value,
+                    "scope_id": item.scope_id,
+                    "updated_at": _timestamp_param(item.updated_at),
+                },
+            )
+            return cursor.rowcount == 1
 
     def fetch_memory_candidates(
         self,

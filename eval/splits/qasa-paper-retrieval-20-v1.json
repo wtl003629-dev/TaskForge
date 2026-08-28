@@ -1,0 +1,226 @@
+{
+  "schema_version": "1.0",
+  "split_id": "scholarqabench-qasa-document-diverse-20-v1",
+  "dataset": "ScholarQABench QASA",
+  "source": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\ScholarQABench\\data\\single_paper_tasks\\qasa_test.jsonl",
+  "source_sha256": "9ce5780e27333d62df6a6d171875a3608456a984f092ebfa3ddd30127e3a8a3b",
+  "selection_policy": "first question from each unique paper in source order",
+  "synthetic_pdf_layout": "compact_scientific_paper_v1",
+  "case_ids": [
+    "qasper:1707.01083:25b1eb4be232fe49cc94e51cea109fcda78557ce",
+    "qasper:1804.06655:540730a2c60ff8843381bd5bb110909f5dada5d7",
+    "qasper:1801.06146:35c5b5f2fcc4e877f88a1dad66f36af0781683d7",
+    "qasper:1502.04681:c592e99325796212f1e7d50ba4b43b232233d5f9",
+    "qasper:1511.07247:517779a7d5cdaaae21a1a6ac3dc53d7314aa458c",
+    "qasper:2009.02009:5205e68d942fbfa527228318b94fba1e90c01812",
+    "qasper:1508.04025:921a0549784710de1f5b7ccc520d985fedabe367",
+    "qasper:1703.03400:68cefd84894afee13c0a6ec2ce82977272ab4340",
+    "qasper:2208.14867:31b01e9add4e4e46f810204d86c89523d3a76ce2",
+    "qasper:2204.11673:5954e6898f57db789b19d3ccea182ed87bd7da8c",
+    "qasper:2208.12242:0023ad1a4598c185c1d7c89320f1fee48ee41bf9",
+    "qasper:1512.03385:0d7048d9b9cf4132c1465555fbac2237900f89cb",
+    "qasper:1602.03409:e5e5ed5e0ea0bd43ba70cca3be57321df8e3ce4d",
+    "qasper:1704.07813:5b843ade5a10de16029c56b3741827938e701f25",
+    "qasper:1703.05175:bc9baf7f0ada0e7a1b49949e7421948941549539",
+    "qasper:1611.01603:6d0e3b1c2e9689a653ed233680081c1eb71e543b",
+    "qasper:1507.06228:2559a2deac9c6ea0162c72fb643cf58fc92eb55a",
+    "qasper:1708.07747:a397496246f2b2dbfeeeefacee7e59762106e05b",
+    "qasper:2004.12832:eda1c5a8bc69bbfe88e65a2024d90a290bcb7603",
+    "qasper:1612.00593:34fab6beb2ea7fe23b4387d016eb5dd8cfe2ba7d"
+  ],
+  "selected_rows": [
+    {
+      "case_id": "qasper:1707.01083:25b1eb4be232fe49cc94e51cea109fcda78557ce",
+      "qasa_paper_id": "1707.01083",
+      "paper_title": "ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices",
+      "context_count": 35,
+      "gold_context_indices": [
+        16
+      ]
+    },
+    {
+      "case_id": "qasper:1804.06655:540730a2c60ff8843381bd5bb110909f5dada5d7",
+      "qasa_paper_id": "1804.06655",
+      "paper_title": "Deep Face Recognition",
+      "context_count": 92,
+      "gold_context_indices": [
+        25,
+        26
+      ]
+    },
+    {
+      "case_id": "qasper:1801.06146:35c5b5f2fcc4e877f88a1dad66f36af0781683d7",
+      "qasa_paper_id": "1801.06146",
+      "paper_title": "Universal Language Model Fine-tuning for Text Classification",
+      "context_count": 55,
+      "gold_context_indices": [
+        17,
+        45,
+        19
+      ]
+    },
+    {
+      "case_id": "qasper:1502.04681:c592e99325796212f1e7d50ba4b43b232233d5f9",
+      "qasa_paper_id": "1502.04681",
+      "paper_title": "Unsupervised Learning of Video Representations using LSTMs",
+      "context_count": 48,
+      "gold_context_indices": [
+        14
+      ]
+    },
+    {
+      "case_id": "qasper:1511.07247:517779a7d5cdaaae21a1a6ac3dc53d7314aa458c",
+      "qasa_paper_id": "1511.07247",
+      "paper_title": "NetVLAD: CNN Architecture for Weakly Supervised Place Recognition",
+      "context_count": 50,
+      "gold_context_indices": [
+        48
+      ]
+    },
+    {
+      "case_id": "qasper:2009.02009:5205e68d942fbfa527228318b94fba1e90c01812",
+      "qasa_paper_id": "2009.02009",
+      "paper_title": "S3NAS: Fast NPU-aware Neural Architecture Search Methodology",
+      "context_count": 78,
+      "gold_context_indices": [
+        34
+      ]
+    },
+    {
+      "case_id": "qasper:1508.04025:921a0549784710de1f5b7ccc520d985fedabe367",
+      "qasa_paper_id": "1508.04025",
+      "paper_title": "Effective Approaches to Attention-based Neural Machine Translation",
+      "context_count": 45,
+      "gold_context_indices": [
+        38
+      ]
+    },
+    {
+      "case_id": "qasper:1703.03400:68cefd84894afee13c0a6ec2ce82977272ab4340",
+      "qasa_paper_id": "1703.03400",
+      "paper_title": "Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks",
+      "context_count": 37,
+      "gold_context_indices": [
+        31
+      ]
+    },
+    {
+      "case_id": "qasper:2208.14867:31b01e9add4e4e46f810204d86c89523d3a76ce2",
+      "qasa_paper_id": "2208.14867",
+      "paper_title": "Sketching the Expression: Flexible Rendering of Expressive Piano Performance with Self-Supervised Learning",
+      "context_count": 36,
+      "gold_context_indices": [
+        5,
+        6
+      ]
+    },
+    {
+      "case_id": "qasper:2204.11673:5954e6898f57db789b19d3ccea182ed87bd7da8c",
+      "qasa_paper_id": "2204.11673",
+      "paper_title": "Incorporating Explicit Knowledge in Pre-trained Language Models for Passage Re-ranking",
+      "context_count": 60,
+      "gold_context_indices": [
+        40
+      ]
+    },
+    {
+      "case_id": "qasper:2208.12242:0023ad1a4598c185c1d7c89320f1fee48ee41bf9",
+      "qasa_paper_id": "2208.12242",
+      "paper_title": "DreamBooth: Fine Tuning Text-to-Image Diffusion Models for Subject-Driven Generation",
+      "context_count": 38,
+      "gold_context_indices": [
+        1
+      ]
+    },
+    {
+      "case_id": "qasper:1512.03385:0d7048d9b9cf4132c1465555fbac2237900f89cb",
+      "qasa_paper_id": "1512.03385",
+      "paper_title": "Deep Residual Learning for Image Recognition",
+      "context_count": 54,
+      "gold_context_indices": [
+        21
+      ]
+    },
+    {
+      "case_id": "qasper:1602.03409:e5e5ed5e0ea0bd43ba70cca3be57321df8e3ce4d",
+      "qasa_paper_id": "1602.03409",
+      "paper_title": "Deep Convolutional Neural Networks for Computer-Aided Detection: CNN Architectures, Dataset Characteristics and Transfer Learning",
+      "context_count": 62,
+      "gold_context_indices": [
+        1
+      ]
+    },
+    {
+      "case_id": "qasper:1704.07813:5b843ade5a10de16029c56b3741827938e701f25",
+      "qasa_paper_id": "1704.07813",
+      "paper_title": "Unsupervised Learning of Depth and Ego-Motion from Video",
+      "context_count": 37,
+      "gold_context_indices": [
+        15
+      ]
+    },
+    {
+      "case_id": "qasper:1703.05175:bc9baf7f0ada0e7a1b49949e7421948941549539",
+      "qasa_paper_id": "1703.05175",
+      "paper_title": "Prototypical Networks for Few-shot Learning",
+      "context_count": 32,
+      "gold_context_indices": [
+        5
+      ]
+    },
+    {
+      "case_id": "qasper:1611.01603:6d0e3b1c2e9689a653ed233680081c1eb71e543b",
+      "qasa_paper_id": "1611.01603",
+      "paper_title": "Bidirectional Attention Flow for Machine Comprehension",
+      "context_count": 41,
+      "gold_context_indices": [
+        26
+      ]
+    },
+    {
+      "case_id": "qasper:1507.06228:2559a2deac9c6ea0162c72fb643cf58fc92eb55a",
+      "qasa_paper_id": "1507.06228",
+      "paper_title": "Training Very Deep Networks",
+      "context_count": 42,
+      "gold_context_indices": [
+        17,
+        23,
+        25
+      ]
+    },
+    {
+      "case_id": "qasper:1708.07747:a397496246f2b2dbfeeeefacee7e59762106e05b",
+      "qasa_paper_id": "1708.07747",
+      "paper_title": "Fashion-MNIST: a Novel Image Dataset for Benchmarking Machine Learning Algorithms",
+      "context_count": 11,
+      "gold_context_indices": [
+        3
+      ]
+    },
+    {
+      "case_id": "qasper:2004.12832:eda1c5a8bc69bbfe88e65a2024d90a290bcb7603",
+      "qasa_paper_id": "2004.12832",
+      "paper_title": "ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT",
+      "context_count": 72,
+      "gold_context_indices": [
+        55
+      ]
+    },
+    {
+      "case_id": "qasper:1612.00593:34fab6beb2ea7fe23b4387d016eb5dd8cfe2ba7d",
+      "qasa_paper_id": "1612.00593",
+      "paper_title": "PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation",
+      "context_count": 71,
+      "gold_context_indices": [
+        32
+      ]
+    }
+  ],
+  "report_metadata": {
+    "evaluation_type": "qasa_synthetic_pdf_upload_retrieval",
+    "benchmark_track": "scientific_paper_fulltext_retrieval",
+    "dataset": "ScholarQABench QASA official test, document-diverse frozen subset",
+    "license": "ODC-BY (aggregate ScholarQABench data; constituent terms apply)",
+    "synthetic_layout_limitation": "QASA text and labels are official ScholarQABench data; the PDF layout is generated locally, so this isolates full-text retrieval but is not a real-PDF parser benchmark."
+  }
+}

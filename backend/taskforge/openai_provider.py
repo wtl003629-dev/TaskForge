@@ -151,6 +151,7 @@ class OpenAIResponsesProvider:
         model: str | None = None,
         base_url: str = "https://api.openai.com/v1",
         timeout_seconds: float = 60.0,
+        trust_env: bool = True,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         if not isinstance(api_key, str) or not api_key.strip():
@@ -165,7 +166,7 @@ class OpenAIResponsesProvider:
         self._base_url = base_url.rstrip("/")
         self._timeout = httpx.Timeout(timeout_seconds)
         self._owns_client = client is None
-        self._client = client or httpx.AsyncClient()
+        self._client = client or httpx.AsyncClient(trust_env=trust_env)
 
     async def complete(
         self,
@@ -276,6 +277,7 @@ class OpenAIChatCompletionsProvider:
         timeout_seconds: float = 60.0,
         thinking_mode: Literal["enabled", "disabled"] | None = None,
         json_mode: bool = False,
+        trust_env: bool = True,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         if not isinstance(api_key, str) or not api_key.strip():
@@ -294,7 +296,7 @@ class OpenAIChatCompletionsProvider:
         self._thinking_mode = thinking_mode
         self._json_mode = json_mode
         self._owns_client = client is None
-        self._client = client or httpx.AsyncClient()
+        self._client = client or httpx.AsyncClient(trust_env=trust_env)
 
     async def complete(
         self,

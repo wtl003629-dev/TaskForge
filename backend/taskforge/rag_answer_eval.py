@@ -522,6 +522,7 @@ async def _generate_answer(
     calculator_registry: ToolRegistry | None = None,
     calculator_max_calls: int = 8,
     contract_max_retries: int = 1,
+    instructions_override: str | None = None,
 ) -> _GeneratedAnswer:
     """Ask the model to answer the question from the retrieved evidence only."""
 
@@ -547,7 +548,11 @@ async def _generate_answer(
     profile = AgentProfile(
         id="answer-eval-agent",
         name="Answer eval agent",
-        instructions=_answer_instructions(mode="naive", contract=contract),
+        instructions=(
+            instructions_override
+            if instructions_override is not None
+            else _answer_instructions(mode="naive", contract=contract)
+        ),
         model=model,
         allowed_tools=["calculator"] if contract == "online_cited_v1" else [],
     )

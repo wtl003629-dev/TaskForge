@@ -238,3 +238,15 @@ async def test_disabled_by_default_and_client_ownership() -> None:
     assert owned._client.is_closed is False
     await owned.aclose()
     assert owned._client.is_closed is True
+
+
+@pytest.mark.asyncio
+async def test_owned_client_can_ignore_environment_proxies() -> None:
+    provider = OpenAIResponsesProvider(
+        api_key="secret",
+        enabled=True,
+        trust_env=False,
+    )
+
+    assert provider._client.trust_env is False
+    await provider.aclose()

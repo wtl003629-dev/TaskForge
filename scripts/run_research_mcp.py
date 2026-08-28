@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
@@ -15,6 +16,7 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+from taskforge.app import create_app  # noqa: E402
 from taskforge.config import Settings  # noqa: E402
 from taskforge.literature.evidence import ScopeBoundEvidenceService  # noqa: E402
 from taskforge.literature.providers import (  # noqa: E402
@@ -32,6 +34,7 @@ from taskforge.literature.repository import (  # noqa: E402
 )
 from taskforge.literature.service import LiteratureDiscoveryService  # noqa: E402
 from taskforge.persistent_context import SQLiteKnowledgeStore  # noqa: E402
+from taskforge.postgres_runtime import set_request_tenant  # noqa: E402
 from taskforge.research_mcp import (  # noqa: E402
     ResearchMCPServer,
     create_mcp_app,
@@ -41,17 +44,53 @@ from taskforge.research_retrieval import ResearchRetrievalService  # noqa: E402
 from taskforge.routed_knowledge import RoutedKnowledgeStore  # noqa: E402
 
 
-def build_server() -> ResearchMCPServer:
+def build_server() -> tuple[ResearchMCPServer, FastAPI | None]:
     settings = Settings()
     tenant = "local"
     user = "research-client"
+    if settings.database_backend == "postgres":
+        # Reuse the application composition root so the standalone MCP
+        # process cannot accidentally construct SQLite repositories while the
+        # API/worker are on PostgreSQL.  The returned app is kept as the
+        # lifecycle owner for the shared pool and provider clients.
+        backend_app = create_app(settings)
+        container = backend_app.state.container
+        return (
+            ResearchMCPServer(
+                container.scope_evidence,
+                LiteratureAccess(tenant, user),
+                discovery=container.literature_discovery,
+            ),
+            backend_app,
+        )
     knowledge = SQLiteKnowledgeStore(settings.context_sqlite_path)
     routed = (
         RoutedKnowledgeStore(
             knowledge,
             general_text_backend=settings.general_text_backend,
             semantic_model=settings.semantic_model,
+            semantic_model_path=(
+                str(settings.semantic_model_path)
+                if settings.semantic_model_path is not None
+                else None
+            ),
             semantic_cache_path=str(settings.semantic_cache_path),
+            fastembed_model_cache_root=str(settings.fastembed_model_cache_root),
+            semantic_batch_size=settings.semantic_batch_size,
+            semantic_device=settings.semantic_device,
+            bailian_api_key=(
+                settings.bailian_api_key.get_secret_value()
+                if settings.bailian_api_key is not None
+                else None
+            ),
+            bailian_base_url=settings.bailian_base_url,
+            bailian_model=settings.bailian_model,
+            bailian_embedding_dimension=settings.bailian_embedding_dimension,
+            bailian_batch_size=settings.bailian_batch_size,
+            bailian_timeout_seconds=settings.bailian_timeout_seconds,
+            bailian_max_retries=settings.bailian_max_retries,
+            bailian_cache_path=str(settings.bailian_cache_path),
+            bailian_index_name=settings.bailian_index_name,
         )
         if settings.retrieval_routing == "profile"
         else knowledge
@@ -96,10 +135,13 @@ def build_server() -> ResearchMCPServer:
         ],
         results_per_query=settings.literature_results_per_query,
     )
-    return ResearchMCPServer(
-        evidence,
-        LiteratureAccess(tenant, user),
-        discovery=discovery,
+    return (
+        ResearchMCPServer(
+            evidence,
+            LiteratureAccess(tenant, user),
+            discovery=discovery,
+        ),
+        None,
     )
 
 
@@ -111,12 +153,31 @@ def main() -> None:
     parser.add_argument("--tenant", default="local")
     parser.add_argument("--user", default="research-client")
     args = parser.parse_args()
-    server = build_server()
+    server, backend_app = build_server()
     server.principal = LiteratureAccess(args.tenant, args.user)
+    if backend_app is not None:
+        # The API normally binds this ContextVar in its tenant dependency. The
+        # standalone MCP transport has no HTTP dependency layer, so bind the
+        # host-selected tenant before provider/embedding cache operations.
+        set_request_tenant(args.tenant)
     if args.transport == "stdio":
-        asyncio.run(run_stdio(server))
+        async def serve_stdio() -> None:
+            if backend_app is None:
+                await run_stdio(server)
+                return
+            async with backend_app.router.lifespan_context(backend_app):
+                await run_stdio(server)
+
+        asyncio.run(serve_stdio())
     else:
         app: FastAPI = create_mcp_app(server)
+        if backend_app is not None:
+            @asynccontextmanager
+            async def backend_lifespan(_: FastAPI):
+                async with backend_app.router.lifespan_context(backend_app):
+                    yield
+
+            app.router.lifespan_context = backend_lifespan
         uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
 
 

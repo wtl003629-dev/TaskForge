@@ -305,6 +305,8 @@ RetrievalSource = Literal[
     "structured_lineage_candidate",
     "structured_lineage_pair_rerank",
     "fastembed_learned_sparse",
+    "pgvector_exact",
+    "pgvector_hnsw",
     "adjacent_chunk",
     "parent_child_retrieval",
     "parent_sibling_coverage",
@@ -329,6 +331,8 @@ RetrievalBackend = Literal[
     "fastembed_sparse",
     "candidate_tail_union",
     "in_memory_dense",
+    "postgres_pgvector_exact",
+    "postgres_pgvector_hnsw",
 ]
 
 
@@ -456,6 +460,8 @@ class FastEmbedEmbedder:
         model_name: str = "BAAI/bge-small-en-v1.5",
         *,
         cache_path: str | Path | None = None,
+        cache_store: Any | None = None,
+        model_cache_dir: str | Path | None = None,
         batch_size: int = 64,
     ) -> None:
         if TextEmbedding is None:
@@ -467,7 +473,15 @@ class FastEmbedEmbedder:
             raise ValueError("batch_size must be between 1 and 1024")
         self._batch_size = int(batch_size)
         self._cache_path = Path(cache_path).resolve() if cache_path is not None else None
-        self._model = TextEmbedding(model_name=model_name)
+        if self._cache_path is not None and cache_store is not None:
+            raise EmbeddingContractError(
+                "cache_path and cache_store are mutually exclusive"
+            )
+        self._cache_store = cache_store
+        model_kwargs = {"model_name": model_name}
+        if model_cache_dir is not None:
+            model_kwargs["cache_dir"] = str(Path(model_cache_dir).resolve())
+        self._model = TextEmbedding(**model_kwargs)
         # Query embeddings are content-addressed on disk, but keeping the
         # values used by a locked evaluation in memory avoids reopening the
         # ONNX runtime for every case.  ``warm_queries`` is an explicit
@@ -487,12 +501,24 @@ class FastEmbedEmbedder:
         return self._model_name
 
     @property
+    def index_name(self) -> str:
+        """Stable model-qualified name for an in-memory dense index.
+
+        The name is telemetry and cache identity only; it deliberately does
+        not alter the legacy FastEmbed ranking behavior.
+        """
+
+        if self._model_name.casefold() == "baai/bge-small-en-v1.5":
+            return "knowledge-fastembed-bge-small-v1"
+        return "knowledge-fastembed-dense-v1"
+
+    @property
     def dimension(self) -> int:
         return self._dimension
 
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         normalized = [str(text) for text in texts]
-        if self._cache_path is None:
+        if self._cache_path is None and self._cache_store is None:
             return self._encode_documents(normalized)
         return self._cached_documents(normalized)
 
@@ -501,7 +527,7 @@ class FastEmbedEmbedder:
         cached_memory = self._query_memory.get(normalized)
         if cached_memory is not None:
             return list(cached_memory)
-        if self._cache_path is None:
+        if self._cache_path is None and self._cache_store is None:
             vector = self._encode_query(normalized)
         else:
             vector = self._cached_query(normalized)
@@ -609,6 +635,13 @@ class FastEmbedEmbedder:
             return {}
         expected = dict(identities)
         loaded: dict[str, list[float]] = {}
+        if self._cache_store is not None:
+            return self._cache_store.load(
+                model_name=self._model_name,
+                identities=identities,
+                embedding_kind=embedding_kind,
+                dimension=self._dimension,
+            )
         try:
             with closing(self._connect_cache()) as connection, connection:
                 keys = list(expected)
@@ -644,6 +677,9 @@ class FastEmbedEmbedder:
 
     def _store_cached(self, rows: Sequence[tuple[object, ...]]) -> None:
         if not rows:
+            return
+        if self._cache_store is not None:
+            self._cache_store.store(rows)
             return
         try:
             with closing(self._connect_cache()) as connection, connection:
@@ -814,6 +850,7 @@ class FastEmbedCrossEncoderReranker:
         self,
         model_name: str = "Xenova/ms-marco-MiniLM-L-6-v2",
         *,
+        cache_dir: str | Path | None = None,
         batch_size: int = 32,
     ) -> None:
         if TextCrossEncoder is None:
@@ -825,7 +862,10 @@ class FastEmbedCrossEncoderReranker:
         self.model_name = _clean_required(model_name, "reranker_model")
         self.batch_size = int(batch_size)
         try:
-            self._model = TextCrossEncoder(model_name=self.model_name)
+            model_kwargs = {"model_name": self.model_name}
+            if cache_dir is not None:
+                model_kwargs["cache_dir"] = str(Path(cache_dir).resolve())
+            self._model = TextCrossEncoder(**model_kwargs)
         except Exception as exc:
             raise RerankerContractError(
                 f"failed to initialize cross-encoder {self.model_name!r}: {exc}"

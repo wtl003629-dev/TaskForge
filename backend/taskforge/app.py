@@ -53,12 +53,16 @@ from .domain import (
     Task,
     utc_now,
 )
+from .hybrid_retrieval import FastEmbedEmbedder
 from .knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
 from .literature import (
     LiteratureAccess,
     LiteratureDiscoveryService,
+    OpenAICompatibleEvidenceQueryExpander,
     OpenAICompatibleQueryRewriter,
     PaperIngestionService,
+    PostgresLiteratureRepository,
+    RuleEvidenceQueryExpander,
     ScopeBoundEvidenceService,
     SQLiteLiteratureRepository,
 )
@@ -67,6 +71,7 @@ from .literature.providers import (
     ArxivProvider,
     CrossrefProvider,
     OpenAlexProvider,
+    PostgresProviderCache,
     SemanticScholarProvider,
 )
 from .literature.providers.base import SQLiteProviderCache
@@ -101,8 +106,27 @@ from .orchestration import (
     SpeakerPlan,
     SQLiteOrchestrationStore,
 )
+from .pdf_parsing.mineru_client import MinerUClient
+from .pdf_parsing.native_parser import NativePDFParser
+from .pdf_parsing.router import PDFParserRouter
+from .pdf_parsing.visual_evidence import OpenAICompatibleVisualEvidenceExtractor
 from .persistent_context import SQLiteKnowledgeStore, SQLiteMemoryStore
+from .postgres_checkpoints import PostgresCheckpointStore
+from .postgres_context_store import PostgresContextStores
+from .postgres_embeddings import PostgresEmbeddingCache
+from .postgres_operations import PostgresOperationsStore
+from .postgres_orchestration import PostgresOrchestrationStore
+from .postgres_review_cases import PostgresReviewCaseStore
+from .postgres_runtime import (
+    PostgresBackendNotReadyError,
+    PostgresDependencyError,
+    PostgresRuntime,
+    current_request_tenant,
+    set_request_tenant,
+)
+from .postgres_verification import PostgresVerificationStore
 from .providers import ModelProvider
+from .rag_experiment_profile import resolve_rag_experiment_profile
 from .research_protocol import (
     ClaimRecord,
     EvidenceCard,
@@ -555,19 +579,19 @@ class CitationVerifyCreate(StrictModel):
 @dataclass(slots=True)
 class AppContainer:
     settings: Settings
-    store: SQLiteCheckpointStore
+    store: Any
     profiles: dict[str, AgentProfile]
     runtime: AgentRuntime
     provider: ModelProvider
     knowledge_store: Any
     memory_store: Any
-    operations: OperationsStore
-    review_case_store: SQLiteReviewCaseStore
-    orchestration_store: SQLiteOrchestrationStore
+    operations: Any
+    review_case_store: Any
+    orchestration_store: Any
     review_profiles: dict[str, AgentProfile]
     review_execution: ReviewExecutionDisclosure
-    verification_store: SQLiteVerificationStore
-    literature_repository: SQLiteLiteratureRepository
+    verification_store: Any
+    literature_repository: Any
     literature_discovery: LiteratureDiscoveryService
     paper_ingestion: PaperIngestionService
     scope_evidence: ScopeBoundEvidenceService
@@ -598,6 +622,7 @@ def _principal(
         raise HTTPException(status_code=400, detail="tenant and user headers must be non-empty")
     if len(tenant) > 256 or len(user) > 256:
         raise HTTPException(status_code=400, detail="tenant and user headers are too long")
+    set_request_tenant(tenant)
     return Principal(tenant_id=tenant, user_id=user)
 
 
@@ -657,6 +682,19 @@ def _review_execution_disclosure(
         )
         return _apply_verification(
             disclosure, verification_store, "deepseek", settings.deepseek_model
+        )
+    if owns_provider and settings.provider == "bailian":
+        disclosure = ReviewExecutionDisclosure(
+            provider="bailian",
+            mode="configured-provider",
+            provider_configured=True,
+            contract_tested_mock=True,
+        )
+        return _apply_verification(
+            disclosure,
+            verification_store,
+            "bailian",
+            settings.bailian_chat_model,
         )
     return ReviewExecutionDisclosure(
         provider=type(provider).__name__,
@@ -873,6 +911,22 @@ def _make_provider(settings: Settings) -> ModelProvider:
             model=settings.deepseek_model,
             base_url=settings.deepseek_base_url,
             timeout_seconds=settings.deepseek_timeout_seconds,
+            trust_env=settings.deepseek_trust_env,
+        )
+    if settings.provider == "bailian":
+        if settings.bailian_api_key is None or not settings.bailian_api_key.get_secret_value().strip():
+            raise ValueError("TASKFORGE_BAILIAN_API_KEY is required when provider=bailian")
+        if not settings.bailian_chat_model.strip():
+            raise ValueError("TASKFORGE_BAILIAN_CHAT_MODEL is required when provider=bailian")
+        from .openai_provider import OpenAIChatCompletionsProvider
+
+        return OpenAIChatCompletionsProvider(
+            api_key=settings.bailian_api_key.get_secret_value(),
+            enabled=True,
+            model=settings.bailian_chat_model,
+            base_url=settings.bailian_base_url,
+            timeout_seconds=settings.bailian_chat_timeout_seconds,
+            trust_env=settings.bailian_chat_trust_env,
         )
     if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value().strip():
         raise ValueError("TASKFORGE_OPENAI_API_KEY is required when provider=openai")
@@ -1126,6 +1180,8 @@ def create_app(
     profile_model = (
         config.deepseek_model
         if config.provider == "deepseek"
+        else config.bailian_chat_model
+        if config.provider == "bailian"
         else config.openai_model
         if config.provider == "openai"
         else "demo"
@@ -1145,59 +1201,250 @@ def create_app(
     if len(profile_catalog) != len(profiles) + len(review_profiles):
         raise ValueError("general and review Agent profile IDs must be unique")
     mcp_config = _load_mcp_config(config.mcp_config_path, profile_catalog)
-    store = SQLiteCheckpointStore(config.sqlite_path)
-    operations = OperationsStore(config.operations_sqlite_path)
-    review_case_store = SQLiteReviewCaseStore(config.review_case_sqlite_path)
-    orchestration_store = SQLiteOrchestrationStore(config.orchestration_sqlite_path)
-    verification_store = SQLiteVerificationStore(config.verification_sqlite_path)
-    for item in profiles.values():
-        store.save_profile(item)
-
-    if config.context_backend == "sqlite":
-        knowledge = SQLiteKnowledgeStore(config.context_sqlite_path)
-        memory = SQLiteMemoryStore(config.context_sqlite_path)
+    postgres_runtime: PostgresRuntime | None = None
+    embedding_cache: PostgresEmbeddingCache | None = None
+    if config.database_backend == "postgres":
+        dsn = config.database_url or ""
+        try:
+            postgres_runtime = PostgresRuntime(
+                dsn,
+                min_size=config.postgres_pool_min_size,
+                max_size=config.postgres_pool_max_size,
+                connect_timeout_seconds=config.postgres_connect_timeout_seconds,
+            )
+        except PostgresDependencyError as exc:
+            raise PostgresBackendNotReadyError(
+                "PostgreSQL dependencies are unavailable; no SQLite fallback is permitted"
+            ) from exc
+        except Exception as exc:
+            raise PostgresBackendNotReadyError(
+                "PostgreSQL backend is unavailable; no SQLite fallback is permitted"
+            ) from exc
+        store = PostgresCheckpointStore(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        operations = PostgresOperationsStore(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        review_case_store = PostgresReviewCaseStore(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        orchestration_store = PostgresOrchestrationStore(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        verification_store = PostgresVerificationStore(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        context_stores = PostgresContextStores(
+            dsn,
+            min_size=config.postgres_pool_min_size,
+            max_size=config.postgres_pool_max_size,
+            connect_timeout=int(config.postgres_connect_timeout_seconds),
+            runtime=postgres_runtime,
+        )
+        knowledge = context_stores.knowledge
+        memory = context_stores.memory
+        embedding_cache = PostgresEmbeddingCache(
+            dsn,
+            tenant_id="local",
+            runtime=postgres_runtime,
+            tenant_resolver=current_request_tenant,
+        )
         knowledge.upsert_many(local_knowledge_chunks(workspace, tenant_id="local"))
     else:
-        knowledge = InMemoryKnowledgeStore(
-            local_knowledge_chunks(workspace, tenant_id="local")
-        )
-        memory = InMemoryMemoryStore()
+        store = SQLiteCheckpointStore(config.sqlite_path)
+        operations = OperationsStore(config.operations_sqlite_path)
+        review_case_store = SQLiteReviewCaseStore(config.review_case_sqlite_path)
+        orchestration_store = SQLiteOrchestrationStore(config.orchestration_sqlite_path)
+        verification_store = SQLiteVerificationStore(config.verification_sqlite_path)
+        if config.context_backend == "sqlite":
+            knowledge = SQLiteKnowledgeStore(config.context_sqlite_path)
+            memory = SQLiteMemoryStore(config.context_sqlite_path)
+            knowledge.upsert_many(local_knowledge_chunks(workspace, tenant_id="local"))
+        else:
+            knowledge = InMemoryKnowledgeStore(
+                local_knowledge_chunks(workspace, tenant_id="local")
+            )
+            memory = InMemoryMemoryStore()
+    for item in profiles.values():
+        if config.database_backend == "postgres":
+            store.save_profile(item, tenant_id="local")
+        else:
+            store.save_profile(item)
     retrieval_knowledge = (
         RoutedKnowledgeStore(
             knowledge,
             general_text_backend=config.general_text_backend,
             semantic_model=config.semantic_model,
-            semantic_cache_path=str(config.semantic_cache_path),
+            semantic_model_path=(
+                str(config.semantic_model_path)
+                if config.semantic_model_path is not None
+                else None
+            ),
+            semantic_cache_path=(
+                None
+                if config.database_backend == "postgres"
+                else str(config.semantic_cache_path)
+            ),
+            semantic_cache_store=embedding_cache,
+            fastembed_model_cache_root=str(config.fastembed_model_cache_root),
+            semantic_batch_size=config.semantic_batch_size,
+            semantic_device=config.semantic_device,
+            bailian_api_key=(
+                config.bailian_api_key.get_secret_value()
+                if config.bailian_api_key is not None
+                else None
+            ),
+            bailian_base_url=config.bailian_base_url,
+            bailian_model=config.bailian_model,
+            bailian_embedding_dimension=config.bailian_embedding_dimension,
+            bailian_batch_size=config.bailian_batch_size,
+            bailian_timeout_seconds=config.bailian_timeout_seconds,
+            bailian_max_retries=config.bailian_max_retries,
+            bailian_cache_path=(
+                None
+                if config.database_backend == "postgres"
+                else str(config.bailian_cache_path)
+            ),
+            bailian_cache_store=embedding_cache,
+            bailian_index_name=config.bailian_index_name,
         )
         if config.retrieval_routing == "profile"
         else knowledge
     )
     research_embedder = getattr(retrieval_knowledge, "_embedder", None)
+    research_multilingual_embedder = None
+    if config.research_multilingual_semantic_model is not None:
+        try:
+            research_multilingual_embedder = FastEmbedEmbedder(
+                config.research_multilingual_semantic_model,
+                cache_path=(
+                    None
+                    if config.database_backend == "postgres"
+                    else config.semantic_cache_path.parent
+                    / "multilingual-embeddings.sqlite3"
+                ),
+                cache_store=embedding_cache,
+                model_cache_dir=config.fastembed_model_cache_root,
+            )
+        except Exception:
+            research_multilingual_embedder = None
     research_reranker = (
         build_research_reranker(
             config.research_reranker_backend,
             config.research_reranker_model,
             device=config.research_reranker_device,
             batch_size=config.research_reranker_batch_size,
+            fastembed_cache_dir=config.fastembed_model_cache_root,
+            bailian_api_key=(
+                config.bailian_api_key.get_secret_value()
+                if config.bailian_api_key is not None
+                else None
+            ),
+            bailian_base_url=config.bailian_rerank_base_url,
+            bailian_timeout_seconds=config.bailian_rerank_timeout_seconds,
+            bailian_max_retries=config.bailian_rerank_max_retries,
         )
         if config.research_reranker_model is not None
         else None
+    )
+    research_multilingual_reranker = None
+    if config.research_multilingual_reranker_model is not None:
+        # The multilingual model is an opt-in accelerator.  A missing or
+        # partially downloaded checkpoint must degrade to the explicit
+        # multilingual_fallback route instead of preventing the app from
+        # starting; Dual then skips the English reranker and can fall back to
+        # Flat/RRF at query time.
+        try:
+            research_multilingual_reranker = build_research_reranker(
+                config.research_multilingual_reranker_backend,
+                config.research_multilingual_reranker_model,
+                device=config.research_reranker_device,
+                batch_size=config.research_reranker_batch_size,
+                fastembed_cache_dir=config.fastembed_model_cache_root,
+                bailian_api_key=(
+                    config.bailian_api_key.get_secret_value()
+                    if config.bailian_api_key is not None
+                    else None
+                ),
+                bailian_base_url=config.bailian_rerank_base_url,
+                bailian_timeout_seconds=config.bailian_rerank_timeout_seconds,
+                bailian_max_retries=config.bailian_rerank_max_retries,
+            )
+        except Exception:
+            research_multilingual_reranker = None
+    active_rag_profile = resolve_rag_experiment_profile(
+        config.rag_active_profile,
+        config.rag_optimized_ablation,
     )
     research_retrieval = ResearchRetrievalService(
         retrieval_knowledge,
         dense_embedder=research_embedder,
         reranker=research_reranker,
+        multilingual_dense_embedder=research_multilingual_embedder,
+        multilingual_reranker=research_multilingual_reranker,
         graph_enabled=config.research_graph_enabled,
         structure_fusion_enabled=config.research_structure_fusion_enabled,
         structure_section_weight=config.research_structure_section_weight,
         structure_query_coverage_weight=config.research_structure_query_coverage_weight,
         preserve_head_k=config.research_preserve_head_k,
         reranker_context_window=config.research_reranker_context_window,
+        contextual_child_rerank_enabled=(
+            config.research_contextual_child_rerank_enabled
+            and active_rag_profile.name == "optimized"
+        ),
+        contextual_child_neighbor_tokens=(
+            config.research_contextual_child_neighbor_tokens
+        ),
+        contextual_child_max_tokens=config.research_contextual_child_max_tokens,
         lexical_fusion_weight=config.research_lexical_fusion_weight,
+        parent_aware_rerank_enabled=(
+            active_rag_profile.parent_aware_rerank_enabled
+            and config.research_parent_aware_rerank_enabled
+        ),
+        parent_referential_guard_enabled=(
+            config.research_parent_referential_guard_enabled
+        ),
+        parent_aware_candidate_k=config.research_parent_aware_candidate_k,
+        parent_context_max_tokens=config.research_parent_context_max_tokens,
+        parent_include_document_title=config.research_parent_include_document_title,
+        parent_include_heading_path=config.research_parent_include_heading_path,
+        parent_include_neighbor_chunks=config.research_parent_include_neighbor_chunks,
+        parent_child_score_weight=config.research_parent_child_score_weight,
+        parent_context_score_weight=config.research_parent_context_score_weight,
+        parent_retrieval_score_weight=config.research_parent_retrieval_score_weight,
+        lineage_diversity_enabled=(
+            active_rag_profile.lineage_diversity_enabled
+            and config.research_lineage_diversity_enabled
+        ),
+        lineage_preferred_children_per_parent=(
+            config.research_lineage_preferred_children_per_parent
+        ),
+        lineage_parent_penalty=config.research_lineage_parent_penalty,
+        lineage_overlap_weight=config.research_lineage_overlap_weight,
         intent_section_fusion_enabled=config.research_intent_section_fusion_enabled,
         intent_section_fusion_weight=config.research_intent_section_fusion_weight,
         intent_query_overlap_weight=config.research_intent_query_overlap_weight,
         intent_rank_fusion_weight=config.research_intent_rank_fusion_weight,
+        operator_budget_standard=config.research_operator_budget_standard,
+        operator_budget_rigorous=config.research_operator_budget_rigorous,
+        dual_route_enabled=config.research_dual_route_enabled,
+        dual_route_flat_candidate_k=config.research_dual_route_flat_candidate_k,
+        dual_route_child_candidate_k=config.research_dual_route_child_candidate_k,
+        dual_route_flat_head_k=config.research_dual_route_flat_head_k,
+        dual_route_rerank_candidate_k=config.research_dual_route_rerank_candidate_k,
+        dual_route_tail_rerank_candidate_k=config.research_dual_route_tail_rerank_candidate_k,
+        dual_route_min_confidence=config.research_dual_route_min_confidence,
         feature_ranker=(
             SupervisedResearchRanker.from_model_dump(
                 json.loads(config.research_feature_ranker_path.read_text(encoding="utf-8"))["model"]
@@ -1205,12 +1452,28 @@ def create_app(
             if config.research_feature_ranker_path is not None
             else None
         ),
+        experiment_profile=active_rag_profile,
     )
-    literature_repository = SQLiteLiteratureRepository(config.literature_sqlite_path)
-    literature_cache = SQLiteProviderCache(
-        config.literature_cache_path,
-        ttl_seconds=config.literature_cache_ttl_seconds,
-    )
+    if config.database_backend == "postgres":
+        assert postgres_runtime is not None
+        literature_repository = PostgresLiteratureRepository(
+            config.database_url or "",
+            tenant_id="local",
+            runtime=postgres_runtime,
+        )
+        literature_cache = PostgresProviderCache(
+            config.database_url or "",
+            tenant_id="local",
+            ttl_seconds=config.literature_cache_ttl_seconds,
+            runtime=postgres_runtime,
+            tenant_resolver=current_request_tenant,
+        )
+    else:
+        literature_repository = SQLiteLiteratureRepository(config.literature_sqlite_path)
+        literature_cache = SQLiteProviderCache(
+            config.literature_cache_path,
+            ttl_seconds=config.literature_cache_ttl_seconds,
+        )
     provider_options: dict[str, Any] = {
         "cache": literature_cache,
         "timeout_seconds": config.literature_provider_timeout_seconds,
@@ -1277,10 +1540,20 @@ def create_app(
                 model=config.deepseek_model,
                 base_url=config.deepseek_base_url,
                 timeout_seconds=config.deepseek_timeout_seconds,
+                trust_env=config.deepseek_trust_env,
             )
             if config.provider == "deepseek"
             and config.deepseek_api_key is not None
             and config.deepseek_model is not None
+            else OpenAICompatibleQueryRewriter(
+                api_key=config.bailian_api_key.get_secret_value(),
+                model=config.bailian_chat_model,
+                base_url=config.bailian_base_url,
+                timeout_seconds=config.bailian_chat_timeout_seconds,
+                trust_env=config.bailian_chat_trust_env,
+            )
+            if config.provider == "bailian"
+            and config.bailian_api_key is not None
             else OpenAICompatibleQueryRewriter(
                 api_key=config.openai_api_key.get_secret_value(),
                 model=config.openai_model,
@@ -1293,15 +1566,108 @@ def create_app(
             else None
         ),
     )
+    native_pdf_parser = NativePDFParser()
+    mineru_pdf_parser = (
+        MinerUClient(
+            config.mineru_base_url,
+            config.mineru_cache_root
+            or artifacts / "pdf-parsing" / "mineru-cache",
+            backend=config.mineru_backend,
+            parse_method=config.mineru_parse_method,
+            effort=config.mineru_effort,
+            expected_version=config.mineru_expected_version,
+            timeout_seconds=config.mineru_timeout_seconds,
+            max_retries=config.mineru_max_retries,
+            concurrency=config.mineru_concurrency,
+        )
+        if config.mineru_base_url is not None
+        else None
+    )
+    pdf_parser_router = PDFParserRouter(
+        native_pdf_parser,
+        mineru_pdf_parser,
+        backend=config.pdf_parser_backend,
+    )
+    visual_evidence_extractor = (
+        OpenAICompatibleVisualEvidenceExtractor(
+            api_key=config.visual_extractor_api_key.get_secret_value(),
+            model=config.visual_extractor_model,
+            base_url=config.visual_extractor_base_url,
+            cache_root=artifacts / "pdf-parsing" / "visual-cache",
+            artifact_root=config.mineru_cache_root
+            or artifacts / "pdf-parsing" / "mineru-cache",
+            timeout_seconds=config.visual_extractor_timeout_seconds,
+            concurrency=config.visual_extractor_concurrency,
+        )
+        if config.visual_extractor_base_url is not None
+        and config.visual_extractor_api_key is not None
+        and config.visual_extractor_model is not None
+        else None
+    )
     paper_ingestion = PaperIngestionService(
         literature_repository,
         knowledge,
         artifacts,
+        parser_router=pdf_parser_router,
+        parent_target_tokens=config.pdf_parent_target_tokens,
+        parent_max_tokens=config.pdf_parent_max_tokens,
+        child_target_tokens=config.pdf_child_target_tokens,
+        child_max_tokens=config.pdf_child_max_tokens,
+        child_overlap_tokens=config.pdf_child_overlap_tokens,
+        visual_evidence_extractor=visual_evidence_extractor,
+        embedding_prewarmer=(
+            research_embedder
+            if config.general_text_backend == "bailian"
+            else None
+        ),
+        chunking_mode=config.pdf_chunking_mode,
+        flat_chunk_chars=config.pdf_flat_chunk_chars,
+        flat_overlap_chars=config.pdf_flat_overlap_chars,
+        experiment_profile=active_rag_profile,
     )
     scope_evidence = ScopeBoundEvidenceService(
         literature_repository,
         research_retrieval,
-        rewrite_enabled=config.research_rewrite_enabled,
+        experiment_profile=active_rag_profile,
+        query_expander=(
+            RuleEvidenceQueryExpander()
+            if config.research_query_expansion_mode == "keyword"
+            else OpenAICompatibleEvidenceQueryExpander(
+                api_key=config.deepseek_api_key.get_secret_value(),
+                model=config.deepseek_model,
+                base_url=config.deepseek_base_url,
+                timeout_seconds=config.deepseek_timeout_seconds,
+                trust_env=config.deepseek_trust_env,
+            )
+            if config.provider == "deepseek"
+            and config.deepseek_api_key is not None
+            and config.deepseek_model is not None
+            else OpenAICompatibleEvidenceQueryExpander(
+                api_key=config.bailian_api_key.get_secret_value(),
+                model=config.bailian_chat_model,
+                base_url=config.bailian_base_url,
+                timeout_seconds=config.bailian_chat_timeout_seconds,
+                trust_env=config.bailian_chat_trust_env,
+            )
+            if config.provider == "bailian"
+            and config.bailian_api_key is not None
+            else OpenAICompatibleEvidenceQueryExpander(
+                api_key=config.openai_api_key.get_secret_value(),
+                model=config.openai_model,
+                base_url=config.openai_base_url,
+                timeout_seconds=config.openai_timeout_seconds,
+            )
+            if config.provider == "openai"
+            and config.openai_api_key is not None
+            and config.openai_model is not None
+            else None
+        ),
+        query_expansion_mode=(
+            "full"
+            if config.research_rewrite_enabled
+            and config.research_query_expansion_mode == "original"
+            else config.research_query_expansion_mode
+        ),
     )
     registry = create_tool_registry(
         workspace_root=workspace,
@@ -1370,14 +1736,21 @@ def create_app(
                         name for name in mounted_names if name not in profile.allowed_tools
                     )
                     if profile_id in profiles:
-                        store.save_profile(profile)
+                        if config.database_backend == "postgres":
+                            store.save_profile(profile, tenant_id="local")
+                        else:
+                            store.save_profile(profile)
                 container.mcp_status[index] = container.mcp_status[index].model_copy(
                     update={"mounted_tools": mounted_names}
                 )
             yield
         finally:
             await literature_discovery.aclose()
+            await scope_evidence.aclose()
             await paper_ingestion.aclose()
+            close_embedder = getattr(research_embedder, "close", None)
+            if callable(close_embedder):
+                close_embedder()
             for client in reversed(mcp_clients):
                 await client.aclose()
             for context_store in (knowledge, memory):
@@ -1389,6 +1762,8 @@ def create_app(
                 result = close()
                 if inspect.isawaitable(result):
                     await result
+            if postgres_runtime is not None:
+                postgres_runtime.close()
 
     api = FastAPI(
         title="TaskForge",
@@ -1912,7 +2287,7 @@ def create_app(
         body: EvidenceSearchRequest,
         principal: Annotated[Principal, Depends(_principal)],
     ) -> ScopeEvidenceResult:
-        return container.scope_evidence.search(
+        return await container.scope_evidence.search(
             literature_access(principal),
             body,
         )
@@ -1927,10 +2302,10 @@ def create_app(
         version: Annotated[int | None, Query(ge=1)] = None,
         paper_id: Annotated[str | None, Query(max_length=240)] = None,
     ) -> list[EvidenceCard]:
-        return container.literature_repository.list_evidence(
+        return container.scope_evidence.list_evidence(
             literature_access(principal),
             scope_id,
-            version=version,
+            scope_version=version,
             paper_id=paper_id,
         )
 
@@ -1974,10 +2349,10 @@ def create_app(
         scope = container.literature_repository.get_scope(access, scope_id)
         evidence_by_id = {
             card.evidence_id: card
-            for card in container.literature_repository.list_evidence(
+            for card in container.scope_evidence.list_evidence(
                 access,
                 scope.scope_id,
-                version=scope.scope_version,
+                scope_version=scope.scope_version,
             )
         }
         container.literature_repository.save_claims(
@@ -2360,8 +2735,12 @@ def create_app(
             success_criteria=list(body.success_criteria),
             metadata=task_metadata,
         )
-        store.save_task(task)
-        store.save_profile(profile)
+        if config.database_backend == "postgres":
+            store.save_task(task, tenant_id=principal.tenant_id)
+            store.save_profile(profile, tenant_id=principal.tenant_id)
+        else:
+            store.save_task(task)
+            store.save_profile(profile)
         if body.execution_mode == "queued":
             run = RunState(
                 task_id=task.id,
@@ -2369,7 +2748,10 @@ def create_app(
                 status=RunStatus.PENDING,
                 step_budget=profile.max_steps,
             )
-            store.save(run)
+            if config.database_backend == "postgres":
+                store.save(run, tenant_id=principal.tenant_id)
+            else:
+                store.save(run)
             operations.enqueue(
                 run.run_id,
                 task.tenant_id,
@@ -2402,8 +2784,12 @@ def create_app(
 
     def load_owned(run_id: str, principal: Principal) -> tuple[RunState, Task]:
         try:
-            run = store.load(run_id)
-            task = store.load_task(run.task_id)
+            if config.database_backend == "postgres":
+                run = store.load(run_id, tenant_id=principal.tenant_id)
+                task = store.load_task(run.task_id, tenant_id=principal.tenant_id)
+            else:
+                run = store.load(run_id)
+                task = store.load_task(run.task_id)
         except CheckpointNotFoundError as exc:
             raise HTTPException(status_code=404, detail="Run not found") from exc
         if task.tenant_id != principal.tenant_id or task.user_id != principal.user_id:
@@ -2478,7 +2864,13 @@ def create_app(
             if body.call_id != run.pending_approval.request.call_id:
                 raise HTTPException(status_code=409, detail="Approval call_id does not match")
             try:
-                profile = store.load_profile(run.agent_profile_id)
+                if config.database_backend == "postgres":
+                    profile = store.load_profile(
+                        run.agent_profile_id,
+                        tenant_id=principal.tenant_id,
+                    )
+                else:
+                    profile = store.load_profile(run.agent_profile_id)
             except CheckpointNotFoundError as exc:
                 raise HTTPException(status_code=409, detail="Persisted Agent profile not found") from exc
             try:
@@ -2509,7 +2901,4 @@ def create_app(
     return api
 
 
-app = create_app()
-
-
-__all__ = ["app", "create_app"]
+__all__ = ["create_app"]

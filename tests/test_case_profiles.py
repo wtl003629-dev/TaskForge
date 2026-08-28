@@ -98,6 +98,7 @@ def test_paper_protocol_scopes_retrieval_to_evaluator() -> None:
     assert "paper_search" in by_role["source_evaluator"].allowed_tools
     assert "paper_search" not in by_role["synthesis_writer"].allowed_tools
     assert "paper_search" not in by_role["critical_reviewer"].allowed_tools
+    assert by_role["synthesis_writer"].max_steps == 3
     assert all(
         profile.metadata["research_protocol"] == "paper"
         for profile in profiles

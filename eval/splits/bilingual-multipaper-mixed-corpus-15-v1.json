@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "split_id": "bilingual-multipaper-mixed-corpus-15-v1-v1",
+  "dataset": "NeuCLIRTech/CSL and ScholarQABench QASA",
+  "source_sha256": {
+    "neuclir_eng": "68c6f621070c006c59e17737a0da9fad8560c333ea71470011a807dd2aebde7a",
+    "neuclir_zho": "4bf9ac87343ab7e8618879d6ecd4f699f81d03f0691cd8392057c952337e0941",
+    "neuclir_qrels": "33537f361f7b00f9489768ebed813db93f0860c1ee106d3a2af1b43a651095d4",
+    "csl_corpus": "749c758e11b7e4d14f3e0d0a1e2cde4ac876fb155e8cdb8f72d2861398b0814e",
+    "qasa": "9ce5780e27333d62df6a6d171875a3608456a984f092ebfa3ddd30127e3a8a3b"
+  },
+  "synthetic_pdf_layout": "compact_scientific_paper_v1",
+  "case_ids": [
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:757e661938604de51607e852295bae8e6f025ac8",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:39a7075a16293acc2b90673bc6ff9be038c5ea20",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:8ebb8493df2164f6b5a625d4fa44c37e6047d2b4",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:45ffa63f15ada5f53a1b6101e47038e1a2de0411",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:f79cca80a71c8aa0044f729edc04f6752bfc5604",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:d50ea735d3fdbbb762719f073bb5decee52934e1",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:a1a841a07d049fa048ac8d09a4074d84db7c8864",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:50e9e6492ac3ba17e3a806e35e12058891203e25",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:2d0e88f99958bfb3573967b7a6fcbb9769fcc83d",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:a341b53703d9494f9b685ab4257b3458c4560273",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:25b1eb4be232fe49cc94e51cea109fcda78557ce",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:540730a2c60ff8843381bd5bb110909f5dada5d7",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:35c5b5f2fcc4e877f88a1dad66f36af0781683d7",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:c592e99325796212f1e7d50ba4b43b232233d5f9",
+    "qasper:multilingual-bilingual-multipaper-mixed-corpus-15-v1:517779a7d5cdaaae21a1a6ac3dc53d7314aa458c"
+  ],
+  "scenario": {
+    "query_language": "Chinese and English",
+    "corpus_language": "Chinese and English",
+    "multi_paper": true,
+    "candidate_paper_sections": 55
+  },
+  "metric_interpretation": "NeuCLIR relevance documents are encoded as alternative legal Gold annotations, so Recall@K is any-relevant Success@K rather than the official graded NeuCLIR nDCG@20. QASA cases retain strict Gold paragraph coverage semantics.",
+  "report_metadata": {
+    "evaluation_type": "multilingual_multi_paper_pdf_upload_retrieval",
+    "benchmark_track": "bilingual-multipaper-mixed-corpus-15-v1",
+    "dataset": "Frozen bilingual-multipaper-mixed-corpus-15-v1 scientific-paper retrieval scenario",
+    "license": "NeuCLIRTech CC BY 4.0; CSL Apache 2.0; ScholarQABench aggregate ODC-BY",
+    "synthetic_layout_limitation": "Queries and relevance labels come from public benchmarks, while the multi-paper PDF layout is generated locally for controlled text retrieval and is not an original-PDF parser benchmark."
+  }
+}

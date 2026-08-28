@@ -38,7 +38,13 @@ def test_bge_adapter_fails_explicitly_when_extra_is_missing(
 
 def test_fastembed_ensemble_normalizes_each_model(monkeypatch: pytest.MonkeyPatch) -> None:
     class _FakeFastEmbed:
-        def __init__(self, model_name: str, *, batch_size: int) -> None:
+        def __init__(
+            self,
+            model_name: str,
+            *,
+            cache_dir: str | None = None,
+            batch_size: int,
+        ) -> None:
             self.model_name = model_name
 
         def score(self, query, documents):

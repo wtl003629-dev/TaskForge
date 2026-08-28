@@ -1,0 +1,2 @@
+{"answer": "CI-SSD算法的准确率达到了87.8%,较SSD算法提高了3.6%。", "flags": ["evidence_quote_derived"], "paper_id": "jos:5695", "query_id": "zhpaper-rag30:jos:5695:q2", "question": "在实验中,CI-SSD算法在无人机数据集上的mAP是多少?与SSD算法相比提高了多少?", "question_type": "result", "title": "改进的SSD航拍目标检测方法"}
+{"answer": "CVMEL模型在R@1、R@5、R@10和MRR@10上的数值分别为57.7、82.3、87.7和67.7。", "flags": ["evidence_quote_derived"], "paper_id": "jos:7078", "query_id": "zhpaper-rag30:jos:7078:q2", "question": "在VMEL数据集上,CVMEL模型在R@1、R@5、R@10和MRR@10指标上的具体数值是多少?", "question_type": "result", "title": "面向视频的细粒度多模态实体链接"}

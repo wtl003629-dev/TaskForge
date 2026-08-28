@@ -553,14 +553,14 @@ def create_tool_registry(
             )
             return scope.model_dump(mode="json")
 
-        def paper_search(
+        async def paper_search(
             arguments: dict[str, Any],
             task: Task,
             profile: AgentProfile,
             _state: RunState,
         ) -> dict[str, Any]:
             scope_id, scope_version = bound_scope(arguments, task)
-            result = research_service.search(
+            result = await research_service.search(
                 research_access(task),
                 EvidenceSearchRequest.model_validate(
                     {**arguments, "scope_id": scope_id, "scope_version": scope_version}
@@ -576,7 +576,7 @@ def create_tool_registry(
                     update={
                         "title": card.title[:240] if card.title else None,
                         "section": card.section[:200] if card.section else None,
-                        "snippet": card.snippet[:320],
+                        "snippet": card.snippet[:2_600],
                         "retrieval_sources": list(card.retrieval_sources[:4]),
                         "supported_requirements": list(
                             card.supported_requirements[:4]
@@ -712,7 +712,7 @@ def create_tool_registry(
                 strict=False,
                 # Search returns bounded evidence cards.  Full passages are
                 # available only through paper_read(evidence_id).
-                max_output_chars=14_000,
+                max_output_chars=32_000,
             ),
             paper_search,
         )

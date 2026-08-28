@@ -26,8 +26,9 @@ from .hybrid_retrieval import (
 )
 from .knowledge import AccessContext, KnowledgeChunk, KnowledgeHit, lexical_match
 from .rag_profiles import knowledge_corpus_metadata, select_retrieval_profile
+from .semantic_providers import BailianDenseEmbedder, BgeM3DenseEmbedder
 
-GeneralTextBackend = Literal["bm25", "fastembed"]
+GeneralTextBackend = Literal["bm25", "fastembed", "flagembedding", "bailian"]
 
 
 @runtime_checkable
@@ -49,6 +50,18 @@ class AuthoritativeKnowledgeStore(Protocol):
         *,
         now: datetime | None = None,
     ) -> KnowledgeChunk | None: ...
+
+
+class _PostgresDenseIndex:
+    """Adapter preserving the hybrid backend port for exact pgvector search."""
+
+    def __init__(self, search: Any, chunks: Sequence[HybridChunk], embedder: Any) -> None:
+        self._search = search
+        self._chunks = tuple(chunks)
+        self._embedder = embedder
+
+    def search(self, request: HybridSearchRequest) -> Any:
+        return self._search(self._chunks, request, self._embedder)
 
 
 def _flatten_strings(value: object) -> list[str]:
@@ -128,7 +141,22 @@ class RoutedKnowledgeStore:
         *,
         general_text_backend: GeneralTextBackend = "bm25",
         semantic_model: str = "BAAI/bge-small-en-v1.5",
+        semantic_model_path: str | None = None,
         semantic_cache_path: str | None = None,
+        fastembed_model_cache_root: str | None = None,
+        semantic_batch_size: int = 64,
+        semantic_device: Literal["auto", "cpu", "cuda"] = "auto",
+        semantic_cache_store: Any | None = None,
+        bailian_api_key: str | None = None,
+        bailian_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        bailian_model: str = "text-embedding-v4",
+        bailian_embedding_dimension: int = 1_024,
+        bailian_batch_size: int = 10,
+        bailian_timeout_seconds: float = 30.0,
+        bailian_max_retries: int = 3,
+        bailian_cache_path: str | None = None,
+        bailian_cache_store: Any | None = None,
+        bailian_index_name: str = "knowledge-bailian-text-embedding-v4-1024-v1",
         candidate_multiplier: int = 5,
     ) -> None:
         if not isinstance(authoritative_store, AuthoritativeKnowledgeStore):
@@ -140,11 +168,39 @@ class RoutedKnowledgeStore:
         self.candidate_multiplier = int(candidate_multiplier)
         # This is explicit host configuration. Missing semantic dependencies or
         # model artifacts fail startup instead of silently changing retrieval.
-        self._embedder = (
-            FastEmbedEmbedder(semantic_model, cache_path=semantic_cache_path)
-            if general_text_backend == "fastembed"
-            else None
-        )
+        if general_text_backend == "fastembed":
+            self._embedder = FastEmbedEmbedder(
+                semantic_model,
+                cache_path=semantic_cache_path,
+                cache_store=semantic_cache_store,
+                model_cache_dir=fastembed_model_cache_root,
+                batch_size=semantic_batch_size,
+            )
+        elif general_text_backend == "flagembedding":
+            self._embedder = BgeM3DenseEmbedder(
+                model_name=semantic_model,
+                model_path=semantic_model_path,
+                cache_path=semantic_cache_path,
+                cache_store=semantic_cache_store,
+                cache_dir=fastembed_model_cache_root,
+                batch_size=min(semantic_batch_size, 256),
+                device=semantic_device,
+            )
+        elif general_text_backend == "bailian":
+            self._embedder = BailianDenseEmbedder(
+                api_key=bailian_api_key or "",
+                base_url=bailian_base_url,
+                model_name=bailian_model,
+                dimension=bailian_embedding_dimension,
+                batch_size=bailian_batch_size,
+                timeout_seconds=bailian_timeout_seconds,
+                max_retries=bailian_max_retries,
+                cache_path=bailian_cache_path,
+                cache_store=bailian_cache_store,
+                index_name=bailian_index_name,
+            )
+        else:
+            self._embedder = None
 
     def get(
         self,
@@ -231,8 +287,26 @@ class RoutedKnowledgeStore:
             backend_name = "structure_aware_pdf_bm25_neighbor"
             neighbor_window = 1
         elif self._embedder is not None:
-            backend = InMemoryDenseIndex(indexed, self._embedder)
-            backend_name = f"fastembed_dense:{self._embedder.model_name}"
+            postgres_search = getattr(self.authoritative_store, "search_dense", None)
+            if self.general_text_backend == "bailian" and callable(postgres_search):
+                backend = _PostgresDenseIndex(
+                    postgres_search,
+                    indexed,
+                    self._embedder,
+                )
+            else:
+                backend = InMemoryDenseIndex(
+                    indexed,
+                    self._embedder,
+                    collection_name=getattr(
+                        self._embedder,
+                        "index_name",
+                        "knowledge-dense-v1",
+                    ),
+                )
+            backend_name = (
+                f"{self.general_text_backend}_dense:{self._embedder.model_name}"
+            )
         else:
             backend = baseline
             backend_name = "bm25_general_text"

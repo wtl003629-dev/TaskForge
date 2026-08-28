@@ -68,7 +68,8 @@ class SQLiteCheckpointStore:
                 """
             )
 
-    def save_task(self, task: Task) -> None:
+    def save_task(self, task: Task, *, tenant_id: str | None = None) -> None:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         payload = task.model_dump_json()
         with self._connect() as connection:
             connection.execute(
@@ -80,7 +81,8 @@ class SQLiteCheckpointStore:
                 (task.id, payload, task.created_at.isoformat()),
             )
 
-    def save_profile(self, profile: AgentProfile) -> None:
+    def save_profile(self, profile: AgentProfile, *, tenant_id: str | None = None) -> None:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         payload = profile.model_dump_json()
         with self._connect() as connection:
             connection.execute(
@@ -94,7 +96,7 @@ class SQLiteCheckpointStore:
                 (profile.id, payload),
             )
 
-    def save(self, state: RunState) -> int:
+    def save(self, state: RunState, *, tenant_id: str | None = None) -> int:
         """Atomically persist a snapshot and return its new version number."""
 
         payload = state.model_dump_json()
@@ -129,15 +131,23 @@ class SQLiteCheckpointStore:
                 raise ValueError("run_id already belongs to another task or profile")
             return int(row["version"])
 
-    def load(self, run_id: str) -> RunState:
+    def load(self, run_id: str, *, tenant_id: str | None = None) -> RunState:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         row = self._one("SELECT state_json FROM runs WHERE run_id = ?", run_id, "run")
         return self._validate(RunState, row["state_json"], f"run {run_id}")
 
-    def load_task(self, task_id: str) -> Task:
+    def load_task(self, task_id: str, *, tenant_id: str | None = None) -> Task:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         row = self._one("SELECT task_json FROM tasks WHERE task_id = ?", task_id, "task")
         return self._validate(Task, row["task_json"], f"task {task_id}")
 
-    def load_profile(self, profile_id: str) -> AgentProfile:
+    def load_profile(
+        self,
+        profile_id: str,
+        *,
+        tenant_id: str | None = None,
+    ) -> AgentProfile:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         row = self._one(
             "SELECT profile_json FROM profiles WHERE profile_id = ?",
             profile_id,
@@ -145,7 +155,8 @@ class SQLiteCheckpointStore:
         )
         return self._validate(AgentProfile, row["profile_json"], f"profile {profile_id}")
 
-    def version(self, run_id: str) -> int:
+    def version(self, run_id: str, *, tenant_id: str | None = None) -> int:
+        del tenant_id  # SQLite compatibility backend is single-tenant.
         row = self._one("SELECT version FROM runs WHERE run_id = ?", run_id, "run")
         return int(row["version"])
 

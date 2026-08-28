@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${TASKFORGE_POSTGRES_TASKFORGE_PASSWORD:?TASKFORGE_POSTGRES_TASKFORGE_PASSWORD is required when the postgres profile is enabled}"
+: "${TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD:?TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD is required when the postgres profile is enabled}"
+
+psql -v ON_ERROR_STOP=1 \
+  --username "$POSTGRES_USER" \
+  --dbname postgres \
+  --set=taskforge_password="$TASKFORGE_POSTGRES_TASKFORGE_PASSWORD" \
+  --set=patchpilot_password="$TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD" <<'EOSQL'
+CREATE ROLE taskforge_app LOGIN PASSWORD :'taskforge_password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+CREATE ROLE patchpilot_app LOGIN PASSWORD :'patchpilot_password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+
+CREATE DATABASE patchpilot OWNER migration_admin;
+
+REVOKE CONNECT ON DATABASE taskforge FROM PUBLIC;
+REVOKE CONNECT ON DATABASE patchpilot FROM PUBLIC;
+GRANT CONNECT ON DATABASE taskforge TO taskforge_app;
+GRANT CONNECT ON DATABASE patchpilot TO patchpilot_app;
+REVOKE CONNECT ON DATABASE patchpilot FROM taskforge_app;
+REVOKE CONNECT ON DATABASE taskforge FROM patchpilot_app;
+
+ALTER DATABASE taskforge SET timezone TO 'UTC';
+ALTER DATABASE patchpilot SET timezone TO 'UTC';
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname taskforge <<'EOSQL'
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+CREATE SCHEMA IF NOT EXISTS taskforge AUTHORIZATION migration_admin;
+REVOKE ALL ON SCHEMA taskforge FROM PUBLIC;
+GRANT USAGE ON SCHEMA taskforge TO taskforge_app;
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname patchpilot <<'EOSQL'
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+CREATE SCHEMA IF NOT EXISTS patchpilot AUTHORIZATION migration_admin;
+REVOKE ALL ON SCHEMA patchpilot FROM PUBLIC;
+GRANT USAGE ON SCHEMA patchpilot TO patchpilot_app;
+EOSQL

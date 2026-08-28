@@ -1,4 +1,4 @@
-"""Run TaskForge's durable SQLite queue worker."""
+"""Run TaskForge's configured durable PostgreSQL/SQLite queue worker."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from taskforge.app import app
+from taskforge.app import create_app
 from taskforge.worker import DurableWorker
 
 
@@ -39,6 +39,7 @@ async def run() -> int:
     if args.poll_seconds <= 0:
         raise ValueError("--poll-seconds must be positive")
 
+    app = create_app()
     async with app.router.lifespan_context(app):
         container = app.state.container
         worker = DurableWorker(

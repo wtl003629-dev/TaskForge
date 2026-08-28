@@ -115,7 +115,7 @@ _TOOLS: tuple[dict[str, Any], ...] = (
                 "scope_version": _SCOPE_VERSION,
                 "query": {"type": "string", "minLength": 1, "maxLength": 4_000},
                 "intent": {"type": "string", "enum": _INTENTS, "default": "general_fact"},
-                "top_k": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10},
+                "top_k": {"type": "integer", "minimum": 1, "maximum": 50, "default": 8},
                 "candidate_k": {"type": "integer", "minimum": 10, "maximum": 100, "default": 50},
                 "mode": {"type": "string", "enum": ["standard", "rigorous"], "default": "standard"},
             },
@@ -298,7 +298,7 @@ class ResearchMCPServer:
                 version=(int(values["scope_version"]) if values.get("scope_version") else None),
             )
         if name == "paper_search":
-            return self.service.search(
+            return await self.service.search(
                 self.principal,
                 EvidenceSearchRequest.model_validate(values),
             )

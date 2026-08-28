@@ -1,0 +1,715 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-08-13T14:34:43.391159+00:00",
+  "dataset": ".taskforge\\eval-cache\\qasper-dev-v0.3.json",
+  "dataset_sha256": "2ae7ee62a65b1c4225791c70de80c2aad4e8998cf1fd4f09a53103db4f21af93",
+  "split": "eval\\splits\\qasper-dev-clean-holdout-100-v2.json",
+  "split_sha256": "b7c0140cc317c9e04952f2ce420d14546d295187a407f343bb898f7e040c0f14",
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
+    "temperature": 0
+  },
+  "variants": [
+    {
+      "case_id": "qasper:1806.05513:dea9e7fe8e47da5e7f31d9b1a46ebe34e731a596",
+      "query": "What type of system does the baseline classification use?",
+      "intent": "experimental_setup",
+      "synonym_query": "Which kind of system is utilized by the baseline classification approach?",
+      "keyword_query": "baseline classification system type"
+    },
+    {
+      "case_id": "qasper:1806.05513:955cbea7e5ead36fb89cd6229a97ccb3febcf8bc",
+      "query": "What experiments were carried out on the corpus?",
+      "intent": "experimental_setup",
+      "synonym_query": "Which experiments were performed on the corpus?",
+      "keyword_query": "corpus experiments experimental evaluation"
+    },
+    {
+      "case_id": "qasper:1806.05513:04d1b3b41fb62a7b896afe55e0e8bc5ffb8c6e39",
+      "query": "How many annotators tagged each text?",
+      "intent": "general_fact",
+      "synonym_query": "What was the total count of annotators that tagged every text?",
+      "keyword_query": "annotators per text tagging count number of labelers annotation"
+    },
+    {
+      "case_id": "qasper:1806.05513:15cdd9ea4bae8891c1652da2ed34c87bbbd0edb8",
+      "query": "Where did the texts in the corpus come from?",
+      "intent": "general_fact",
+      "synonym_query": "What is the origin of the texts in the corpus?",
+      "keyword_query": "corpus texts origin source provenance"
+    },
+    {
+      "case_id": "qasper:1910.12795:3415762847ed13acc3c90de60e3ef42612bc49af",
+      "query": "How much is classification performance improved in experiments for low data regime and class-imbalance problems?",
+      "intent": "experimental_setup",
+      "synonym_query": "To what extent does classification performance improve in experimental evaluations under conditions of low data availability and imbalanced class distributions?",
+      "keyword_query": "classification performance improvement experiments low data regime class-imbalance problems accuracy gain data scarcity imbalanced classes experimental evaluation"
+    },
+    {
+      "case_id": "qasper:1910.12795:223dc2b9ea34addc0f502003c2e1c1141f6b36a7",
+      "query": "What off-the-shelf reward learning algorithm from RL for joint data manipulation learning and model training is adapted?",
+      "intent": "method_definition",
+      "synonym_query": "Which off-the-shelf reward learning algorithm in RL is used for simultaneous data manipulation learning and model training?",
+      "keyword_query": "off-the-shelf reward learning algorithm from RL reinforcement learning joint data manipulation learning model training adapted"
+    },
+    {
+      "case_id": "qasper:1910.08293:808f0ad46ca4eb4ea5492f9e14ca043fe1e206cc",
+      "query": "How many different characters were in dataset?",
+      "intent": "general_fact",
+      "synonym_query": "What was the total number of unique characters in the dataset?",
+      "keyword_query": "count distinct characters dataset"
+    },
+    {
+      "case_id": "qasper:1910.08293:36ae003c7cb2a1bbfa90b89c671bc286bd3b3dfd",
+      "query": "How does dataset model character's profiles?",
+      "intent": "general_fact",
+      "synonym_query": "How does a dataset model character profiles?",
+      "keyword_query": "dataset character profiles modeling"
+    },
+    {
+      "case_id": "qasper:1910.08293:f0b1d8c0a44dbe8d444a5dbe2d9c3d51e048a6f6",
+      "query": "How big is the difference in performance between proposed model and baselines?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "How large is the performance difference between the proposed model and the baselines?",
+      "keyword_query": "performance difference between proposed model and baselines performance gap baseline comparison"
+    },
+    {
+      "case_id": "qasper:1910.08293:357eb9f0c07fa45e482d998a8268bd737beb827f",
+      "query": "What baseline models are used?",
+      "intent": "experimental_setup",
+      "synonym_query": "What baseline approaches are employed?",
+      "keyword_query": "baseline models baselines reference methods used"
+    },
+    {
+      "case_id": "qasper:1912.01852:d6e353e0231d09fd5dcba493544d53706f3fe1ab",
+      "query": "How is the quality of singing voice measured?",
+      "intent": "general_fact",
+      "synonym_query": "What techniques are used to evaluate the quality of a singing voice?",
+      "keyword_query": "singing voice quality measurement assessment evaluation vocal acoustic"
+    },
+    {
+      "case_id": "qasper:1910.14076:a712718e6596ba946f29a99838d82f95b9ebb1ce",
+      "query": "How big are improvements of small-scale unbalanced datasets when sentence representation is enhanced with topic information?",
+      "intent": "general_fact",
+      "synonym_query": "What is the magnitude of performance gains for small-scale imbalanced datasets when sentence embeddings are augmented with topical features?",
+      "keyword_query": "improvements small-scale unbalanced datasets sentence representation enhanced topic information magnitude imbalanced data sentence embedding topic augmentation"
+    },
+    {
+      "case_id": "qasper:1910.14076:3116453e35352a3a90ee5b12246dc7f2e60cfc59",
+      "query": "To what baseline models is proposed model compared?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "Which baseline models does the proposed model compare against?",
+      "keyword_query": "baseline models proposed model comparison compare evaluation"
+    },
+    {
+      "case_id": "qasper:1910.14076:dfca00be3284cc555a6a4eac4831471fb1f5875b",
+      "query": "How big is dataset for testing?",
+      "intent": "general_fact",
+      "synonym_query": "What is the scale of the dataset used for testing?",
+      "keyword_query": "dataset size testing dataset number of samples"
+    },
+    {
+      "case_id": "qasper:1910.14076:a9a532399237b514c1227f2d6be8601474e669be",
+      "query": "What existing dataset is re-examined and corrected for training?",
+      "intent": "general_fact",
+      "synonym_query": "Which already existing dataset is re-analyzed and rectified for training?",
+      "keyword_query": "existing dataset re-examined corrected training data revision"
+    },
+    {
+      "case_id": "qasper:1708.06185:e48e750743aef36529fbea4328b8253dbe928b4d",
+      "query": "what dataset was used?",
+      "intent": "general_fact",
+      "synonym_query": "Which dataset was utilized?",
+      "keyword_query": "dataset used OR dataset employed OR dataset utilized"
+    },
+    {
+      "case_id": "qasper:1708.06185:c08aab979dcdc8f4fe8ec1337c3c8290ab13414e",
+      "query": "how many total combined features were there?",
+      "intent": "general_fact",
+      "synonym_query": "What was the total number of all features combined?",
+      "keyword_query": "total combined features count number"
+    },
+    {
+      "case_id": "qasper:1708.06185:8756b7b9ff5e87e4efdf6c2f73a0512f05b5ae3f",
+      "query": "what pretrained word embeddings were used?",
+      "intent": "general_fact",
+      "synonym_query": "Which pretrained word embeddings were employed?",
+      "keyword_query": "pretrained word embeddings pre-trained word vectors used employed"
+    },
+    {
+      "case_id": "qasper:1801.06482:5c6fa86757410aee6f5a0762328637de03a569e9",
+      "query": "What were their performance results?",
+      "intent": "general_fact",
+      "synonym_query": "What were their performance outcomes?",
+      "keyword_query": "performance results"
+    },
+    {
+      "case_id": "qasper:1801.06482:7e38e0279a620d3df05ab9b5e2795044f18d4471",
+      "query": "What cyberbulling topics did they address?",
+      "intent": "general_fact",
+      "synonym_query": "Which cyberbulling topics did they discuss?",
+      "keyword_query": "cyberbulling cyberbullying topics addressed covered discussed"
+    },
+    {
+      "case_id": "qasper:1712.05999:907b3af3cfaf68fe188de9467ed1260e52ec6cf1",
+      "query": "What were their distribution results?",
+      "intent": "general_fact",
+      "synonym_query": "What were their distribution outcomes?",
+      "keyword_query": "distribution results OR distribution outcomes OR distribution findings"
+    },
+    {
+      "case_id": "qasper:1712.05999:56a8826cbee49560592b2d4b47b18ada236a12b9",
+      "query": "How did they determine fake news tweets?",
+      "intent": "general_fact",
+      "synonym_query": "How were fake news tweets detected?",
+      "keyword_query": "fake news tweets detection method identify determine"
+    },
+    {
+      "case_id": "qasper:1712.05999:968b7c3553a668ba88da105eff067d57f393c63f",
+      "query": "What is their definition of tweets going viral?",
+      "intent": "general_fact",
+      "synonym_query": "What do they mean by tweets going viral?",
+      "keyword_query": "tweets going viral definition criteria"
+    },
+    {
+      "case_id": "qasper:1712.05999:f03df5d99b753dc4833ef27b32bb95ba53d790ee",
+      "query": "What are the characteristics of the accounts that spread fake news?",
+      "intent": "general_fact",
+      "synonym_query": "What features do the accounts that disseminate fake news possess?",
+      "keyword_query": "characteristics accounts spread fake news misinformation traits profiles propagation"
+    },
+    {
+      "case_id": "qasper:1712.05999:a8f51b4e334a917702422782329d97304a2fe139",
+      "query": "What is the threshold for determining that a tweet has gone viral?",
+      "intent": "general_fact",
+      "synonym_query": "What is the cutoff for a tweet to be considered to have gone viral?",
+      "keyword_query": "tweet virality threshold cutoff definition"
+    },
+    {
+      "case_id": "qasper:1712.05999:dca86fbe1d57b44986055b282a03c15ef7882e51",
+      "query": "How is the ground truth for fake news established?",
+      "intent": "general_fact",
+      "synonym_query": "What methods are used to determine the reference standard for misinformation?",
+      "keyword_query": "ground truth fake news establishment annotation labeling methodology"
+    },
+    {
+      "case_id": "qasper:1908.07245:e82fa03f1638a8c59ceb62bb9a6b41b498950e1f",
+      "query": "What is the state of the art system mentioned?",
+      "intent": "general_fact",
+      "synonym_query": "Which system is described as the state of the art?",
+      "keyword_query": "state-of-the-art system mentioned SOTA"
+    },
+    {
+      "case_id": "qasper:1908.07245:7ab9c0b4ceca1c142ff068f85015a249b14282d0",
+      "query": "Do they incoprorate WordNet into the model?",
+      "intent": "general_fact",
+      "synonym_query": "Do they integrate WordNet into the model?",
+      "keyword_query": "WordNet incorporate integrate model"
+    },
+    {
+      "case_id": "qasper:1908.07245:00050f7365e317dc0487e282a4c33804b58b1fb3",
+      "query": "Is SemCor3.0 reflective of English language data in general?",
+      "intent": "general_fact",
+      "synonym_query": "Is SemCor3.0 representative of general English language data?",
+      "keyword_query": "SemCor3.0 English language data general representative reflective"
+    },
+    {
+      "case_id": "qasper:1908.07245:c5b0ed5db65051eebd858beaf303809aa815e8e5",
+      "query": "Do they use large or small BERT?",
+      "intent": "general_fact",
+      "synonym_query": "Do they employ a large or a small BERT?",
+      "keyword_query": "BERT large small model variant used"
+    },
+    {
+      "case_id": "qasper:1908.07245:10fb7dc031075946153baf0a0599e126de29e3a4",
+      "query": "How does the neural network architecture accomodate an unknown amount of senses per word?",
+      "intent": "method_definition",
+      "synonym_query": "How do neural network architectures handle a variable number of senses for each word?",
+      "keyword_query": "neural network architecture unknown amount senses per word accommodate polysemy variable number"
+    },
+    {
+      "case_id": "qasper:1902.09666:8c852fc29bda014d28c3ee5b5a7e449ab9152d35",
+      "query": "What models are used in the experiment?",
+      "intent": "experimental_setup",
+      "synonym_query": "Which models are utilized in the experimental evaluation?",
+      "keyword_query": "models experiment used architectures evaluation"
+    },
+    {
+      "case_id": "qasper:1902.09666:682e26262abba473412f68cbeb5f69aa3b9968d7",
+      "query": "What are the differences between this dataset and pre-existing ones?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "What are the key differences between this dataset and datasets that already exist?",
+      "keyword_query": "dataset differences between pre-existing datasets comparison"
+    },
+    {
+      "case_id": "qasper:1902.09666:5daeb8d4d6f3b8543ec6309a7a35523e160437eb",
+      "query": "In what language are the tweets?",
+      "intent": "general_fact",
+      "synonym_query": "Which language do the tweets use?",
+      "keyword_query": "tweets language"
+    },
+    {
+      "case_id": "qasper:1902.09666:74fb77a624ea9f1821f58935a52cca3086bb0981",
+      "query": "What is the size of the new dataset?",
+      "intent": "general_fact",
+      "synonym_query": "What is the scale of the recently created data collection?",
+      "keyword_query": "new dataset size scale"
+    },
+    {
+      "case_id": "qasper:1902.09666:d015faf0f8dcf2e15c1690bbbe2bf1e7e0ce3751",
+      "query": "What kinds of offensive content are explored?",
+      "intent": "general_fact",
+      "synonym_query": "Which categories of offensive material are studied?",
+      "keyword_query": "offensive content types OR categories explored OR studied OR investigated OR offensive material kinds"
+    },
+    {
+      "case_id": "qasper:1902.09666:55bd59076a49b19d3283af41c5e3ccb875f3eb0c",
+      "query": "What is the best performing model?",
+      "intent": "general_fact",
+      "synonym_query": "Which model achieves the highest performance?",
+      "keyword_query": "best performing model OR state-of-the-art model OR top-performing model"
+    },
+    {
+      "case_id": "qasper:1902.09666:521280a87c43fcdf9f577da235e7072a23f0673e",
+      "query": "How many annotators participated?",
+      "intent": "general_fact",
+      "synonym_query": "What was the total count of annotators who took part?",
+      "keyword_query": "annotators participated number count"
+    },
+    {
+      "case_id": "qasper:1902.09666:5a8cc8f80509ea77d8213ed28c5ead501c68c725",
+      "query": "What is the definition of offensive language?",
+      "intent": "general_fact",
+      "synonym_query": "What is the meaning of offensive language?",
+      "keyword_query": "offensive language definition"
+    },
+    {
+      "case_id": "qasper:1902.09666:1b72aa2ec3ce02131e60626639f0cf2056ec23ca",
+      "query": "How long is the dataset for each step of hierarchy?",
+      "intent": "general_fact",
+      "synonym_query": "What is the duration of the dataset at every level of the hierarchy?",
+      "keyword_query": "dataset hierarchy step duration length"
+    },
+    {
+      "case_id": "qasper:1909.05359:8b0abc1907c2bf3e0256f8cf85e0ba66a839bd92",
+      "query": "Were any of the pipeline components based on deep learning models?",
+      "intent": "general_fact",
+      "synonym_query": "Were any of the pipeline components founded on deep learning models?",
+      "keyword_query": "pipeline components deep learning models neural networks DL were based on"
+    },
+    {
+      "case_id": "qasper:1909.05359:03ebb29c08375afc42a957c7b2dc1a42bed7b713",
+      "query": "How is the effectiveness of this pipeline approach evaluated?",
+      "intent": "general_fact",
+      "synonym_query": "How is the efficacy of this pipeline approach measured?",
+      "keyword_query": "pipeline approach effectiveness evaluation performance assessment"
+    },
+    {
+      "case_id": "qasper:1909.00015:5c5aeee83ea3b34f5936404f5855ccb9869356c1",
+      "query": "What tasks are used for evaluation?",
+      "intent": "general_fact",
+      "synonym_query": "Which tasks are employed for assessment?",
+      "keyword_query": "evaluation tasks assessment tasks benchmark tasks"
+    },
+    {
+      "case_id": "qasper:1909.00015:f8c1b17d265a61502347c9a937269b38fc3fcab1",
+      "query": "HOw does the method perform compared with baselines?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "How does the method perform in comparison with the baselines?",
+      "keyword_query": "how method performance baseline comparison"
+    },
+    {
+      "case_id": "qasper:1909.00015:5913930ce597513299e4b630df5e5153f3618038",
+      "query": "How does their model improve interpretability compared to softmax transformers?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "In what manner does their model provide better interpretability than softmax transformers?",
+      "keyword_query": "their model improve interpretability compared to softmax transformers"
+    },
+    {
+      "case_id": "qasper:1706.01678:e8f969ffd637b82d04d3be28c51f0f3ca6b3883e",
+      "query": "Which evaluation methods are used?",
+      "intent": "method_definition",
+      "synonym_query": "Which evaluation approaches are utilized?",
+      "keyword_query": "evaluation methods used evaluation techniques assessment methods"
+    },
+    {
+      "case_id": "qasper:1706.01678:46227b4265f1d300a5ed71bf40822829de662bc2",
+      "query": "What dataset is used in this paper?",
+      "intent": "general_fact",
+      "synonym_query": "Which dataset is employed in this paper?",
+      "keyword_query": "dataset data used paper article"
+    },
+    {
+      "case_id": "qasper:1706.01678:a6a48de63c1928238b37c2a01c924b852fe752f8",
+      "query": "Which other methods do they compare with?",
+      "intent": "cross_paper_comparison",
+      "synonym_query": "What alternative methods are they compared against?",
+      "keyword_query": "other methods compared comparison baseline"
+    },
+    {
+      "case_id": "qasper:1706.01678:b65a83a24fc66728451bb063cf6ec50134c8bfb0",
+      "query": "How are sentences selected from the summary graph?",
+      "intent": "general_fact",
+      "synonym_query": "What is the procedure for selecting sentences from the summary graph?",
+      "keyword_query": "sentence selection summary graph extraction algorithm"
+    },
+    {
+      "case_id": "qasper:1901.08079:5fa36dc8f7c4e65acb962fc484989d20b8fdaeec",
+      "query": "Do they report results only on English data?",
+      "intent": "general_fact",
+      "synonym_query": "Are their reported results exclusively on English-language data?",
+      "keyword_query": "reported results English data only"
+    },
+    {
+      "case_id": "qasper:1901.08079:d98847340e46ffe381992f1a594e75d3fb8d385e",
+      "query": "What machine learning and deep learning methods are used for RQE?",
+      "intent": "method_definition",
+      "synonym_query": "What machine learning and deep learning techniques are utilized for RQE?",
+      "keyword_query": "machine learning deep learning RQE methods techniques models algorithms"
+    },
+    {
+      "case_id": "qasper:1909.00105:5b551ba47d582f2e6467b1b91a8d4d6a30c343ec",
+      "query": "What metrics are used for evaluation?",
+      "intent": "numeric_table",
+      "synonym_query": "Which evaluation metrics are utilized for assessment?",
+      "keyword_query": "evaluation metrics performance measures assessment criteria metrics for evaluation"
+    },
+    {
+      "case_id": "qasper:1909.00105:3cf1edfa6d53a236cf4258afd87c87c0a477e243",
+      "query": "What natural language(s) are the recipes written in?",
+      "intent": "general_fact",
+      "synonym_query": "Which natural languages are used for writing the recipes?",
+      "keyword_query": "recipe natural language written language"
+    },
+    {
+      "case_id": "qasper:1909.00105:9bfebf8e5bc0bacf0af96a9a951eb7b96b359faa",
+      "query": "What were their results on the new dataset?",
+      "intent": "general_fact",
+      "synonym_query": "What outcomes did they achieve on the newly introduced dataset?",
+      "keyword_query": "results new dataset performance evaluation outcomes"
+    },
+    {
+      "case_id": "qasper:1909.00105:34dc0838632d643f33c8dbfe7bd4b656586582a2",
+      "query": "What are the baseline models?",
+      "intent": "experimental_setup",
+      "synonym_query": "Which models are used as baselines?",
+      "keyword_query": "baseline models baselines comparison models reference models baseline methods"
+    },
+    {
+      "case_id": "qasper:1909.00105:c77359fb9d3ef96965a9af0396b101f82a0a9de6",
+      "query": "How did they obtain the interactions?",
+      "intent": "general_fact",
+      "synonym_query": "How were the interactions obtained?",
+      "keyword_query": "interactions obtain acquire method"
+    },
+    {
+      "case_id": "qasper:1909.00105:1bdc990c7e948724ab04e70867675a334fdd3051",
+      "query": "Where do they get the recipes from?",
+      "intent": "general_fact",
+      "synonym_query": "What is the source of the recipes?",
+      "keyword_query": "recipes source origin"
+    },
+    {
+      "case_id": "qasper:1910.01863:abe2393415e533cb06311e74ed1c5674cff8571f",
+      "query": "What evaluation criteria and metrics were used to evaluate the generated text?",
+      "intent": "numeric_table",
+      "synonym_query": "Which assessment standards and measurement methods were employed for assessing the produced output?",
+      "keyword_query": "evaluation criteria metrics generated text evaluate"
+    },
+    {
+      "case_id": "qasper:1703.07476:01e2d10178347d177519f792f86f25575106ddc7",
+      "query": "What datasets are used to assess the performance of the system?",
+      "intent": "general_fact",
+      "synonym_query": "What data collections are employed to measure the system's performance?",
+      "keyword_query": "datasets benchmarks evaluation system performance"
+    },
+    {
+      "case_id": "qasper:1703.07476:021bfb7e180d67112b74f05ecb3fa13acc036c86",
+      "query": "How is the vocabulary of word-like or phoneme-like units automatically discovered?",
+      "intent": "general_fact",
+      "synonym_query": "What are the approaches for automatically determining the set of units that resemble words or phonemes?",
+      "keyword_query": "automatic discovery vocabulary word-like units phoneme-like units subword units acoustic units unsupervised"
+    },
+    {
+      "case_id": "qasper:1705.05437:cf874cd9023d901e10aa8664b813d32501e7e4d2",
+      "query": "What is NER?",
+      "intent": "general_fact",
+      "synonym_query": "What does NER stand for?",
+      "keyword_query": "NER named entity recognition definition"
+    },
+    {
+      "case_id": "qasper:1705.05437:42084c41343e5a6ae58a22e5bfc5ce987b5173de",
+      "query": "Does the paper explore extraction from electronic health records?",
+      "intent": "general_fact",
+      "synonym_query": "Is information extraction from electronic health records examined in this paper?",
+      "keyword_query": "electronic health records EHR extraction"
+    },
+    {
+      "case_id": "qasper:1906.00346:c4628d965983934d7a2a9797a2de6a411629d5bc",
+      "query": "Is the G-BERT model useful beyond the task considered?",
+      "intent": "general_fact",
+      "synonym_query": "Does the G-BERT model provide utility for tasks other than the one considered?",
+      "keyword_query": "G-BERT model usefulness effectiveness applicability beyond task considered"
+    },
+    {
+      "case_id": "qasper:1806.04330:8bf7f1f93d0a2816234d36395ab40c481be9a0e0",
+      "query": "Do the authors also analyze transformer-based architectures?",
+      "intent": "method_definition",
+      "synonym_query": "Do the authors additionally examine transformer-based models?",
+      "keyword_query": "authors analyze transformer-based architectures transformer models attention-based architectures"
+    },
+    {
+      "case_id": "qasper:1806.03125:440faf8d0af8291d324977ad0f68c8d661fe365e",
+      "query": "Which dataset has been used in this work?",
+      "intent": "general_fact",
+      "synonym_query": "What dataset was utilized in this research?",
+      "keyword_query": "dataset used work research employed data collection"
+    },
+    {
+      "case_id": "qasper:1806.03125:0ec56e15005a627d0b478a67fd627a9d85c3920e",
+      "query": "What can word subspace represent?",
+      "intent": "general_fact",
+      "synonym_query": "What can a subspace of word embeddings represent?",
+      "keyword_query": "\"word subspace\" representation embedding semantic vector"
+    },
+    {
+      "case_id": "qasper:1706.01875:d7b60abb0091246e29d1a9c28467de598e090c20",
+      "query": "What was the baseline?",
+      "intent": "experimental_setup",
+      "synonym_query": "What was the baseline measurement?",
+      "keyword_query": "baseline control reference standard measurement"
+    },
+    {
+      "case_id": "qasper:1706.01875:bdf93053b1b9b0a21f77ed370cf4d5a10df70e3e",
+      "query": "What was their system's performance?",
+      "intent": "general_fact",
+      "synonym_query": "What was the performance of their system?",
+      "keyword_query": "their system performance effectiveness efficiency metrics evaluation"
+    },
+    {
+      "case_id": "qasper:1706.01875:5a6926de13a8cc25ce687c22741ba97a6e63d4ee",
+      "query": "What other political events are included in the database?",
+      "intent": "general_fact",
+      "synonym_query": "Which other political occurrences are listed in the database?",
+      "keyword_query": "additional political events database"
+    },
+    {
+      "case_id": "qasper:1706.01875:dcc1115aeaf87118736e86f3e3eb85bf5541281c",
+      "query": "What classifier did they use?",
+      "intent": "general_fact",
+      "synonym_query": "Which classifier was used?",
+      "keyword_query": "classifier used classification algorithm model"
+    },
+    {
+      "case_id": "qasper:1604.03114:26327ccebc620a73ba37a95aabe968864e3392b2",
+      "query": "what aspects of conversation flow do they look at?",
+      "intent": "general_fact",
+      "synonym_query": "What aspects of conversational flow are examined?",
+      "keyword_query": "\"conversation flow\" aspects features analysis dialogue turn-taking topic shifts"
+    },
+    {
+      "case_id": "qasper:1604.03114:ababb79dd3c301f4541beafa181f6a6726839a10",
+      "query": "what debates dataset was used?",
+      "intent": "general_fact",
+      "synonym_query": "which debates corpus was employed?",
+      "keyword_query": "debates dataset used corpus employed collection"
+    },
+    {
+      "case_id": "qasper:1812.10479:b634ff1607ce5756655e61b9a6f18bc736f84c83",
+      "query": "Which stock market sector achieved the best performance?",
+      "intent": "general_fact",
+      "synonym_query": "Which sector in the equity market achieved the highest performance?",
+      "keyword_query": "stock market sector best performance top performing sector equity market industry returns"
+    },
+    {
+      "case_id": "qasper:1801.07887:f67b9bda14ec70feba2e0d10c400b2b2025a0a6a",
+      "query": "What downstream tasks are evaluated?",
+      "intent": "general_fact",
+      "synonym_query": "Which downstream tasks are assessed?",
+      "keyword_query": "downstream tasks evaluation benchmarks"
+    },
+    {
+      "case_id": "qasper:1801.07887:1cfed6b0c9b5a079a51166209649a987e7553e4e",
+      "query": "What is active learning?",
+      "intent": "general_fact",
+      "synonym_query": "What is the definition of active learning?",
+      "keyword_query": "active learning definition concept query learning interactive learning"
+    },
+    {
+      "case_id": "qasper:1904.01548:bd6dc38a9ac8d329114172194b0820766458dacc",
+      "query": "What datasets are used?",
+      "intent": "general_fact",
+      "synonym_query": "Which datasets are employed in the study?",
+      "keyword_query": "datasets used employed utilized data sets"
+    },
+    {
+      "case_id": "qasper:1908.06264:0af16b164db20d8569df4ce688d5a62c861ace0b",
+      "query": "what were the baselines?",
+      "intent": "experimental_setup",
+      "synonym_query": "What baseline approaches were used?",
+      "keyword_query": "baseline baselines baseline method baseline model reference method experimental setup"
+    },
+    {
+      "case_id": "qasper:1908.06264:78a4ec72d76f0a736a4a01369a42b092922203b6",
+      "query": "what datasets were used?",
+      "intent": "general_fact",
+      "synonym_query": "which datasets were utilized?",
+      "keyword_query": "datasets used"
+    },
+    {
+      "case_id": "qasper:1908.06264:6a14379fee26a39631aebd0e14511ce3756e42ad",
+      "query": "What BERT models are used?",
+      "intent": "general_fact",
+      "synonym_query": "Which BERT variants are employed?",
+      "keyword_query": "BERT models used OR BERT variants OR BERT architectures utilized"
+    },
+    {
+      "case_id": "qasper:1908.06264:81588e0e207303c2867c896f3911a54a1ef7c874",
+      "query": "What are the sources of the datasets?",
+      "intent": "general_fact",
+      "synonym_query": "Where do the datasets come from?",
+      "keyword_query": "dataset sources data origin provenance"
+    },
+    {
+      "case_id": "qasper:1908.06264:dd09db5eb321083dba16c2550676e60682f9a0cd",
+      "query": "What labels does the dataset have?",
+      "intent": "general_fact",
+      "synonym_query": "What labels are present in the dataset?",
+      "keyword_query": "dataset labels annotations"
+    },
+    {
+      "case_id": "qasper:1909.08970:bd419f4094186a5ce74ba6ac1622b24e29e553f4",
+      "query": "How well did the baseline perform?",
+      "intent": "experimental_setup",
+      "synonym_query": "What was the baseline's performance?",
+      "keyword_query": "baseline performance evaluation"
+    },
+    {
+      "case_id": "qasper:1909.08970:11e8bd4abf5f8bdabad3e8f0691e6d0ad6c326af",
+      "query": "What is the baseline?",
+      "intent": "experimental_setup",
+      "synonym_query": "Which baseline is being referred to?",
+      "keyword_query": "baseline method model performance comparison setup reference benchmark"
+    },
+    {
+      "case_id": "qasper:1909.06200:5c3e98e3cebaecd5d3e75ec2c9fc3dd267ac3c83",
+      "query": "What experiments are conducted?",
+      "intent": "experimental_setup",
+      "synonym_query": "What experiments are performed?",
+      "keyword_query": "experiments conducted performed experimental setup"
+    },
+    {
+      "case_id": "qasper:1909.06200:3f0ae9b772eeddfbfd239b7e3196dc6dfa21365f",
+      "query": "What is the combination of rewards for reinforcement learning?",
+      "intent": "general_fact",
+      "synonym_query": "How are rewards combined in reinforcement learning?",
+      "keyword_query": "rewards combination reinforcement learning"
+    },
+    {
+      "case_id": "qasper:1909.06200:14b8ae5656e7d4ee02237288372d9e682b24fdb8",
+      "query": "What are the difficulties in modelling the ironic pattern?",
+      "intent": "general_fact",
+      "synonym_query": "What challenges arise when modeling the ironic pattern?",
+      "keyword_query": "difficulties modeling ironic pattern irony modeling challenges"
+    },
+    {
+      "case_id": "qasper:1909.06200:e3a2d8886f03e78ed5e138df870f48635875727e",
+      "query": "How did the authors find ironic data on twitter?",
+      "intent": "general_fact",
+      "synonym_query": "What approach did the researchers use to collect ironic content on Twitter?",
+      "keyword_query": "ironic data Twitter authors find method detection"
+    },
+    {
+      "case_id": "qasper:1909.06200:62f27fe08ddb67f16857fab2a8a721926ecbb6fb",
+      "query": "Who judged the irony accuracy, sentiment preservation and content preservation?",
+      "intent": "numeric_table",
+      "synonym_query": "Which individuals assessed the correctness of irony, the retention of sentiment, and the preservation of content?",
+      "keyword_query": "irony accuracy sentiment preservation content preservation judged by evaluators human assessment annotation"
+    },
+    {
+      "case_id": "qasper:1811.05711:0689904db9b00a814e3109fb1698086370a28fa2",
+      "query": "Which text embedding methodologies are used?",
+      "intent": "method_definition",
+      "synonym_query": "What text embedding approaches are utilized?",
+      "keyword_query": "text embedding methodologies techniques used methods representation approaches"
+    },
+    {
+      "case_id": "qasper:1709.05036:50cb50657572e315fd452a89f3e0be465094b66f",
+      "query": "Do they experiment with their proposed model on any other dataset other than MovieQA?",
+      "intent": "experimental_setup",
+      "synonym_query": "Do they evaluate the proposed model on any dataset except MovieQA?",
+      "keyword_query": "proposed model experiment evaluate dataset besides MovieQA"
+    },
+    {
+      "case_id": "qasper:1909.03135:5aa12b4063d6182a71870c98e4e1815ff3dc8a72",
+      "query": "Do the authors mention any downside of lemmatizing input before training ELMo?",
+      "intent": "general_fact",
+      "synonym_query": "Do the authors mention any drawback of performing lemmatization on the input before training ELMo?",
+      "keyword_query": "lemmatizing lemmatization input training ELMo before downside disadvantage drawback"
+    },
+    {
+      "case_id": "qasper:1909.03135:22815878083ebd2f9e08bc33a5e733063dac7a0f",
+      "query": "What other examples of morphologically-rich languages do the authors give?",
+      "intent": "general_fact",
+      "synonym_query": "What other instances of morphologically rich language examples do the authors provide?",
+      "keyword_query": "morphologically-rich languages other examples authors give mention provide list"
+    },
+    {
+      "case_id": "qasper:1909.03135:220d11a03897d85af91ec88a9b502815c7d2b6f3",
+      "query": "Why is lemmatization not necessary in English?",
+      "intent": "general_fact",
+      "synonym_query": "Why is it that lemmatization is not necessary for English?",
+      "keyword_query": "lemmatization not necessary English reason why text preprocessing"
+    },
+    {
+      "case_id": "qasper:1909.03135:d509081673f5667060400eb325a8050fa5db7cc8",
+      "query": "How big was the corpora they trained ELMo on?",
+      "intent": "general_fact",
+      "synonym_query": "What was the scale of the corpora used to train ELMo?",
+      "keyword_query": "ELMo training corpora size, ELMo corpus volume, ELMo training data amount"
+    },
+    {
+      "case_id": "qasper:2001.07786:1038542243efe5ab3e65c89385e53c4831cd9981",
+      "query": "What is the corpus used for the task?",
+      "intent": "general_fact",
+      "synonym_query": "Which dataset is employed for the task?",
+      "keyword_query": "corpus dataset used task"
+    },
+    {
+      "case_id": "qasper:2001.07786:e2b0cd30cf56a4b13f96426489367024310c3a05",
+      "query": "How is evaluation performed?",
+      "intent": "general_fact",
+      "synonym_query": "What is the procedure for performing evaluation?",
+      "keyword_query": "evaluation methodology process assessment"
+    },
+    {
+      "case_id": "qasper:1805.07133:1269c5d8f61e821ee0029080c5ba2500421d5fa6",
+      "query": "what methods were used to reduce data sparsity effects?",
+      "intent": "method_definition",
+      "synonym_query": "which approaches were employed to mitigate the impact of sparse data?",
+      "keyword_query": "data sparsity reduction methods techniques mitigate sparse data effects"
+    },
+    {
+      "case_id": "qasper:1805.07133:e35a7f9513ff1cc0f0520f1d4ad9168a47dc18bb",
+      "query": "what was the baseline?",
+      "intent": "experimental_setup",
+      "synonym_query": "What baseline was used in the experimental setup?",
+      "keyword_query": "baseline method baseline model control condition reference experimental setup"
+    },
+    {
+      "case_id": "qasper:1805.07133:b9ea841b817ba23281c95c7a769873b840dee8d5",
+      "query": "did they collect their own data?",
+      "intent": "general_fact",
+      "synonym_query": "Did the researchers gather their own dataset?",
+      "keyword_query": "self-collected data primary data original data authors"
+    },
+    {
+      "case_id": "qasper:1805.07133:219af68afeaecabdfd279f439f10ba7c231736e4",
+      "query": "what japanese-vietnamese dataset do they use?",
+      "intent": "general_fact",
+      "synonym_query": "Which Japanese-Vietnamese dataset do they employ?",
+      "keyword_query": "Japanese-Vietnamese dataset used"
+    }
+  ]
+}

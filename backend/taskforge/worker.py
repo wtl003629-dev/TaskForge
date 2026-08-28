@@ -6,9 +6,9 @@ import asyncio
 import hashlib
 import time
 from dataclasses import dataclass
+from typing import Protocol
 from uuid import NAMESPACE_URL, uuid5
 
-from .checkpoints import SQLiteCheckpointStore
 from .domain import AgentProfile, RunState, RunStatus, Task, utc_now
 from .operations import (
     AuditEvent,
@@ -30,6 +30,23 @@ class WorkerOutcome:
     error: str | None = None
 
 
+class DurableCheckpointStore(Protocol):
+    """Backend-neutral checkpoint port used by the durable worker."""
+
+    def save(self, state: RunState, *, tenant_id: str | None = None) -> int: ...
+
+    def load(self, run_id: str, *, tenant_id: str | None = None) -> RunState: ...
+
+    def load_task(self, task_id: str, *, tenant_id: str | None = None) -> Task: ...
+
+    def load_profile(
+        self,
+        profile_id: str,
+        *,
+        tenant_id: str | None = None,
+    ) -> AgentProfile: ...
+
+
 class DurableWorker:
     """Claim and execute durable runs without trusting in-process ownership."""
 
@@ -38,7 +55,7 @@ class DurableWorker:
         *,
         owner: str,
         operations: OperationsStore,
-        checkpoints: SQLiteCheckpointStore,
+        checkpoints: DurableCheckpointStore,
         runtime: AgentRuntime,
         lease_seconds: float = 30.0,
         heartbeat_interval: float | None = None,
@@ -77,9 +94,16 @@ class DurableWorker:
         profile: AgentProfile | None = None
         job_completed = False
         try:
-            state = self.checkpoints.load(claimed.run_id)
-            task = self.checkpoints.load_task(state.task_id)
-            profile = self.checkpoints.load_profile(state.agent_profile_id)
+            # The queue claim is the source of truth for the tenant.  Passing
+            # it through every checkpoint read prevents a non-local worker
+            # from accidentally consulting the single-tenant compatibility
+            # default of the PostgreSQL store.
+            state = self.checkpoints.load(claimed.run_id, tenant_id=claimed.tenant_id)
+            task = self.checkpoints.load_task(state.task_id, tenant_id=claimed.tenant_id)
+            profile = self.checkpoints.load_profile(
+                state.agent_profile_id,
+                tenant_id=claimed.tenant_id,
+            )
             self._validate_identity(claimed, task, profile, state)
 
             terminal = {
@@ -110,7 +134,7 @@ class DurableWorker:
                                 "updated_at": utc_now(),
                             }
                         )
-                        self.checkpoints.save(state)
+                        self.checkpoints.save(state, tenant_id=claimed.tenant_id)
                     raise RuntimeError(
                         f"retryable provider failure: {error_code}"
                     )

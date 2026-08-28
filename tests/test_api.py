@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,12 @@ from taskforge.memory import MemoryItem, MemoryScope
 from taskforge.providers import ScriptedProvider
 from taskforge.routed_knowledge import RoutedKnowledgeStore
 from taskforge.worker import DurableWorker
+
+
+def test_app_module_import_has_no_default_application_side_effect() -> None:
+    module = importlib.import_module("taskforge.app")
+
+    assert not hasattr(module, "app")
 
 
 def make_settings(tmp_path: Path, **changes) -> Settings:
@@ -631,3 +638,29 @@ def test_deepseek_selection_fails_fast_when_required_configuration_is_missing(
     settings = make_settings(tmp_path, provider="deepseek", **overrides)
     with pytest.raises(ValueError, match="TASKFORGE_DEEPSEEK"):
         create_app(settings)
+
+
+def test_bailian_selection_requires_the_shared_bailian_key(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="provider=bailian requires bailian_api_key"):
+        make_settings(
+            tmp_path,
+            provider="bailian",
+            bailian_api_key=None,
+        )
+
+
+def test_bailian_selection_reuses_the_embedding_key_for_generation(
+    tmp_path: Path,
+) -> None:
+    settings = make_settings(
+        tmp_path,
+        provider="bailian",
+        bailian_api_key="sk-test",
+        bailian_chat_model="qwen-plus",
+    )
+
+    app = create_app(settings)
+
+    assert app.state.container.settings.provider == "bailian"
+    assert app.state.container.profiles["research-agent"].model == "qwen-plus"
+    assert app.state.container.review_execution.provider == "bailian"

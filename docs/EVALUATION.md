@@ -1188,6 +1188,13 @@ regression.
 
 ### Scope-bound passage retrieval
 
+Every pre-schema-2 QASPER upload report is retired. Those reports used page
+overlap as relevance; all scores, ablations, trained/calibrated rerankers and
+promotion decisions derived from that proxy are historical artifacts, not
+paragraph-retrieval evidence. They must not be used for acceptance, model
+selection, project claims, or answer evaluation. The files are retained only
+for auditability; see `eval/reports/QASPER_RETRIEVAL_DEPRECATION.md`.
+
 The frozen `eval/reports/research-scope-retrieval-gate-current.json` matrix is:
 
 | Route | Recall@10 | Candidate@50 |
@@ -1203,150 +1210,69 @@ HTTP upload path and therefore must not be presented as upload-path recall.
 Search snippets and discovery abstracts are recommendation metadata and are
 never accepted as bounded evidence.
 
-The product-facing core gate starts at a user-supplied PDF and excludes open
-discovery. `POST /api/research/uploads` creates the paper record and confirmed
-Scope without a literature search. The current upload-path results are:
+The product-facing gate starts at a user-supplied binary PDF. The strict
+schema-2.3 evaluator freezes the PDF checksum cohort and parser, maps each Gold
+Evidence paragraph to actual retrieval Child text, scores every legal QASPER
+annotation set separately, and takes the maximum legal Recall. Parser failures
+remain zero-recall rows. Only Recall@1/5/10/50 may be a headline metric.
 
-| Upload-path dataset | Papers / cases | Recall@1 | Recall@5 | Recall@10 | Recall@50 | p95 |
-|---|---:|---:|---:|---:|---:|---:|
-| Self-authored binary PDF gate | 3 / 12 | 0.8750 | 1.0000 | 1.0000 | 1.0000 | 31.3 ms |
-| QASPER upload lexical baseline | 38 / 100 | 0.1148 | 0.3564 | 0.5535 | 0.9433 | 239.4 ms |
-| QASPER upload BGE + Jina rerank | 38 / 100 | 0.2348 | 0.5010 | 0.7022 | 0.9900 | 1173.8 ms |
+The native-parser preflight remains a historical diagnostic and is not a
+formal result. The current MinerU 3.4.4 locked 100-case run passes the frozen
+  gate with `97.03%` Gold-unit alignment and `97/100` fully eligible cases. On
+  identical inputs, the frozen Flat comparison with the original Query and local
+Cross-Encoder reports paragraph Recall@1/5/10/50
+`0.2728/0.7367/0.8625/0.9830`; Agent-visible Recall@8 is `0.8250`. Against
+the same-parser, same-chunk, no-reranker locked baseline, Recall@10 improves by
+`2.70` percentage points and Recall@5 by approximately `2.68` points; the exact
+comparison is frozen in `eval/reports/qasper-pdf-reranker-uplift-v1.json`.
+Failure attribution is 3 candidate misses, 17 Top-10 reranking misses and 80
+successful cases, with no additional presentation-window loss. The Parent–Child
+  A/B reports `0.7022/0.8447` at Recall@5/10 and Agent-visible Recall@8=`0.7938`.
+  The current Parent-Child default adds title-enriched indexing, Parent-aware
+  reranking and lineage diversity; it has not been rerun, so those historical
+  figures remain comparison evidence rather than a claim about the new chain. The machine-readable
+reports are
+`eval/reports/qasper-real-pdf-locked100-current-original-flat-v2-top8.json` and
+`eval/reports/qasper-real-pdf-locked100-current-original-parent-child-v2-top8.json`.
 
-The QASPER upload run traverses PDF rendering, direct upload, parsing,
-page-preserving chunking, indexing and Scope-bound search. QASPER text and gold
-evidence are official CC BY 4.0 data; the local PDF layout is generated and is
-not the publishers' original layout. The promoted local high-recall profile
-uses BGE-small dense/BM25 RRF over the selected paper, reranks the complete
-50-candidate pool with `jina-reranker-v1-tiny-en`, caches immutable per-Scope
-indexes, and disables the old generic second-query rewrite. In a paired
-ablation that rewrite reduced Recall@10 on the 11 triggered cases from `0.6818`
-to `0.5455`. The optimized run improves Recall@10 by `0.1487` and Recall@50 by
-`0.0467`, but still does not clear the `0.80` quality gate. This remains an
-early-ranking problem, not open paper discovery or gross evidence loss during
-upload. The reports are
-`eval/reports/direct-upload-retrieval.json` and
-`eval/reports/qasper-direct-upload-100.json` (baseline) plus
-`eval/reports/qasper-direct-upload-100-optimized-v3.json` (promoted profile).
+A separate no-API 20-case chunk-strategy screen tested Flat targets from 500 to
+2,000 characters and same-page sliding windows. Flat 500 reached only
+`0.5350/0.7817` at Recall@5/10; sliding 500/100 and 1000/200 failed the Gold
+alignment gate; sliding 2000/400 traded lower Recall@5 for higher Recall@10.
+Because no configuration improved both @5 and @10, the default remains Flat
+2,000 characters with zero overlap. See
+`eval/reports/qasper-pdf-chunk-strategy-screen20-v1.json`.
 
-### QASPER reranker data construction (2026-08-12)
+Parent–Child was then screened with four token budgets, including Child
+300/400, 400/500, 500/650 and 600/800 plus proportional overlap. All passed the
+alignment gate, but every configuration was below Flat 2000/0 at both @5 and
+@10. The hierarchy remains available for `paper_read` context expansion and as
+an opt-in ablation; it is not the retrieval default. See
+`eval/reports/qasper-real-pdf-screen20-parent2000-3000-child400-500-overlap60-v2-top8.json`.
 
-The first step toward domain tuning is reproducible in
-`scripts/build_qasper_reranker_training.py`. It labels the current BM25
-candidate pool without injecting gold evidence into retrieval. Each question
-records gold positives, non-gold Top-1--10 hard negatives, non-gold Top-11--50
-regular negatives, first-positive rank, query type and candidate-miss versus
-ranking-miss diagnostics.
+The remaining formal ablations are:
 
-| Split | Questions | Papers | Top-10 covered | Top-10 ranking failures | Top-50 candidate misses |
-|---|---:|---:|---:|---:|---:|
-| QASPER train tuning | 200 | 81 | 121 | 66 | 13 |
-| QASPER train validation | 200 | 81 | 135 | 53 | 12 |
+| ID | Parser | Chunking | Query/ranking addition |
+|---|---|---|---|
+| A0 | Native | flat | original query, no reranker/supplement |
+| A1 | MinerU 3.4.4 | flat | parser change only |
+| A2 | MinerU 3.4.4 | Parent–Child | hierarchy change only |
+| A3 | same | Parent–Child | constrained synonym query |
+| A4 | same | Parent–Child | keyword/entity query |
+| A5 | same | Parent–Child | Cross-Encoder over full Candidate@50 |
+| A6 | same | Parent–Child | one directed supplementary round |
+| A7 | same | Parent–Child | separate VLM visual extraction |
 
-The two manifests have no paper-ID overlap. Their source dataset SHA-256 is
-`c99b487807d246bdd0aeee187b354ada9b2d097fd8582ee66c877022c3e05c47`; the
-generated reports include case-ID and paper-ID hashes for auditability. The
-locked 100-question upload test remains untouched by this construction.
+Run the matrix with `scripts/run_qasper_pdf_ablation.py`. Expanded-query runs
+require a split-hashed, pre-generated manifest; A7 additionally requires an
+explicit visual-call acknowledgement. No query generation or PDF acquisition
+occurs inside a scored run. A configuration may be frozen for the locked split
+only after validation, parser-quality and alignment gates pass.
 
-Reproduction:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/build_qasper_reranker_training.py `
-  --dataset .taskforge\eval-cache\qasper-train-v0.3.json `
-  --split eval\splits\qasper-train-tuning-200-v1.json `
-  --output eval\reports\qasper-reranker-tuning-200-v1.json
-
-.\.venv\Scripts\python.exe scripts/build_qasper_reranker_training.py `
-  --dataset .taskforge\eval-cache\qasper-train-v0.3.json `
-  --split eval\splits\qasper-train-validation-200-v1.json `
-  --output eval\reports\qasper-reranker-validation-200-v1.json
-
-# 论文不相交的领域训练集（1,691 题；锁定 tuning/validation/test 不参与）
-.\.venv\Scripts\python.exe scripts/build_qasper_reranker_training.py `
-  --dataset .taskforge\eval-cache\qasper-train-v0.3.json `
-  --split eval\splits\qasper-train-fit-complement-v1.json `
-  --output eval\reports\qasper-reranker-fit-complement-v1.json
-.\.venv\Scripts\python.exe scripts/prepare_qasper_reranker_finetune.py `
-  --report eval\reports\qasper-reranker-fit-complement-v1.json `
-  --dataset .taskforge\eval-cache\qasper-train-v0.3.json `
-  --output eval\data\qasper-reranker-fit-complement-v1.json
-.\.venv\Scripts\python.exe scripts/train_qasper_bge_reranker.py `
-  --model-path .taskforge\models\bge-reranker-v2-m3 `
-  --train-data eval\data\qasper-reranker-fit-complement-v1.json `
-  --output-dir .taskforge\models\bge-reranker-v2-m3-qasper-v1
-```
-
-The explicit `flagembedding` adapter for `BAAI/bge-reranker-v2-m3` is present
-in `backend/taskforge/research_reranking.py`, with batch/device telemetry and
-fail-closed initialization. A real CPU smoke load produced finite scores and
-the domain-training path is reproducible through
-`scripts/prepare_qasper_reranker_finetune.py` and
-`scripts/train_qasper_bge_reranker.py`. Zero-shot BGE-M3 was nevertheless a
-negative result on the locked validation candidate pool: 20 unseen questions,
-Top-20 rerank, Recall@10 `0.6472`, Recall@20 `0.7694`, and Recall@50 `0.7694`
-(`eval/reports/qasper-m3-rerank-validation-20-top20.json`), below the existing
-MiniLM control. Full BGE-M3 fine-tuning is not claimed here: this machine has
-CPU-only Torch, and the 1,688-example fit is not a practical local run.
-
-The first structure-fusion candidate was also evaluated on the same
-paper-disjoint validation candidates. A pairwise model over cross-encoder,
-dense, reciprocal-rank, lexical/numeric coverage and section features reached
-Recall@10 `0.6830` and Recall@50 `0.9627`, below the existing dense+rerank
-control (`0.7223` / `0.9627`), so it was not wired into the runtime. The report
-is `eval/reports/qasper-feature-fusion-validation-v6-20260813.json`.
-
-The direct-upload graph ablation was run end-to-end on the locked 100-question
-test as well. Jina plus graph reranking produced Recall@10 `0.6793` and
-Recall@50 `0.9986` (versus the no-graph optimized control `0.7022` / `0.9900`),
-with p95 `1324.0 ms`; it is therefore not promoted despite the Candidate@50
-increase. Report: `eval/reports/qasper-direct-upload-100-jina-graph.json`.
-
-The promotion policy is implemented in `backend/taskforge/research_promotion.py`:
-minimum Recall@10 gain `+5` percentage points and Recall@50 at least `0.99`.
-Latency is now only a sanity bound (p95 <= 5 seconds and <=20x baseline), not a
-normal quality gate. The current optimized upload profile is within that
-sanity bound (`1173.8 / 239.4 = 4.90x`). The recall-first application default
-uses `TASKFORGE_GENERAL_TEXT_BACKEND=fastembed` with the explicit
-`fastembed_ensemble` backend and comma-separated Jina/MiniLM models. On the
-locked upload test this recall-first ensemble reaches Recall@10 `0.7493` and
-Recall@50 `0.9986` (p95 `3486.5 ms`), versus Jina alone `0.7022/0.9900`;
-latency is retained only as a sanity bound. BM25 is available by explicitly
-setting the backend to `bm25` and clearing the reranker model. The profile
-still does not meet the aspirational Recall@10 `0.80` target. We then ran a
-paper-disjoint QASPER domain fine-tune rather than a blind switch to zero-shot
-BGE-M3. A full paper-disjoint QASPER fine-tune of
-`cross-encoder/ms-marco-MiniLM-L-6-v2` (`.taskforge/models/minilm-qasper-full`)
-was then evaluated: held-out validation reached Recall@10 `0.7981` /
-Recall@20 `0.8998`, while the locked 100-case direct-upload run reached
-Recall@10 `0.7686` / Recall@50 `1.0000`. The tuned checkpoint is therefore an
-explicit opt-in high-recall profile, not the portable default (the checkpoint
-is a local artifact and is not committed). Enabling the generic second-query
-rewrite regressed the same run to Recall@10 `0.2778`, so rewrite remains
-disabled for this upload path. A second calibration pass using 49 groups from
-the PDF-validation distribution produced
-the calibrated upload result before the intent prior: Recall@10 `0.7871`, Recall@50 `0.9986`,
-nDCG@10 `0.5613`, p95 `1.42 s`. A further opt-in intent/section prior, restricted
-to explicit dataset/collection/method/baseline/result questions and fused with
-query-term overlap, reaches `0.7961/0.9986`. Fusing that deterministic order
-with the calibrated-model order using reciprocal rank fusion (intent weight
-`0.45`) reaches Recall@10 **`0.8078`**, Recall@50 `0.9986`, nDCG@10 `0.5686`
-on the locked 100-case upload test. The 50-case PDF set reaches `0.8217/0.9817`,
-but it is not an independent holdout: those cases supplied the calibration
-examples, and 6 exact questions from 3 of its papers also occur in the 100-case
-report. Therefore `0.8078` is a promising engineering result, not a clean
-no-leakage generalization estimate. We then froze the checkpoint, intent prior,
-RRF weight and retrieval budget and ran one fresh paper-disjoint holdout from
-QASPER dev (`eval/splits/qasper-dev-clean-holdout-100-v1.json`): 100 questions,
-33 papers, no paper overlap with training, calibration or the locked test. It
-reached Recall@10 `0.8317`, Recall@50 `1.0000`, nDCG@10 `0.6485` and p95 `6.10 s`
-(`eval/reports/qasper-dev-clean-holdout-100-pdf-calibrated-intent-fused.json`).
-The clean holdout is slightly higher than the locked score, so this run shows
-no evidence of classic memorization under the paper-disjoint protocol; it is
-still a finite-sample result, not a proof of universal generalization. The
-calibrated checkpoint and this prior remain opt-in and are not committed as
-portable defaults.
-Structure-fusion, context-window, and preserve-head ablations did not improve
-the 50-case calibration/tuning set and remain disabled by default.
+The deterministic keyword-only query ablation on the current locked 100-case
+Flat track matched the original Query exactly at Candidate@50 and all four
+Recall@K values, so it was not promoted. See
+`eval/reports/qasper-query-expansion-locked100-v1.json`.
 
 ### End-to-end and Token
 
@@ -1366,6 +1292,34 @@ Reports are `eval/reports/paper-research-e2e-30-deterministic.json`,
 `paper-research-business-e2e-live.json`, and
 `paper-research-business-e2e-prebudget-live.json`.
 
+### QASPER cited-answer E2E
+
+Existing QASPER answer reports are development diagnostics only: their
+retrieved-evidence input came from the retired page-proxy evaluation, early
+versions selected only one annotation, and the answer model and semantic judge
+were not independent. The later multi-reference validation run still used a
+non-independent judge and one answer Agent, not the complete Planner,
+Evaluator, Writer and Critic product path. None is a current project result.
+
+The answer evaluator now accepts strict schema 2.0/2.1/2.2/2.3 upload reports
+and refuses retrieved-evidence execution unless the Gold→Child alignment gate
+passed. It restores Yes/No labels, evaluates all answerable annotations,
+separates citation failure from answer reasoning failure and keeps Oracle Gold
+Evidence as a separately labelled upper bound. The current retrieval contract
+is frozen at Flat 2000/0, Candidate@50 and Agent-visible Top-8; a new live
+four-Agent run is intentionally deferred because it requires a DeepSeek API
+call and must not be confused with the historical run below. The final
+semantic judge should be independent or calibrated against blinded human
+labels.
+
+A historical 100-case four-Agent direct-answer replay is retained for audit:
+`eval/reports/qasper-four-agent-e2e-live-direct-answer-a1-final-v1.json`. It
+used a frozen Parent–Child retrieval trace rather than the current Flat default
+and reports deterministic Token F1 `0.4761` (the old baseline delta was
+`+36.35` percentage points), with semantic judging explicitly auxiliary and
+same-model. These values are historical and are not a current-config E2E
+claim.
+
 Reproduction:
 
 ```powershell
@@ -1379,9 +1333,56 @@ Reproduction:
 .\.venv\Scripts\python.exe scripts\evaluate_paper_research_e2e.py
 .\.venv\Scripts\python.exe scripts\run_paper_research_e2e.py
 
-# Same locked 100-case direct-upload high-recall run reported above.
-.\.venv\Scripts\python.exe scripts\evaluate_qasper_direct_upload.py `
-  --backend fastembed --no-graph --no-rewrite `
-  --reranker-model jinaai/jina-reranker-v1-tiny-en `
-  --output eval\reports\qasper-direct-upload-100-optimized-v3.json
+# Billable only after the strict retrieval report has status=complete.
+.\.venv\Scripts\python.exe scripts\evaluate_qasper_answer_e2e.py `
+  --retrieval-report <strict-schema-2.3-report.json> `
+  --split eval\splits\qasper-dev-clean-holdout-100-v2.json `
+  --output eval\reports\qasper-answer-e2e-strict.json `
+  --confirm-live-call
+.\.venv\Scripts\python.exe scripts\evaluate_qasper_answer_e2e.py `
+  --retrieval-report <strict-schema-2.3-report.json> `
+  --split eval\splits\qasper-dev-clean-holdout-100-v2.json `
+  --evidence-source oracle `
+  --output eval\reports\qasper-answer-e2e-strict-oracle.json `
+  --confirm-live-call
+
+# Billable four-Agent replay; intentionally deferred while API spend is frozen.
+.\.venv\Scripts\python.exe scripts/evaluate_qasper_four_agent_e2e.py `
+  --retrieval-report eval\reports\qasper-real-pdf-locked100-current-original-flat-v2-top8.json `
+  --split eval\splits\qasper-dev-clean-holdout-100-v2.json `
+  --output eval\reports\qasper-four-agent-e2e-current.json `
+  --confirm-live-call
+```
+
+## Final selected-paper retrieval baseline (2026-08-28)
+
+The frozen baseline for question answering after a user explicitly selects a
+paper is `eval/baselines/paper-scoped-flat-bailian-v1.json`. It covers 30
+English and 30 Chinese real PDFs with 177 annotated questions. The fixed path
+is MinerU 3.4.4, Flat 2000/0, BM25 plus Bailian `text-embedding-v4`, RRF, and
+Bailian `qwen3-rerank`, with a per-paper `knowledge_base_id` filter.
+
+The overall result is Recall@10 `0.9262`, MRR@10 `0.6366`, and NDCG@10
+`0.6551`. English Recall@10 is `0.9015`; Chinese Recall@10 is `0.9500`.
+This baseline is valid only for selected-paper QA. The unchanged global
+60-paper report remains the discovery control and must not be compared against
+the paper-scoped score as if both tasks had the same information available.
+
+The controlled Dual candidate (Flat primary plus 400/500-Token structured
+Child auxiliary retrieval) was rejected on the same 177 questions. It reduced
+overall Recall@10 from `0.9262` to `0.8870`, Chinese Recall@10 from `0.9500`
+to `0.8667`, MRR@10 from `0.6366` to `0.5785`, and increased p95 from
+`384.0 ms` to `448.0 ms`. English Recall@10 improved only slightly to
+`0.9080`. The decision artifact is
+`eval/reports/paper-scoped-flat-vs-dual-v1.json`; the frozen Flat baseline is
+unchanged.
+
+Reproduction:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\evaluate_mixed_dual_mineru.py `
+  --mode flat `
+  --scope paper `
+  --output eval\reports\mixed-mineru-flat2000-30zh-30en-bailian-paper-scoped-final-v1.json `
+  --state-dir .taskforge\eval-runs\mixed-mineru-flat2000-30zh-30en-bailian-all-v1
 ```

@@ -237,7 +237,10 @@ class EvidenceSearchRequest(StrictModel):
     scope_version: int | None = Field(default=None, ge=1)
     query: str = Field(min_length=1, max_length=4_000)
     intent: EvidenceIntent = "general_fact"
-    top_k: int = Field(default=10, ge=1, le=50)
+    # Paper-search returns eight bounded evidence windows to match the
+    # production Planner/Evaluator evidence budget. Recall@10/50 are measured
+    # from the complete reranked trace by the offline evaluator.
+    top_k: int = Field(default=8, ge=1, le=50)
     candidate_k: int = Field(default=50, ge=10, le=100)
     mode: Literal["standard", "rigorous"] = "standard"
 
@@ -262,12 +265,19 @@ class EvidenceCard(StrictModel):
     scope_version: int | None = Field(default=None, ge=1)
     paper_id: str | None = Field(default=None, max_length=240)
     chunk_id: str | None = Field(default=None, max_length=512)
+    rag_profile: Literal["current", "optimized"] = "current"
+    rag_ablation: Literal["a", "b", "c", "d", "e"] = "a"
     source: str = Field(min_length=1, max_length=2_048)
     title: str | None = Field(default=None, max_length=500)
     section: str | None = Field(default=None, max_length=500)
     page: str | None = Field(default=None, max_length=240)
     evidence_type: str = Field(default="paragraph", min_length=1, max_length=128)
-    snippet: str = Field(min_length=1, max_length=500)
+    visual_artifact_ids: list[str] = Field(default_factory=list, max_length=32)
+    visual_pending: bool = False
+    snippet: str = Field(min_length=1, max_length=3_000)
+    text_start: int = Field(default=0, ge=0)
+    text_end: int | None = Field(default=None, ge=1)
+    presentation_strategy: str = Field(default="full_child", min_length=1, max_length=128)
     score: float = Field(default=0.0, ge=0.0)
     retrieval_sources: list[str] = Field(default_factory=list, max_length=16)
     supported_requirements: list[str] = Field(default_factory=list, max_length=32)
@@ -327,8 +337,34 @@ class RetrievalConfidence(StrictModel):
     section_match: float = Field(default=0.0, ge=0.0, le=1.0)
     citation_ready_count: int = Field(default=0, ge=0)
     scope_paper_coverage: float = Field(default=0.0, ge=0.0, le=1.0)
+    unresolved_visual_count: int = Field(default=0, ge=0)
     sufficient: bool = False
     reasons: list[str] = Field(default_factory=list, max_length=16)
+
+
+class RetrievalTraceHit(StrictModel):
+    chunk_id: str = Field(min_length=1, max_length=512)
+    rank: int = Field(ge=1, le=500)
+    score: float
+    retrieval_sources: list[str] = Field(default_factory=list, max_length=16)
+    text_start: int | None = Field(default=None, ge=0)
+    text_end: int | None = Field(default=None, ge=1)
+    child_score: float | None = None
+    context_score: float | None = None
+    final_score: float | None = None
+    parent_context_used: bool = False
+    heading_path_used: bool = False
+    parent_rank_before: int | None = Field(default=None, ge=1, le=500)
+    parent_rank_after: int | None = Field(default=None, ge=1, le=500)
+
+
+class RetrievalTrace(StrictModel):
+    protocol: Literal["research.retrieval_trace.v1"] = "research.retrieval_trace.v1"
+    query: str = Field(min_length=1, max_length=4_000)
+    query_variants: list[str] = Field(min_length=1, max_length=3)
+    candidate_hits: list[RetrievalTraceHit] = Field(default_factory=list, max_length=100)
+    reranked_hits: list[RetrievalTraceHit] = Field(default_factory=list, max_length=100)
+    returned_hits: list[RetrievalTraceHit] = Field(default_factory=list, max_length=50)
 
 
 class ScopeEvidenceResult(StrictModel):
@@ -338,12 +374,16 @@ class ScopeEvidenceResult(StrictModel):
     scope_id: str = Field(min_length=1, max_length=240)
     scope_version: int = Field(ge=1)
     query: str = Field(min_length=1, max_length=4_000)
+    query_variants: list[str] = Field(min_length=1, max_length=3)
+    query_expansion_error: str | None = Field(default=None, max_length=1_000)
     routed_intent: EvidenceIntent
     rewritten_query: str | None = Field(default=None, max_length=4_000)
     retrieval_rounds: int = Field(default=1, ge=1, le=2)
     activated_operators: list[str] = Field(default_factory=list, max_length=8)
     evidence: list[EvidenceCard] = Field(default_factory=list, max_length=50)
     confidence: RetrievalConfidence
+    retrieval_traces: list[RetrievalTrace] = Field(default_factory=list, max_length=2)
+    retrieval_route: Literal["english", "multilingual", "multilingual_fallback"] = "english"
 
 
 class IngestionStatus(StrictModel):
@@ -411,12 +451,105 @@ class WriterHandoff(StrictModel):
     protocol: Literal["research.writer_handoff.v1"] = "research.writer_handoff.v1"
     draft: DraftArtifact
     claim_manifest: list[ClaimRecord] = Field(default_factory=list, max_length=6)
+    # Compact answer for benchmark scoring and machine consumers. The claim
+    # manifest remains the complete user-facing explanation with citations.
+    # Keep it optional while older persisted fixtures migrate to the contract.
+    direct_answer: str = Field(default="", max_length=500)
+
+    @model_validator(mode="after")
+    def draft_claim_ids_match_manifest(self) -> WriterHandoff:
+        draft_ids = self.draft.claim_ids
+        manifest_ids = [claim.claim_id for claim in self.claim_manifest]
+        if len(manifest_ids) != len(set(manifest_ids)):
+            raise ValueError("writer claim_manifest contains duplicate claim IDs")
+        if draft_ids != manifest_ids:
+            raise ValueError(
+                "writer draft claim_ids must exactly match claim_manifest order"
+            )
+        return self
 
 
 class CriticHandoff(StrictModel):
     protocol: Literal["research.critic_handoff.v1"] = "research.critic_handoff.v1"
     patches: list[ReviewPatch] = Field(default_factory=list, max_length=6)
     verdict: Literal["accept", "needs_revision", "more_evidence"]
+
+
+class FinalResearchAnswer(StrictModel):
+    """Deterministic answer projection from Writer claims and Critic patches."""
+
+    protocol: Literal["research.final_answer.v1"] = "research.final_answer.v1"
+    answer: str = Field(min_length=1, max_length=4_000)
+    direct_answer: str = Field(default="", max_length=500)
+    evidence_ids: list[str] = Field(default_factory=list, max_length=24)
+    included_claim_ids: list[str] = Field(default_factory=list, max_length=6)
+    removed_claim_ids: list[str] = Field(default_factory=list, max_length=6)
+    unresolved_claim_ids: list[str] = Field(default_factory=list, max_length=6)
+    critic_verdict: Literal["accept", "needs_revision", "more_evidence"]
+
+
+def project_final_research_answer(
+    writer: WriterHandoff,
+    critic: CriticHandoff,
+) -> FinalResearchAnswer:
+    """Apply Critic patches without inventing new evidence or claim IDs.
+
+    A replacement may revise only the text of an existing Writer claim.  Its
+    citations remain the Writer's exact Evidence IDs; Critic output cannot
+    manufacture evidence through prose. ``remove`` and ``request_evidence``
+    both exclude an unsupported claim from the presented answer, while the
+    latter is retained as an explicit unresolved claim for diagnostics.
+    """
+
+    claims = {claim.claim_id: claim for claim in writer.claim_manifest}
+    patches: dict[str, ReviewPatch] = {}
+    for patch in critic.patches:
+        if patch.claim_id not in claims:
+            raise ValueError(f"critic patch references unknown claim: {patch.claim_id}")
+        if patch.claim_id in patches:
+            raise ValueError(f"critic emitted duplicate patches for claim: {patch.claim_id}")
+        if patch.action == "revise" and not (patch.replacement or "").strip():
+            raise ValueError("critic revise patch requires a non-empty replacement")
+        if patch.action != "revise" and patch.replacement is not None:
+            raise ValueError("only a revise patch may include replacement text")
+        patches[patch.claim_id] = patch
+
+    answer_parts: list[str] = []
+    evidence_ids: list[str] = []
+    included: list[str] = []
+    removed: list[str] = []
+    unresolved: list[str] = []
+    for claim in writer.claim_manifest:
+        patch = patches.get(claim.claim_id)
+        if patch is not None and patch.action in {"remove", "request_evidence"}:
+            removed.append(claim.claim_id)
+            if patch.action == "request_evidence":
+                unresolved.append(claim.claim_id)
+            continue
+        text = (
+            patch.replacement.strip()
+            if patch is not None and patch.action == "revise" and patch.replacement
+            else claim.claim_text.strip()
+        )
+        if not text:
+            continue
+        answer_parts.append(text)
+        included.append(claim.claim_id)
+        for evidence_id in claim.evidence_ids:
+            if evidence_id not in evidence_ids:
+                evidence_ids.append(evidence_id)
+
+    if not answer_parts:
+        raise ValueError("critic projection removed every answer claim")
+    return FinalResearchAnswer(
+        answer="\n\n".join(answer_parts),
+        direct_answer=writer.direct_answer.strip(),
+        evidence_ids=evidence_ids,
+        included_claim_ids=included,
+        removed_claim_ids=removed,
+        unresolved_claim_ids=unresolved,
+        critic_verdict=critic.verdict,
+    )
 
 
 ResearchRolePayload = Annotated[
@@ -430,6 +563,7 @@ __all__ = [
     "DraftArtifact",
     "EvidenceCard",
     "EvidenceLedger",
+    "FinalResearchAnswer",
     "EvidenceIntent",
     "EvidenceSearchRequest",
     "IngestionStatus",
@@ -447,6 +581,7 @@ __all__ = [
     "EvaluatorHandoff",
     "WriterHandoff",
     "CriticHandoff",
+    "project_final_research_answer",
     "ScopeEvidenceResult",
     "ScopeExpansionRequest",
     "SearchQuery",

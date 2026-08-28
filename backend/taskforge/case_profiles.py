@@ -197,7 +197,9 @@ def research_survey_profiles(
     role_steps = {
         "retrieval_planner": 1,
         "source_evaluator": 2,
-        "synthesis_writer": 2,
+        # The paper Writer may use paper_read and citation_verify before its
+        # mandatory submit_role_result call; each model turn consumes one step.
+        "synthesis_writer": 3,
         "critical_reviewer": 3,
     }
     research_tool_limits = {
@@ -356,11 +358,29 @@ def research_survey_slots(
         instruction=(
             "Write the survey from the upstream evidence-card blackboard; every "
             "claim must cite a real retrieved source (evidence_id or source). "
+            "Before the claim manifest, fill direct_answer with the shortest "
+            "standalone answer to the user's question. Prefer one exact noun "
+            "phrase copied verbatim from a cited evidence snippet; do not replace "
+            "specific names with a broad category. It must normally be at most 12 "
+            "tokens and answer only what was asked, not summarize the evidence. "
+            "For yes/no questions use exactly Yes, No, or Unanswerable. For "
+            "how-many or numeric questions use the number form exactly as written "
+            "in the source, without adding a second form. For what-is-baseline, "
+            "what-system, or list questions return only the specific names/items. "
+            "For task questions return only the task name. For comparison "
+            "questions return only the requested comparison. Do not put citations, "
+            "rationale, methods, or extra paper details in direct_answer. The "
+            "claim manifest is still the complete cited explanation shown to the "
+            "user. "
             "Use at most one paper_read and one citation_verify call for the "
             "highest-value cited claim, and never start "
             "a duplicate paper_search in this role. Emit no more than 6 claims. "
+            "DraftArtifact.claim_ids must exactly equal the ClaimManifest claim_id "
+            "values in the same order; never list a draft claim without its full "
+            "ClaimRecord. "
             "Submit research_payload "
-            "using research.writer_handoff.v1 with DraftArtifact and ClaimManifest."
+            "using research.writer_handoff.v1 with DraftArtifact, direct_answer, "
+            "and ClaimManifest."
             + writer_verdict
         ),
         depends_on=writer_depends,
@@ -397,9 +417,15 @@ def research_survey_slots(
         instruction=(
             "Critically review the claim manifest: do claims exceed what the "
             "cited sources support? Are counter-evidence and section gaps missed? "
+            "Treat direct_answer as a compact answer contract: do not rewrite it "
+            "for style, and preserve its yes/no, numeric, or list form unless a "
+            "specific cited fact is wrong. If no concrete factual defect exists, "
+            "accept the Writer answer without patches. "
             "Use at most one paper_read and one citation_verify call for the highest-"
             "risk cited claim; do not search "
             "for new papers or rewrite the draft, and emit no more than 6 patches. "
+            "Every patch claim_id must be copied exactly from the upstream "
+            "ClaimManifest; never patch a draft-only or invented claim ID. "
             "Use scope_expansion_request only for genuinely new paper IDs not already "
             "listed in the bound Scope. Missing evidence for an already selected paper "
             "is an ingestion/retrieval gap: report it in a patch and do not request "

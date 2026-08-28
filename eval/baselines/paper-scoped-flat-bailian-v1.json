@@ -1,0 +1,111 @@
+{
+  "schema_version": "taskforge.paper_scoped_rag_baseline.v1",
+  "baseline_id": "paper-scoped-flat-bailian-v1",
+  "status": "frozen",
+  "frozen_at": "2026-08-28T07:46:50.091350+00:00",
+  "purpose": "Final retrieval baseline when the caller has explicitly selected one paper.",
+  "scope_contract": {
+    "retrieval_scope": "paper",
+    "filter": "knowledge_base_id_per_paper",
+    "supported_use_case": "question answering over a selected paper",
+    "excluded_use_case": "global paper discovery without a selected paper",
+    "global_control_retained": true
+  },
+  "corpus": {
+    "english_papers": 30,
+    "chinese_papers": 30,
+    "total_papers": 60,
+    "english_cases": 87,
+    "chinese_cases": 90,
+    "total_cases": 177
+  },
+  "pipeline": {
+    "parser": "MinerU 3.4.4",
+    "chunking": "flat",
+    "flat_chunk_chars": 2000,
+    "flat_overlap_chars": 0,
+    "lexical_retrieval": "BM25",
+    "embedding_backend": "bailian",
+    "embedding_model": "text-embedding-v4",
+    "fusion": "RRF",
+    "reranker_backend": "bailian",
+    "reranker_model": "qwen3-rerank",
+    "candidate_k": 50,
+    "top_k": 50,
+    "graph_enabled": false,
+    "parent_aware_rerank_enabled": false,
+    "retrieval_text_enabled": false
+  },
+  "metrics": {
+    "overall": {
+      "recall_at_1": 0.4379943502824859,
+      "recall_at_5": 0.8354048964218456,
+      "recall_at_10": 0.9261770244821093,
+      "recall_at_20": 0.9649717514124294,
+      "recall_at_50": 0.976271186440678,
+      "mrr_at_10": 0.6366334857860282,
+      "ndcg_at_10": 0.6551082274793439,
+      "p50_ms": 262.34649999969406,
+      "p95_ms": 384.04940000009447
+    },
+    "english": {
+      "recall_at_10": 0.9015325670498084,
+      "recall_at_50": 0.9862068965517241,
+      "mrr_at_10": 0.5675606641123883,
+      "ndcg_at_10": 0.6081191470919459
+    },
+    "chinese": {
+      "recall_at_10": 0.95,
+      "recall_at_50": 0.9666666666666667,
+      "mrr_at_10": 0.7034038800705467,
+      "ndcg_at_10": 0.7005310051871618
+    }
+  },
+  "regression_floors": {
+    "overall_recall_at_10": 0.91,
+    "overall_recall_at_50": 0.97,
+    "overall_mrr_at_10": 0.62,
+    "overall_ndcg_at_10": 0.64,
+    "english_recall_at_10": 0.89,
+    "chinese_recall_at_10": 0.94
+  },
+  "artifacts": {
+    "baseline_report": {
+      "path": "eval/reports/mixed-mineru-flat2000-30zh-30en-bailian-paper-scoped-final-v1.json",
+      "sha256": "7d425d37da840fe9c4faa05e98ce00d391ffe4188be1cdfdd914695397dbc6c1"
+    },
+    "global_control_report": {
+      "path": "eval/reports/mixed-mineru-flat2000-30zh-30en-bailian-all-v1.json",
+      "sha256": "b7d581ba52743b6cdd6a37e0592bade325f668de4155818c9a2c1b1e3849d00a"
+    },
+    "evaluation_script": {
+      "path": "scripts/evaluate_mixed_dual_mineru.py",
+      "sha256": "77e83eb3a1e9cada2187bb019bcca195a93e70ee179609c666c8eb27302b7b54"
+    },
+    "english_split": {
+      "path": "eval/splits/qasper-dev-random-papers-30-v1.json",
+      "sha256": "3ecf027648f8d0d10c77644a194bf5d9539be210d403966f6d75eb0b9c6d4231"
+    },
+    "english_pdf_manifest": {
+      "path": ".taskforge/eval-cache/qasper-dev-random-papers-30-real-pdfs-v1.json",
+      "sha256": "d32de44bfc5692739b3cb55c30b3fe5688c510166735ce2bc682002e6b5053d7"
+    },
+    "chinese_queries": {
+      "path": "eval/queries/chinese-paper-rag-30-v2-precision/queries.jsonl",
+      "sha256": "98bae36ddaf0a2c1e8482ad1a79a54256f1d633427cb7981b98552f0d470d673"
+    },
+    "chinese_qrels": {
+      "path": "eval/queries/chinese-paper-rag-30-v2-precision/qrels.jsonl",
+      "sha256": "e64e5d1a308e1ac8e4e7e66e588609dbb467ff1c9f4467aea427d3cefddf61fd"
+    },
+    "chinese_chunks": {
+      "path": "eval/queries/chinese-paper-rag-30-v2-precision/chunks.jsonl.gz",
+      "sha256": "8272e31507b80cec254700e7f6a375a6e8eaeb859f8f7720dcfa8ce5e2ffe4e1"
+    }
+  },
+  "code": {
+    "git_commit": "d46791eea0ecee21d0fd95f07f6f0c552586d303",
+    "working_tree_dirty": true
+  },
+  "promotion_rule": "A candidate must use the same corpus, split, PDFs, parser, scope and labels; it must satisfy every regression floor. Global-discovery results must be compared only with the retained global control."
+}

@@ -173,11 +173,11 @@ Claude Code/Hermes 可使用标准 stdio 配置：
 | MultiHop | 0.9199 | 0.9893 |
 | PDF layout smoke | 1.0000 | 1.0000 |
 
-核心产品评测从用户上传 PDF 后开始，不把开放论文发现计入 Recall。当前直接上传链路使用 QASPER dev 锁定 100 题、38 篇论文，官方全文和证据标签被渲染为 PDF 后依次经过 upload → parse → chunk → index → bounded search。原 BM25 链路 Recall@1/5/10/50 为 `0.1148 / 0.3564 / 0.5535 / 0.9433`；Jina + MiniLM 归一化集成达到 `0.2364 / 0.5157 / 0.7493 / 0.9986`；PDF 分布校准 MiniLM 达到 `0.2870 / 0.6078 / 0.7871 / 0.9986`。加入显式 dataset/collection/method/baseline/result 意图章节先验并与校准模型顺序做 rank fusion 后，锁定测试达到 `0.2870 / 0.6078 / 0.8078 / 0.9986`，独立 50 题验证为 `0.4567 / 0.7017 / 0.8217 / 0.9817`。按当前“召回优先”策略，该策略作为 opt-in 高召回 profile，时延只保留 sanity bound；PDF 排版为本地生成，不能冒充出版方原始 PDF。
+核心产品评测从用户上传 PDF 后开始，不把开放论文发现计入 Recall。旧 direct-upload 报告及其页级重合数字全部作废。MinerU 3.4.4 locked 100 题历史门禁通过 `90%/90%` Gold 对齐要求；冻结的 Flat 链路段落 Recall@1/5/10/50 为 `0.2728/0.7367/0.8625/0.9830`，Agent-visible Recall@8 为 `0.8250`。相较同解析/分块、无精排的单 Query locked baseline，Recall@10 提升 `2.70` 个百分点、Recall@5 提升约 `2.68` 个百分点。旧 Parent–Child 同变量 A/B 的 Recall@5/10 为 `0.7022/0.8447`。当前产品已切换到标题增强、Parent-aware 二次重排和 lineage diversity 的 Parent–Child 链路，但尚未重跑评测，因此不把旧结果或未验证改造写成提升；实现与重跑顺序见 [`PDF_RAG_PIPELINE.md`](PDF_RAG_PIPELINE.md) 和 [`qasper-pdf-reranker-uplift-v1.json`](../eval/reports/qasper-pdf-reranker-uplift-v1.json)。
 
 报告见 [`research-scope-retrieval-gate-current.json`](../eval/reports/research-scope-retrieval-gate-current.json)。这些数值是用户确认后的证据检索，不是开放论文发现率。
 
-真实 DeepSeek `deepseek-v4-flash` 四角色业务 E2E 使用实时文献发现、两篇用户选文、Scope 摄取和两轮有界检索。预优化同任务为 212,874 Token；当前完整成功运行为 62,186 Token，下降 70.79%，四种协议齐全、跨角色载荷约 2,366 Token、Scope 越界 0。报告和基线分别为：
+历史真实 DeepSeek `deepseek-v4-flash` 四角色业务 E2E 使用实时文献发现、两篇用户选文、Scope 摄取和两轮有界检索。预优化同任务为 212,874 Token；当前完整成功运行为 62,186 Token，下降 70.79%，四种协议齐全、跨角色载荷约 2,366 Token、Scope 越界 0。该结果是一次 paired 业务任务，不是当前 PDF 默认链路的答案质量结果。另有历史 QASPER 四 Agent direct-answer replay：100 题 Token F1 `0.4761`，相对旧基线提升 `36.35` 个百分点，但使用旧 Parent–Child retrieval trace，不能替代当前 Flat 配置的 live E2E；报告见 [`qasper-four-agent-e2e-live-direct-answer-a1-final-v1.json`](../eval/reports/qasper-four-agent-e2e-live-direct-answer-a1-final-v1.json)。报告和基线分别为：
 
 - [`paper-research-business-e2e-live.json`](../eval/reports/paper-research-business-e2e-live.json)
 - [`paper-research-business-e2e-prebudget-live.json`](../eval/reports/paper-research-business-e2e-prebudget-live.json)

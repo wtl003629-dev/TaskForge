@@ -8,7 +8,10 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY backend ./backend
-RUN python -m pip install --upgrade pip && python -m pip install .
+# Keep the default runtime SQLite-compatible, while shipping the optional
+# PostgreSQL client/pool so the opt-in postgres Compose profile can execute
+# without rebuilding a different image.
+RUN python -m pip install --upgrade pip && python -m pip install '.[postgres]'
 
 COPY AGENTS.md ./AGENTS.md
 COPY docs ./docs
@@ -26,4 +29,4 @@ RUN groupadd --gid 10001 taskforge \
 USER taskforge
 EXPOSE 8000
 
-CMD ["uvicorn", "taskforge.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "taskforge.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]

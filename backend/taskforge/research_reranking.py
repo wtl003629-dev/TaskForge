@@ -10,8 +10,12 @@ default retrieval path.
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any, Literal
+
+import httpx
 
 from .hybrid_retrieval import (
     FastEmbedCrossEncoderReranker,
@@ -134,7 +138,13 @@ class FastEmbedEnsembleReranker:
 
     backend = "fastembed_ensemble"
 
-    def __init__(self, model_names: Sequence[str], *, batch_size: int = 32) -> None:
+    def __init__(
+        self,
+        model_names: Sequence[str],
+        *,
+        cache_dir: str | Path | None = None,
+        batch_size: int = 32,
+    ) -> None:
         raw = tuple(str(name).strip() for name in model_names if str(name).strip())
         parsed: list[tuple[float, str]] = []
         for name in raw:
@@ -158,7 +168,11 @@ class FastEmbedEnsembleReranker:
         self._models = tuple(
             TransformerCrossEncoderReranker(name.removeprefix("transformers::"), batch_size=batch_size)
             if name.startswith("transformers::")
-            else FastEmbedCrossEncoderReranker(name, batch_size=batch_size)
+            else FastEmbedCrossEncoderReranker(
+                name,
+                cache_dir=cache_dir,
+                batch_size=batch_size,
+            )
             for name in cleaned
         )
 
@@ -275,17 +289,178 @@ class TransformerCrossEncoderReranker:
         }
 
 
+class BailianReranker:
+    """Alibaba Cloud Model Studio ``qwen3-rerank`` adapter.
+
+    The adapter follows the provider-neutral ``score(query, documents)``
+    contract used by the research retriever.  The API returns ranked indexes;
+    this class restores scores to the caller's original candidate order so
+    downstream code never loses chunk identity.
+    """
+
+    backend = "bailian"
+    _MAX_DOCUMENTS = 500
+    _RETRYABLE_STATUS_CODES = frozenset({408, 409, 425, 429, 500, 502, 503, 504})
+
+    def __init__(
+        self,
+        model_name: str = "qwen3-rerank",
+        *,
+        api_key: str,
+        base_url: str = "https://dashscope.aliyuncs.com/compatible-api/v1",
+        timeout_seconds: float = 30.0,
+        max_retries: int = 2,
+        client: httpx.Client | None = None,
+        sleeper: Any = time.sleep,
+    ) -> None:
+        cleaned_key = str(api_key or "").strip()
+        if not cleaned_key:
+            raise RerankerContractError("bailian reranker requires an API key")
+        self.model_name = str(model_name or "").strip()
+        if self.model_name != "qwen3-rerank":
+            raise RerankerContractError(
+                "BailianReranker currently supports qwen3-rerank only"
+            )
+        cleaned_base = str(base_url or "").strip().rstrip("/")
+        if cleaned_base.endswith("/compatible-mode/v1"):
+            # The existing embedding base is OpenAI-compatible; qwen3-rerank
+            # uses Bailian's compatible-api route.
+            cleaned_base = cleaned_base[: -len("/compatible-mode/v1")] + "/compatible-api/v1"
+        if not cleaned_base.startswith("https://"):
+            raise RerankerContractError("Bailian reranker base URL must use HTTPS")
+        if timeout_seconds <= 0:
+            raise RerankerContractError("Bailian reranker timeout must be positive")
+        if not 0 <= int(max_retries) <= 10:
+            raise RerankerContractError("Bailian reranker max_retries must be 0..10")
+        self._api_key = cleaned_key
+        self._base_url = cleaned_base
+        self._timeout = httpx.Timeout(float(timeout_seconds))
+        self._max_retries = int(max_retries)
+        self._owns_client = client is None
+        self._client = client or httpx.Client(trust_env=False)
+        self._sleeper = sleeper
+        self._scored_pairs = 0
+        self._requests = 0
+
+    def score(self, query: str, documents: Sequence[str]) -> list[float]:
+        values = [str(document) for document in documents]
+        if not values:
+            return []
+        if len(values) > self._MAX_DOCUMENTS:
+            raise RerankerContractError(
+                f"Bailian qwen3-rerank accepts at most {self._MAX_DOCUMENTS} documents"
+            )
+        payload = {
+            "model": self.model_name,
+            "query": str(query),
+            "documents": values,
+            "top_n": len(values),
+            "instruct": "Given a web search query, retrieve relevant passages that answer the query.",
+        }
+        response: httpx.Response | None = None
+        for attempt in range(self._max_retries + 1):
+            try:
+                response = self._client.post(
+                    f"{self._base_url}/reranks",
+                    headers={
+                        "Authorization": f"Bearer {self._api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                    timeout=self._timeout,
+                )
+            except httpx.TimeoutException as exc:
+                if attempt < self._max_retries:
+                    self._sleeper(min(4.0, 0.25 * (2**attempt)))
+                    continue
+                raise RerankerContractError("Bailian reranker request timed out") from exc
+            except httpx.RequestError as exc:
+                if attempt < self._max_retries:
+                    self._sleeper(min(4.0, 0.25 * (2**attempt)))
+                    continue
+                raise RerankerContractError("Bailian reranker request failed") from exc
+            self._requests += 1
+            if 200 <= response.status_code < 300:
+                return self._parse_response(response, len(values))
+            if response.status_code in self._RETRYABLE_STATUS_CODES and attempt < self._max_retries:
+                self._sleeper(min(4.0, 0.25 * (2**attempt)))
+                continue
+            detail = response.text[:300].replace("\n", " ")
+            raise RerankerContractError(
+                f"Bailian reranker API returned HTTP {response.status_code}: {detail}"
+            )
+        raise RerankerContractError("Bailian reranker request failed")
+
+    def _parse_response(self, response: httpx.Response, expected_count: int) -> list[float]:
+        try:
+            payload = response.json()
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise RerankerContractError("Bailian reranker returned invalid JSON") from exc
+        if not isinstance(payload, dict):
+            raise RerankerContractError("Bailian reranker response must be an object")
+        raw_results = payload.get("results")
+        if raw_results is None and isinstance(payload.get("output"), dict):
+            raw_results = payload["output"].get("results")
+        if isinstance(raw_results, (str, bytes)) or not isinstance(raw_results, Sequence):
+            raise RerankerContractError("Bailian reranker response results must be an array")
+        scores = [float("-inf")] * expected_count
+        seen: set[int] = set()
+        for item in raw_results:
+            if not isinstance(item, dict):
+                raise RerankerContractError("Bailian reranker result must be an object")
+            raw_index = item.get("index")
+            if type(raw_index) is not int or not 0 <= raw_index < expected_count:
+                raise RerankerContractError("Bailian reranker result index is invalid")
+            if raw_index in seen:
+                raise RerankerContractError("Bailian reranker result indexes must be unique")
+            raw_score = item.get("relevance_score", item.get("score"))
+            try:
+                score = float(raw_score)
+            except (TypeError, ValueError) as exc:
+                raise RerankerContractError("Bailian reranker score is not numeric") from exc
+            if not math.isfinite(score):
+                raise RerankerContractError("Bailian reranker score is not finite")
+            scores[raw_index] = score
+            seen.add(raw_index)
+        if seen != set(range(expected_count)):
+            raise RerankerContractError("Bailian reranker response is missing candidate scores")
+        self._scored_pairs += expected_count
+        return scores
+
+    def telemetry(self) -> dict[str, Any]:
+        return {
+            "backend": self.backend,
+            "model": self.model_name,
+            "base_url": self._base_url,
+            "scored_pairs": self._scored_pairs,
+            "requests": self._requests,
+        }
+
+    def close(self) -> None:
+        if self._owns_client and not self._client.is_closed:
+            self._client.close()
+
+
 def build_research_reranker(
-    backend: Literal["fastembed", "flagembedding", "fastembed_ensemble", "transformers"],
+    backend: Literal["fastembed", "flagembedding", "fastembed_ensemble", "transformers", "bailian"],
     model_name: str,
     *,
     device: Literal["auto", "cpu", "cuda"] = "auto",
     batch_size: int = 32,
+    fastembed_cache_dir: str | Path | None = None,
+    bailian_api_key: str | None = None,
+    bailian_base_url: str = "https://dashscope.aliyuncs.com/compatible-api/v1",
+    bailian_timeout_seconds: float = 30.0,
+    bailian_max_retries: int = 2,
 ) -> Reranker:
     """Construct the configured adapter and fail loudly on unavailable extras."""
 
     if backend == "fastembed":
-        return FastEmbedCrossEncoderReranker(model_name, batch_size=batch_size)
+        return FastEmbedCrossEncoderReranker(
+            model_name,
+            cache_dir=fastembed_cache_dir,
+            batch_size=batch_size,
+        )
     if backend == "flagembedding":
         return BGEV2M3Reranker(
             model_name,
@@ -293,14 +468,27 @@ def build_research_reranker(
             batch_size=batch_size,
         )
     if backend == "fastembed_ensemble":
-        return FastEmbedEnsembleReranker(str(model_name).split(","), batch_size=batch_size)
+        return FastEmbedEnsembleReranker(
+            str(model_name).split(","),
+            cache_dir=fastembed_cache_dir,
+            batch_size=batch_size,
+        )
     if backend == "transformers":
         return TransformerCrossEncoderReranker(model_name, device=device, batch_size=batch_size)
+    if backend == "bailian":
+        return BailianReranker(
+            model_name,
+            api_key=bailian_api_key or "",
+            base_url=bailian_base_url,
+            timeout_seconds=bailian_timeout_seconds,
+            max_retries=bailian_max_retries,
+        )
     raise ValueError(f"unsupported research reranker backend: {backend}")
 
 
 __all__ = [
     "BGEV2M3Reranker",
+    "BailianReranker",
     "FastEmbedEnsembleReranker",
     "TransformerCrossEncoderReranker",
     "build_research_reranker",

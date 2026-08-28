@@ -284,6 +284,125 @@ def test_qasper_adapter_uses_only_exact_full_text_evidence(tmp_path) -> None:
     assert evidence_document.metadata["char_end"] == len(evidence)
 
 
+def test_qasper_adapter_preserves_all_legal_evidence_sets_and_duplicate_locations(
+    tmp_path,
+) -> None:
+    repeated = "Repeated evidence paragraph."
+    alternative = "A different legal evidence paragraph."
+    payload = {
+        "paper-1": {
+            "title": "A paper",
+            "abstract": "Abstract.",
+            "full_text": [
+                {
+                    "section_name": "Results",
+                    "paragraphs": [repeated, alternative, repeated],
+                }
+            ],
+            "qas": [
+                {
+                    "question": "What was found?",
+                    "question_id": "q1",
+                    "answers": [
+                        {
+                            "annotation_id": "worker-a",
+                            "answer": {
+                                "unanswerable": False,
+                                "extractive_spans": ["Repeated"],
+                                "free_form_answer": "",
+                                "yes_no": None,
+                                "evidence": [repeated],
+                            },
+                        },
+                        {
+                            "annotation_id": "worker-b",
+                            "answer": {
+                                "unanswerable": False,
+                                "extractive_spans": ["different"],
+                                "free_form_answer": "",
+                                "yes_no": None,
+                                "evidence": [alternative],
+                            },
+                        },
+                        {
+                            "annotation_id": "ignored",
+                            "answer": {
+                                "unanswerable": True,
+                                "evidence": [repeated],
+                            },
+                        },
+                    ],
+                }
+            ],
+        }
+    }
+    path = tmp_path / "qasper-multigold.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    case = load_qasper_dataset(path).cases[0]
+
+    assert case.qasper_gold is not None
+    assert [
+        item.annotation_id for item in case.qasper_gold.evidence_sets
+    ] == ["worker-a", "worker-b"]
+    first_unit = case.qasper_gold.evidence_sets[0].units[0]
+    assert len(first_unit.alternative_paragraph_ids) == 2
+    assert case.metadata["gold_annotation_count"] == 2
+
+
+def test_qasper_adapter_maps_float_selected_evidence_to_caption_without_injection(
+    tmp_path,
+) -> None:
+    caption = "Table 5: Results of Experiment A"
+    marker = f"FLOAT SELECTED: {caption}"
+    payload = {
+        "paper-1": {
+            "title": "A paper",
+            "abstract": "Abstract.",
+            "full_text": [
+                {"section_name": "Results", "paragraphs": ["Body text."]}
+            ],
+            "figures_and_tables": [
+                {"file": "table5.png", "caption": caption}
+            ],
+            "qas": [
+                {
+                    "question": "Which table contains the results?",
+                    "question_id": "q1",
+                    "answers": [
+                        {
+                            "annotation_id": "worker",
+                            "answer": {
+                                "unanswerable": False,
+                                "extractive_spans": ["Table 5"],
+                                "free_form_answer": "",
+                                "yes_no": None,
+                                "evidence": [marker],
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+    }
+    path = tmp_path / "qasper-float.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    dataset = load_qasper_dataset(path)
+    case = dataset.cases[0]
+    float_document = next(
+        item for item in dataset.documents if item.metadata["kind"] == "table"
+    )
+
+    assert case.qasper_gold is not None
+    assert case.qasper_gold.evidence_sets[0].units[0].text == marker
+    assert case.qasper_gold.evidence_sets[0].units[
+        0
+    ].alternative_paragraph_ids == [float_document.document_id]
+    assert float_document.text == caption
+    assert "FLOAT SELECTED" not in float_document.text
+
+
 def test_mmlongbench_adapter_maps_evidence_pages_without_pdf_download(tmp_path) -> None:
     path = tmp_path / "samples.json"
     path.write_text(

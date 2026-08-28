@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "policy_id": "mineru-pipeline-v1",
+  "status": "frozen_for_qasper_validation",
+  "parser": {
+    "name": "mineru",
+    "version": "3.4.4",
+    "backend": "pipeline",
+    "parse_method": "auto_with_explicit_ocr_for_no_machine_text",
+    "model_source": "local"
+  },
+  "quality_thresholds": {
+    "minimum_text_coverage": 0.8,
+    "maximum_garbled_character_ratio": 0.03,
+    "maximum_repeated_indexable_edge_text_ratio": 0.2
+  },
+  "hierarchy": {
+    "parent_target_tokens": 2000,
+    "parent_max_tokens": 3000,
+    "child_target_tokens": 400,
+    "child_max_tokens": 500,
+    "child_overlap_tokens": 60,
+    "atomic_types": [
+      "table",
+      "chart",
+      "equation",
+      "image",
+      "code",
+      "algorithm"
+    ]
+  },
+  "alignment_gate": {
+    "minimum_gold_unit_coverage": 0.9,
+    "minimum_fully_eligible_case_ratio": 0.9
+  },
+  "development_audit": {
+    "report_path": "eval/reports/mineru-real-pdf-parse-audit-15-frozen-v1.json",
+    "report_sha256": "f6bd34dc631a89876a5ffefc542a042f3a5eced2959b83958f639c45c91239fa",
+    "paper_count": 15,
+    "page_count": 197,
+    "parse_failure_count": 0,
+    "visual_pending_paper_count": 11,
+    "cold_parse_latency_ms": {
+      "mean": 10439.24110666679,
+      "p50": 7908.099199998105,
+      "p95": 24883.29683000011,
+      "max": 25160.255399998277
+    },
+    "machine_text_audit": {
+      "native_status": "ocr_required",
+      "mineru_status": "ready",
+      "mineru_text_coverage": 1.0,
+      "ocr_used": true
+    },
+    "visual_pages_reviewed": [
+      "1806.05513:1",
+      "1806.04330:9",
+      "1811.05711:2",
+      "1811.05711:22",
+      "1901.08079:14",
+      "1909.00015:5"
+    ],
+    "review_outcome": "accepted_after_heading_list_header_and_ocr_metadata_repairs"
+  },
+  "notes": [
+    "Explicit non-indexable headers, footers, and page numbers are excluded from the repeated edge-text leakage metric.",
+    "MinerU list_items are expanded at semantic item boundaries before Child packing.",
+    "Dense visual-page labels are retained as paragraph evidence but do not create Parent section boundaries.",
+    "Unparsed charts and diagrams remain visual_pending and require the separate A7 visual extractor."
+  ]
+}

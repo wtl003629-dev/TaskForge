@@ -15,14 +15,15 @@ The invariant is simple: a `ToolRequest` is a proposal, never authority.
 ## Verification labels
 
 “Implemented control” below means host code plus the stated automated/local
-tests exist. It does not by itself mean the control is selected by the product
-application, deployed behind production identity, or verified against a real
-external service. The current product path uses SQLite and lexical retrieval;
-PostgreSQL has fake DB-API coverage only, Neo4j has fake-driver coverage only,
-and semantic adapters use injected/mock tests. Remote MCP and real-model
-planning have no live success claim. These boundaries matter because a unit
-test can validate fail-closed logic but cannot validate network, service
-configuration, production RLS, model behavior or operational isolation.
+tests exist. It does not by itself mean the control is deployed behind
+production identity or verified against a real external service. SQLite remains
+the compatibility path; PostgreSQL is selectable and has fake DB-API coverage
+plus an opt-in live test, while the local PostgreSQL service/RLS gate is still
+pending. Neo4j has fake-driver coverage only, semantic adapters use
+injected/mock tests, and remote MCP and real-model planning have no live
+success claim. These boundaries matter because a unit test can validate
+fail-closed logic but cannot validate network, service configuration,
+production RLS, model behavior or operational isolation.
 
 ## Implemented controls
 
@@ -40,7 +41,7 @@ configuration, production RLS, model behavior or operational isolation.
 | Unbounded loops or output | Model steps, per-turn tool fanout, tool time, arguments, file size, match count, and outputs are bounded. | Provider token and monetary budgets should be enforced by a deployment adapter. |
 | Checkpoint tampering | SQLite payloads and persistent context JSON are revalidated; corrupt context rows fail closed individually. | SQLite has no application-level signature or encryption. |
 | Worker double execution | Atomic claim plus owner/token/version/expiry CAS, heartbeat, explicit retryable provider taxonomy, bounded retry, final-lease checkpoint reconciliation and receipt idempotency. | Checkpoint/queue/downstream writes are not one transaction; downstream systems must honor idempotency. Provider calls are at-least-once across ambiguous transport failures and may be charged twice. |
-| Duplicate multi-role execution | RoleRun uses an atomic SQLite execution claim, heartbeat and token fence before provider/schema/tool dispatch; only the active token can write durable state. Missing/waiting/terminal checkpoints are reconciled before new scheduling. | A provider request already in flight when a process stalls cannot be cancelled reliably and may be billed twice; downstream side effects still require business idempotency. |
+| Duplicate multi-role execution | RoleRun uses an atomic database execution claim, heartbeat and token fence before provider/schema/tool dispatch; only the active token can write durable state. Missing/waiting/terminal checkpoints are reconciled before new scheduling. | A provider request already in flight when a process stalls cannot be cancelled reliably and may be billed twice; downstream side effects still require business idempotency. |
 | Audit leakage or mutation | Credential-like keys/values are rejected, failures are bounded/redacted, tenant/run filters are mandatory, and DB triggers reject UPDATE/DELETE. | Central log access, retention and encrypted backups remain deployment responsibilities. |
 | Arbitrary MCP/SSRF | MCP is off by default; endpoint and allowlist are host config, DNS/IP receives a preflight check, redirects/private ranges are denied by default, schemas/results are bounded, and local policy remains authoritative. | Preflight resolution and httpx connection resolution are not IP-pinned, leaving DNS-rebinding TOCTOU; production needs egress enforcement. No live conformance suite; JSON-only revision 2025-11-25, not current 2026-07-28. |
 
@@ -65,12 +66,12 @@ configuration, production RLS, model behavior or operational isolation.
 ## Production gates not claimed by phase two
 
 - authenticated identity and role administration;
-- live PostgreSQL/psycopg execution, ordered base-plus-hardening migration execution, RLS verification and encrypted backups (an adapter and migrations are supplied, but the app does not select them and tests use fake DB-API connections);
+- live PostgreSQL/psycopg execution, ordered migration execution, RLS verification and encrypted backups (the app wiring, migrations, maintenance commands and opt-in live tests are supplied, but the local Docker engine is unavailable and the gate is not yet passed);
 - container or VM isolation for code execution;
 - certificate-pinned MCP and infrastructure-level egress controls;
 - production semantic embedding/reranking services and durable remote Qdrant indexing (local Qdrant and hash-vector degradation tests exist);
 - live Neo4j connectivity and graph-quality gate results (the optional adapter is fake-driver tested only);
-- PostgreSQL-backed distributed queue and exactly-once downstream effects;
+- exactly-once downstream effects; PostgreSQL-backed queue lease/CAS is implemented but still needs the live concurrency/recovery gate;
 - verified Docker image builds and container-runtime security controls (files are supplied, but Docker is unavailable on the current development machine);
 - red-team suites for prompt injection, data exfiltration and denial of service.
 - live-provider planning, tool-use, citation and adversarial quality evaluation after credentials are supplied.

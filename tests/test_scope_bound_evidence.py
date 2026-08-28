@@ -11,7 +11,9 @@ from taskforge.literature.evidence import (
 )
 from taskforge.literature.repository import LiteratureAccess, SQLiteLiteratureRepository
 from taskforge.persistent_context import SQLiteKnowledgeStore
+from taskforge.rag_experiment_profile import resolve_rag_experiment_profile
 from taskforge.research_protocol import (
+    EvidenceCard,
     EvidenceSearchRequest,
     LiteratureRequest,
     PaperCard,
@@ -103,13 +105,14 @@ def test_intent_router_covers_numeric_and_comparison_queries() -> None:
     assert route_evidence_intent("plain factual question", "claim_verification") == "claim_verification"
 
 
-def test_scope_bound_search_only_reads_selected_sources(tmp_path: Path) -> None:
+@pytest.mark.asyncio
+async def test_scope_bound_search_only_reads_selected_sources(tmp_path: Path) -> None:
     repository, knowledge, access = _ready_scope(tmp_path)
     service = ScopeBoundEvidenceService(
         repository,
         ResearchRetrievalService(knowledge, graph_enabled=False),
     )
-    result = service.search(
+    result = await service.search(
         access,
         EvidenceSearchRequest(
             scope_id="scope-1",
@@ -135,7 +138,7 @@ def test_scope_bound_search_only_reads_selected_sources(tmp_path: Path) -> None:
     assert verified.resolved_evidence_ids == (result.evidence[0].evidence_id,)
     assert not verified.missing_evidence_ids
 
-    escaped = service.search(
+    escaped = await service.search(
         access,
         EvidenceSearchRequest(
             scope_id="scope-1",
@@ -150,13 +153,14 @@ def test_scope_bound_search_only_reads_selected_sources(tmp_path: Path) -> None:
         service.read_evidence(access, "scope-1", "evidence-outside")
 
 
-def test_cross_paper_gap_triggers_one_bounded_rewrite(tmp_path: Path) -> None:
+@pytest.mark.asyncio
+async def test_cross_paper_gap_triggers_one_bounded_rewrite(tmp_path: Path) -> None:
     repository, knowledge, access = _ready_scope(tmp_path)
     service = ScopeBoundEvidenceService(
         repository,
         ResearchRetrievalService(knowledge, graph_enabled=False),
     )
-    result = service.search(
+    result = await service.search(
         access,
         EvidenceSearchRequest(
             scope_id="scope-1",
@@ -167,6 +171,134 @@ def test_cross_paper_gap_triggers_one_bounded_rewrite(tmp_path: Path) -> None:
     )
     assert result.routed_intent == "cross_paper_comparison"
     assert result.retrieval_rounds == 2
-    assert result.rewritten_query is not None
+    assert result.rewritten_query is None
     assert not result.confidence.sufficient
     assert "not enough selected papers are represented" in result.confidence.reasons
+
+
+@pytest.mark.asyncio
+async def test_scope_search_expands_before_one_shared_ranking(tmp_path: Path) -> None:
+    class StubExpander:
+        async def expand(self, query: str, intent: str) -> tuple[str, str]:
+            return "dense retrieval recall", "recall table 95 percent"
+
+    repository, knowledge, access = _ready_scope(tmp_path)
+    service = ScopeBoundEvidenceService(
+        repository,
+        ResearchRetrievalService(knowledge, graph_enabled=False),
+        query_expander=StubExpander(),  # type: ignore[arg-type]
+        query_expansion_mode="full",
+    )
+
+    result = await service.search(
+        access,
+        EvidenceSearchRequest(
+            scope_id="scope-1",
+            query="What did it report?",
+            top_k=5,
+            candidate_k=10,
+        ),
+    )
+
+    assert result.query_variants == [
+        "What did it report?",
+        "dense retrieval recall",
+        "recall table 95 percent",
+    ]
+    assert result.evidence
+    assert result.retrieval_traces[0].query_variants == result.query_variants
+
+
+@pytest.mark.asyncio
+async def test_scope_search_supports_keyword_only_expansion(tmp_path: Path) -> None:
+    class StubExpander:
+        async def expand(self, query: str, intent: str) -> tuple[str, str]:
+            return "unused synonym", "recall table 95 percent"
+
+    repository, knowledge, access = _ready_scope(tmp_path)
+    service = ScopeBoundEvidenceService(
+        repository,
+        ResearchRetrievalService(knowledge, graph_enabled=False),
+        query_expander=StubExpander(),  # type: ignore[arg-type]
+        query_expansion_mode="keyword",
+    )
+
+    result = await service.search(
+        access,
+        EvidenceSearchRequest(
+            scope_id="scope-1",
+            query="What did it report?",
+            top_k=5,
+            candidate_k=10,
+        ),
+    )
+
+    assert result.query_variants == ["What did it report?", "recall table 95 percent"]
+    assert result.rewritten_query == "recall table 95 percent"
+    assert result.retrieval_traces[0].query_variants == result.query_variants
+
+
+def test_confidence_tracks_entities_independently_from_common_terms() -> None:
+    confidence = ScopeBoundEvidenceService._confidence(
+        "How does BERT compare with RoBERTa?",
+        [
+            EvidenceCard(
+                evidence_id="evidence-1",
+                source="paper://selected",
+                paper_id="selected",
+                snippet="The paper explains how the models compare on accuracy.",
+            )
+        ],
+        selected_papers=["selected"],
+        intent="general_fact",
+    )
+
+    assert confidence.query_term_coverage > 0.0
+    assert confidence.entity_coverage == 0.0
+    assert "named entity constraints are not fully covered" in confidence.reasons
+
+
+def test_evidence_listing_keeps_current_and_optimized_profiles_isolated(
+    tmp_path: Path,
+) -> None:
+    repository, knowledge, access = _ready_scope(tmp_path)
+    repository.save_evidence(
+        access,
+        [
+            EvidenceCard(
+                evidence_id="evidence-current",
+                scope_id="scope-1",
+                scope_version=1,
+                paper_id="paper-selected",
+                source="paper://paper-selected",
+                snippet="current evidence",
+            ),
+            EvidenceCard(
+                evidence_id="evidence-optimized",
+                scope_id="scope-1",
+                scope_version=1,
+                paper_id="paper-selected",
+                chunk_id="chunk-optimized",
+                rag_profile="optimized",
+                rag_ablation="e",
+                source="paper://paper-selected",
+                snippet="optimized evidence",
+            ),
+        ],
+    )
+    current = ScopeBoundEvidenceService(
+        repository,
+        ResearchRetrievalService(knowledge, graph_enabled=False),
+    )
+    optimized = ScopeBoundEvidenceService(
+        repository,
+        ResearchRetrievalService(knowledge, graph_enabled=False),
+        experiment_profile=resolve_rag_experiment_profile("optimized", "e"),
+    )
+
+    assert [card.evidence_id for card in current.list_evidence(access, "scope-1")] == [
+        "evidence-current"
+    ]
+    assert [
+        card.evidence_id for card in optimized.list_evidence(access, "scope-1")
+    ] == ["evidence-optimized"]

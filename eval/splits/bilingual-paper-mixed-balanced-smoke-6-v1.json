@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "split_id": "bilingual-paper-mixed-balanced-smoke-6-v1",
+  "dataset": "TaskForge Paper RAG",
+  "source_split": "bilingual-paper-mixed-15-v1",
+  "selection": {
+    "strategy": "three English queries over Chinese papers plus three Chinese queries over English papers",
+    "selected_cases": 6
+  },
+  "case_ids": [
+    "qasper:jos-7684:c4f037a59a7448aab758341a8ed40eea50f44e01",
+    "qasper:jos-7684:a00c6f496fdae7ab8c5834cbd9b172ab2357e024",
+    "qasper:jos-7514:952fba6544728cfc166169395325432d659511d9",
+    "qasper:1806.05513:fc81d2bf23e1956886f3d10ef5ba1d24906ead4c",
+    "qasper:1910.12795:826e3759f055efa92bc97c1701f874bee15f4439",
+    "qasper:1910.08293:1069416ca3dcddb5cd7fe5c9a60f538f727de018"
+  ]
+}

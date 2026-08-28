@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
 from .document_ingestion import StructuredDocument, extract_pdf_document
 from .knowledge import KnowledgeChunk
-from .persistent_context import SQLiteKnowledgeStore
 from .security import ToolInputError, resolve_workspace_path
+
+
+class KnowledgeWriter(Protocol):
+    """Minimal persistence port required by the operator ingestion flow."""
+
+    def replace_document_version(self, chunks: Iterable[KnowledgeChunk]) -> int: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,7 +39,7 @@ class PDFIngestionResult(IngestionResult):
 
 
 def ingest_workspace_document(
-    store: SQLiteKnowledgeStore,
+    store: KnowledgeWriter,
     *,
     workspace_root: str | Path,
     relative_path: str,
@@ -119,7 +126,7 @@ def ingest_workspace_document(
 
 
 def ingest_workspace_pdf(
-    store: SQLiteKnowledgeStore,
+    store: KnowledgeWriter,
     *,
     workspace_root: str | Path,
     relative_path: str,

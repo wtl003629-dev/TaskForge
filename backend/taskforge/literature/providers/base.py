@@ -39,6 +39,25 @@ class LiteratureProvider(Protocol):
     async def citations(self, paper_id: str, limit: int) -> list[ProviderPaper]: ...
 
 
+class ProviderCache(Protocol):
+    """Synchronous content-cache port shared by SQLite and PostgreSQL."""
+
+    @staticmethod
+    def key(provider: str, url: str, params: Mapping[str, object] | None) -> str: ...
+
+    def get(self, key: str, *, now: float | None = None) -> tuple[int, Any] | None: ...
+
+    def put(
+        self,
+        key: str,
+        provider: str,
+        status_code: int,
+        payload: Any,
+        *,
+        now: float | None = None,
+    ) -> None: ...
+
+
 class SQLiteProviderCache:
     """Content cache that never stores authorization headers or API keys."""
 
@@ -144,7 +163,7 @@ class ResilientHTTPProvider:
         self,
         *,
         client: httpx.AsyncClient | None = None,
-        cache: SQLiteProviderCache | None = None,
+        cache: ProviderCache | None = None,
         timeout_seconds: float = 15.0,
         max_retries: int = 2,
         concurrency: int = 3,
@@ -353,6 +372,7 @@ class ResilientHTTPProvider:
 
 __all__ = [
     "LiteratureProvider",
+    "ProviderCache",
     "ProviderError",
     "ProviderUnavailableError",
     "ResilientHTTPProvider",

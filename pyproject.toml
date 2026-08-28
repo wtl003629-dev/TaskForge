@@ -31,6 +31,7 @@ evaluation = [
 ]
 semantic = [
   "qdrant-client>=1.18,<2",
+  "FlagEmbedding>=1.3,<2",
 ]
 reranker = [
   "FlagEmbedding>=1.3,<2",
@@ -38,6 +39,7 @@ reranker = [
 ]
 postgres = [
   "psycopg[binary]>=3.2,<4",
+  "psycopg-pool>=3.2,<4",
 ]
 graph = [
   "neo4j>=5.20,<7",

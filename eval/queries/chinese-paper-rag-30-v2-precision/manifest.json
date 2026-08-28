@@ -1,0 +1,30 @@
+{
+  "schema_version": "zhpaper_rag_annotation.v1",
+  "dataset_id": "chinese-paper-rag-30-v2-precision",
+  "source_dataset": "chinese-ai-oa-jos-v2",
+  "source_annotations": "D:\\my-coding\\TaskForge\\eval\\queries\\chinese-paper-rag-30-v1\\annotations.jsonl",
+  "source_path": "D:\\my-coding\\TaskForge\\.taskforge\\datasets\\chinese-ai-oa-jos-v2\\corpus.jsonl.gz",
+  "annotated_papers": 30,
+  "queries": 90,
+  "chunk_qrels": 104,
+  "paper_qrels": 90,
+  "chunks": 539,
+  "evidence_quotes": 112,
+  "model_evidence_quotes_verified": 77,
+  "curated_evidence_quotes_verified": 112,
+  "derived_evidence_quotes": 2,
+  "question_rewrites": 7,
+  "duplicate_question_groups": 0,
+  "duplicate_question_instances": 0,
+  "review_queue_queries": 2,
+  "annotation_status": "silver_curated",
+  "annotation_method": "deterministic source binding, quote provenance repair, and answer-grounded question specificity repair; no external API calls",
+  "human_reviewed": false,
+  "external_api_used": false,
+  "limitations": [
+    "Question and answer semantics remain inherited from the automatic silver annotations.",
+    "Seven repeated generic contribution questions were editorially rewritten using method terms already present in their answers; originals are retained in question_rewrites.jsonl.",
+    "Derived quotes are exact spans from the target chunk but require a human to confirm that they fully support the answer.",
+    "Page coordinates are not available in this corpus export."
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "split_id": "bilingual-paper-mixed-15-v1",
+  "dataset": "TaskForge Paper RAG",
+  "source": "Five real Chinese JOS PDFs plus five checksum-pinned real QASPER PDFs",
+  "case_ids": [
+    "qasper:jos-7684:c4f037a59a7448aab758341a8ed40eea50f44e01",
+    "qasper:jos-7684:a00c6f496fdae7ab8c5834cbd9b172ab2357e024",
+    "qasper:jos-7514:952fba6544728cfc166169395325432d659511d9",
+    "qasper:jos-7514:413b10b48a36cfbd151968e269f7734e9bdc20ce",
+    "qasper:jos-7369:28f756d63c4b7ce5baf1ce399c50239691c1d552",
+    "qasper:jos-7369:5aedaea395bfe1096056ed9873ccf1ad39baaf30",
+    "qasper:jos-7595:5d20bdcf0df8cbad7ebbb987035880b6f86b6bdc",
+    "qasper:jos-7595:32a87d72b9891d544a199b9033baa368667fb7d3",
+    "qasper:jos-6508:4555668364cf70e4cd2a876856915cfad5a556ec",
+    "qasper:jos-6508:45176129dfe1cdb3e340f0a01c2173d42048f1b0",
+    "qasper:1806.05513:fc81d2bf23e1956886f3d10ef5ba1d24906ead4c",
+    "qasper:1910.12795:826e3759f055efa92bc97c1701f874bee15f4439",
+    "qasper:1910.08293:1069416ca3dcddb5cd7fe5c9a60f538f727de018",
+    "qasper:1912.01852:841699307ee301684d63c4b584961ea65ce054d5",
+    "qasper:1910.14076:bbbf9f72db3de59cb84954e0578b286be5e845e9"
+  ],
+  "selected_rows": [
+    {
+      "case_id": "qasper:jos-7684:c4f037a59a7448aab758341a8ed40eea50f44e01",
+      "paper_id": "jos-7684",
+      "query": "Which two aspects does the survey use to classify retrieval-augmented generation routes?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7684:a00c6f496fdae7ab8c5834cbd9b172ab2357e024",
+      "paper_id": "jos-7684",
+      "query": "Which two processes does RAG combine to dynamically query an external knowledge base?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7514:952fba6544728cfc166169395325432d659511d9",
+      "paper_id": "jos-7514",
+      "query": "What are the two core stages of the NALSpatial method?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7514:413b10b48a36cfbd151968e269f7734e9bdc20ce",
+      "paper_id": "jos-7514",
+      "query": "How does NALSpatial determine the query type during natural-language understanding?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7369:28f756d63c4b7ce5baf1ce399c50239691c1d552",
+      "paper_id": "jos-7369",
+      "query": "Into how many types does the paper organize supplementary information from Issues?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7369:5aedaea395bfe1096056ed9873ccf1ad39baaf30",
+      "paper_id": "jos-7369",
+      "query": "After retrieving information from Issues, how is it used to generate supplementary code comments?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7595:5d20bdcf0df8cbad7ebbb987035880b6f86b6bdc",
+      "paper_id": "jos-7595",
+      "query": "What are the three core stages of the SmartGen-AADL method?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7595:32a87d72b9891d544a199b9033baa368667fb7d3",
+      "paper_id": "jos-7595",
+      "query": "What problem does the RAG module in SmartGen-AADL mainly address?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-6508:4555668364cf70e4cd2a876856915cfad5a556ec",
+      "paper_id": "jos-6508",
+      "query": "Which short-text problems in Mashup services does TWE-NMF address?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-6508:45176129dfe1cdb3e340f0a01c2173d42048f1b0",
+      "paper_id": "jos-6508",
+      "query": "How does TWE-NMF automatically determine the number of topics?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:1806.05513:fc81d2bf23e1956886f3d10ef5ba1d24906ead4c",
+      "paper_id": "1806.05513",
+      "query": "基线分类使用了哪种系统？",
+      "query_language": "zh"
+    },
+    {
+      "case_id": "qasper:1910.12795:826e3759f055efa92bc97c1701f874bee15f4439",
+      "paper_id": "1910.12795",
+      "query": "在低数据和类别不平衡问题上，实验中的分类性能提升了多少？",
+      "query_language": "zh"
+    },
+    {
+      "case_id": "qasper:1910.08293:1069416ca3dcddb5cd7fe5c9a60f538f727de018",
+      "paper_id": "1910.08293",
+      "query": "数据集中包含多少个不同的角色？",
+      "query_language": "zh"
+    },
+    {
+      "case_id": "qasper:1912.01852:841699307ee301684d63c4b584961ea65ce054d5",
+      "paper_id": "1912.01852",
+      "query": "歌声质量是如何衡量的？",
+      "query_language": "zh"
+    },
+    {
+      "case_id": "qasper:1910.14076:bbbf9f72db3de59cb84954e0578b286be5e845e9",
+      "paper_id": "1910.14076",
+      "query": "在小规模不平衡数据集上加入主题信息增强句子表示后，性能提升了多少？",
+      "query_language": "zh"
+    }
+  ],
+  "pdf_manifest": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\paper-scenarios\\bilingual-paper-mixed-15-v1-real-pdfs.json",
+  "synthetic_pdf_layout": null,
+  "report_metadata": {
+    "source": "Five real Chinese JOS PDFs plus five checksum-pinned real QASPER PDFs",
+    "evaluation_type": "bilingual_mixed_paper_corpus_cross_language_queries",
+    "benchmark_track": "scholarly_paper_fulltext_retrieval",
+    "annotation_status": "Chinese labels manually authored; English labels from QASPER with frozen Chinese query translations",
+    "metric_interpretation": "Recall/MRR/nDCG are evidence-paragraph retrieval over original-language paper text; this is not a public bilingual benchmark."
+  }
+}

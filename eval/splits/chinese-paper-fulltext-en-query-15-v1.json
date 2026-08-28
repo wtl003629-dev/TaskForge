@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "split_id": "chinese-paper-fulltext-en-query-15-v1",
+  "dataset": "TaskForge Paper RAG",
+  "source": "Five real JOS Chinese full-paper PDFs with frozen English translations of manually authored questions",
+  "case_ids": [
+    "qasper:jos-7684:c4f037a59a7448aab758341a8ed40eea50f44e01",
+    "qasper:jos-7684:a00c6f496fdae7ab8c5834cbd9b172ab2357e024",
+    "qasper:jos-7684:fcfd707fd048b258153e6c8a53c671df2675b914",
+    "qasper:jos-7514:952fba6544728cfc166169395325432d659511d9",
+    "qasper:jos-7514:413b10b48a36cfbd151968e269f7734e9bdc20ce",
+    "qasper:jos-7514:28fd1b57ddc2c10ee2a3aebf378a050c663dd5f5",
+    "qasper:jos-7369:28f756d63c4b7ce5baf1ce399c50239691c1d552",
+    "qasper:jos-7369:5aedaea395bfe1096056ed9873ccf1ad39baaf30",
+    "qasper:jos-7369:e638542b2494ee2dbeffe9823f715b55e46fbc95",
+    "qasper:jos-7595:5d20bdcf0df8cbad7ebbb987035880b6f86b6bdc",
+    "qasper:jos-7595:32a87d72b9891d544a199b9033baa368667fb7d3",
+    "qasper:jos-7595:2f118e729c3e6ae8e5f872a7ad259e1dc1061fe3",
+    "qasper:jos-6508:4555668364cf70e4cd2a876856915cfad5a556ec",
+    "qasper:jos-6508:45176129dfe1cdb3e340f0a01c2173d42048f1b0",
+    "qasper:jos-6508:e58687c27572537aca8e51e211d13b9ab9a7e4f4"
+  ],
+  "selected_rows": [
+    {
+      "case_id": "qasper:jos-7684:c4f037a59a7448aab758341a8ed40eea50f44e01",
+      "paper_id": "jos-7684",
+      "query": "Which two aspects does the survey use to classify retrieval-augmented generation routes?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7684:a00c6f496fdae7ab8c5834cbd9b172ab2357e024",
+      "paper_id": "jos-7684",
+      "query": "Which two processes does RAG combine to dynamically query an external knowledge base?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7684:fcfd707fd048b258153e6c8a53c671df2675b914",
+      "paper_id": "jos-7684",
+      "query": "What types of application tasks does the paper say RAG is better suited for?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7514:952fba6544728cfc166169395325432d659511d9",
+      "paper_id": "jos-7514",
+      "query": "What are the two core stages of the NALSpatial method?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7514:413b10b48a36cfbd151968e269f7734e9bdc20ce",
+      "paper_id": "jos-7514",
+      "query": "How does NALSpatial determine the query type during natural-language understanding?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7514:28fd1b57ddc2c10ee2a3aebf378a050c663dd5f5",
+      "paper_id": "jos-7514",
+      "query": "What average response time, translatability, and translation accuracy does NALSpatial report?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7369:28f756d63c4b7ce5baf1ce399c50239691c1d552",
+      "paper_id": "jos-7369",
+      "query": "Into how many types does the paper organize supplementary information from Issues?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7369:5aedaea395bfe1096056ed9873ccf1ad39baaf30",
+      "paper_id": "jos-7369",
+      "query": "After retrieving information from Issues, how is it used to generate supplementary code comments?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7369:e638542b2494ee2dbeffe9823f715b55e46fbc95",
+      "paper_id": "jos-7369",
+      "query": "To what coverage did GPT-4o comments of human supplementary comments improve in the experiment?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7595:5d20bdcf0df8cbad7ebbb987035880b6f86b6bdc",
+      "paper_id": "jos-7595",
+      "query": "What are the three core stages of the SmartGen-AADL method?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7595:32a87d72b9891d544a199b9033baa368667fb7d3",
+      "paper_id": "jos-7595",
+      "query": "What problem does the RAG module in SmartGen-AADL mainly address?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-7595:2f118e729c3e6ae8e5f872a7ad259e1dc1061fe3",
+      "paper_id": "jos-7595",
+      "query": "Compared with simple prompt engineering, how did the method change component error rate and FBERT?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-6508:4555668364cf70e4cd2a876856915cfad5a556ec",
+      "paper_id": "jos-6508",
+      "query": "Which short-text problems in Mashup services does TWE-NMF address?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-6508:45176129dfe1cdb3e340f0a01c2173d42048f1b0",
+      "paper_id": "jos-6508",
+      "query": "How does TWE-NMF automatically determine the number of topics?",
+      "query_language": "en"
+    },
+    {
+      "case_id": "qasper:jos-6508:e58687c27572537aca8e51e211d13b9ab9a7e4f4",
+      "paper_id": "jos-6508",
+      "query": "Compared with existing service-clustering methods, what is the overall trend of the TWE-NMF results?",
+      "query_language": "en"
+    }
+  ],
+  "pdf_manifest": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\paper-scenarios\\chinese-paper-fulltext-en-query-15-v1-real-pdfs.json",
+  "synthetic_pdf_layout": null,
+  "report_metadata": {
+    "source": "Five real JOS Chinese full-paper PDFs with frozen English translations of manually authored questions",
+    "evaluation_type": "cross_language_query_to_chinese_fulltext",
+    "benchmark_track": "scholarly_paper_fulltext_retrieval",
+    "annotation_status": "manual_auditable_smoke_cohort",
+    "metric_interpretation": "Recall/MRR/nDCG are evidence-paragraph retrieval over parser-native gold spans."
+  }
+}

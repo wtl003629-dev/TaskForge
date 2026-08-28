@@ -1,0 +1,24 @@
+{
+  "schema_version": "zhpaper_rag_annotation.v1",
+  "dataset_id": "chinese-paper-rag-30-v1",
+  "source_dataset": "chinese-ai-oa-jos-v2",
+  "source_path": "D:\\my-coding\\TaskForge\\.taskforge\\datasets\\chinese-ai-oa-jos-v2\\corpus.jsonl.gz",
+  "selection_seed": 20260827,
+  "requested_papers": 30,
+  "annotated_papers": 30,
+  "queries": 90,
+  "chunk_qrels": 104,
+  "paper_qrels": 90,
+  "chunks": 539,
+  "evidence_quotes": 112,
+  "evidence_quotes_verified": 77,
+  "duplicate_question_instances": 5,
+  "annotation_status": "silver",
+  "annotation_method": "DeepSeek generation plus deterministic evidence-quote validation",
+  "human_reviewed": false,
+  "limitations": [
+    "Questions and answers are automatically generated and require human audit for gold-standard use.",
+    "Evidence is bound to deterministic 1800-character chunks; page coordinates are not available in this corpus export.",
+    "qrels.jsonl is chunk-level; paper_qrels.jsonl is document-level."
+  ]
+}

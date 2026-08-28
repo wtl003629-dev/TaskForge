@@ -113,7 +113,7 @@ intake -> compliance --\
 - Downstream context separates `host_verified` facts from
   `model_untrusted` proposed facts, dependency summaries, handoffs and
   role-private memory under a 16,000-character hard budget.
-- A SQLite claim token and lease fence run before provider schema/model calls
+- A database-backed claim token and lease fence run before provider schema/model calls
   and every tool dispatch. This prevents a stale worker from writing state or
   executing a tool after another worker takes over. A provider HTTP request
   already in flight cannot be withdrawn, so model-call exactly-once is not
@@ -124,7 +124,7 @@ intake -> compliance --\
 
 ## Phase-two persistence and execution
 
-- Checkpoints, Knowledge/Memory, and Operations are separate SQLite stores. Knowledge/Memory rows use composite tenant identity; retrieval performs tenant/validity prefiltering before ACL/scope and deterministic ranking.
+- Checkpoints, Knowledge/Memory, and Operations share a backend-neutral contract. SQLite remains the compatibility path; PostgreSQL uses composite tenant identity, forced RLS, JSONB and transaction-local tenant settings. Retrieval performs tenant/validity prefiltering before ACL/scope and deterministic ranking.
 - Safe ingestion turns one operator-selected UTF-8 workspace document into bounded, provenance-carrying chunks and atomically replaces the selected document version.
 - A queued run starts from a durable `PENDING` checkpoint. Workers use `BEGIN IMMEDIATE` claim and subsequent owner + opaque token + lease version + expiry CAS. Only failures explicitly classified as retryable (network/timeout and selected HTTP 408/409/425/429/5xx responses) reset the durable cursor to `PENDING`; configuration, authentication, and response-shape failures terminate without replay. Retryable failures use backoff and dead-letter after a bounded attempt count. An expired final-attempt lease receives one reconciliation claim: a terminal checkpoint is completed without another provider call, while a non-terminal checkpoint is dead-lettered.
 - Provider calls are at-least-once across an ambiguous timeout or connection loss. A retry can incur another provider request and charge; TaskForge does not claim provider-call exactly-once semantics.
@@ -146,7 +146,7 @@ real external service was exercised.
 | SQLite Knowledge/Memory + profile router | implemented | local integration and four-profile routing tests | default application path; BM25 is the default general-text backend | no external service required |
 | Qdrant hybrid retrieval | implemented | local in-memory Qdrant experiment; generic path remains an evaluation adapter | not selected by default online routing | no remote Qdrant verification |
 | FastEmbed/OpenAI semantic adapters | implemented | local BGE semantic QASPER evaluation plus injected provider tests | FastEmbed is explicit host opt-in; OpenAI embedding is not selected | no paid/live model verification |
-| PostgreSQL context adapter | implemented with migrations | fake DB-API tests only | not selectable by current app settings | no psycopg/PostgreSQL/RLS run |
+| PostgreSQL durable runtime and pgvector | implemented with migrations and backend wiring | fake DB-API tests plus opt-in live test | selected by `TASKFORGE_DATABASE_BACKEND=postgres`; no SQLite fallback | Docker/PostgreSQL/RLS/pgvector run pending on this machine |
 | Neo4j graph retriever | implemented | fake-driver tests only | not wired; quality gate is disabled | no Neo4j service or graph-quality result |
 | Remote MCP | governed client implemented | simulated HTTP tests | only when an operator explicitly configures and mounts it | no live remote server test |
 
@@ -234,18 +234,23 @@ nDCG@10 `0.5069` while preserving Candidate@50. TAT-QA, MultiHop and PDF
 routes do not inherit it.
 
 PostgreSQL migrations are ordered, not interchangeable. On an empty test
-database, apply `migrations/postgres/001_context.sql` first to create the
-schema, tables, baseline indexes and RLS, then apply
-`migrations/0002_context_postgres.sql` to harden policies and add indexes. Use
-`psql -v ON_ERROR_STOP=1` for each step and stop on the first failure. Applying
-the SQL alone neither changes the current `memory`/`sqlite` application backend
-selector nor proves live RLS isolation.
+database, apply the role/init boundary and
+`migrations/postgres/002_taskforge_runtime.sql` with the migration role, then
+run `scripts/migrate_sqlite_to_postgres.py` in dry-run, execute and verify
+mode with the least-privileged application DSN. The exact/HNSW comparison is
+provided by `scripts/freeze_rag_query_set.py` plus
+`scripts/verify_pgvector_retrieval.py`: the former freezes the existing
+1024-dimensional Bailian query cache and SQLite+NumPy Top-K reference, while
+the latter compares SQLite+NumPy, exact pgvector, and HNSW with Recall/MRR/NDCG
+and latency metrics. Applying the SQL alone does
+not prove live RLS isolation or business E2E; the opt-in
+`tests/test_postgres_live.py` test is the executable gate.
 
 ## Deployment boundaries still not claimed
 
 - The built-in demo provider is deterministic. The OpenAI Responses provider and native function-call continuation are tested with mocked HTTP responses. `scripts/run_live_openai_smoke.py` exists, but no live success is claimed until a user supplies credentials and explicitly runs it.
 - PDF ingestion, structure-aware BM25, adjacent-chunk expansion, table/numeric feature reranking and cross-document source-coverage RRF are wired into the product profile router. Local Qdrant named dense/sparse vectors, server-side RRF, Cross-Encoder and graph reranking remain evaluation or explicit opt-in paths. The no-key hash embedder is `degraded_nonsemantic` and excluded from semantic claims. QASPER's local BGE model can be selected online only with explicit FastEmbed host configuration; this does not claim remote Qdrant or paid/live model availability.
-- `postgres_context.py`, `migrations/postgres/001_context.sql` and the ordered hardening migration `migrations/0002_context_postgres.sql` provide a PostgreSQL runtime contract, indexes and forced default-deny RLS. Tests use a fake DB-API connection; the application does not select this adapter, and psycopg, a PostgreSQL service and live RLS have not been verified here.
+- `postgres_runtime.py`, the PostgreSQL stores, `migrations/postgres/002_taskforge_runtime.sql` and `tests/test_postgres_live.py` provide the PostgreSQL runtime contract, pgvector indexes and forced default-deny RLS. Fake DB-API tests pass; Docker/PostgreSQL/psycopg live execution and business E2E remain pending here because the local Docker engine is unavailable.
 - The MCP client pins the handshake-era `2025-11-25` revision and implements JSON responses only; if a server selects SSE it fails closed. DNS/IP preflight is not connection-level IP pinning, so egress controls remain required. The official current revision changed to stateless, per-request metadata in `2026-07-28`; that newer revision is not implemented. Tests use simulated HTTP, not a live remote server.
 - Workspace inspection tools are read-only. Report artifact and long-term Agent memory writes require idempotency and human approval; containerized code execution remains a later gate.
 - Header-derived local identity demonstrates ownership checks but is not production authentication. Approval locking is still single-process.

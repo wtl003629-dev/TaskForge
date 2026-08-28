@@ -315,6 +315,18 @@ async def test_disabled_by_default_and_client_ownership() -> None:
     assert owned._client.is_closed is True
 
 
+@pytest.mark.asyncio
+async def test_owned_client_can_ignore_environment_proxies() -> None:
+    provider = OpenAIChatCompletionsProvider(
+        api_key="secret",
+        enabled=True,
+        trust_env=False,
+    )
+
+    assert provider._client.trust_env is False
+    await provider.aclose()
+
+
 def test_chat_payload_accepts_native_nested_function_tool() -> None:
     payload = build_openai_chat_completions_payload(
         model="deepseek-chat",

@@ -24,7 +24,7 @@ Run backend tests from the repository root:
 Run the API locally:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn taskforge.app:app --reload
+.\.venv\Scripts\python.exe -m uvicorn taskforge.app:create_app --factory --reload
 ```
 
 Run a durable queue worker:

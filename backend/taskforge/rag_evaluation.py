@@ -28,6 +28,57 @@ class EvalCorpusDocument(StrictModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class GoldEvidenceUnit(StrictModel):
+    """One annotated evidence paragraph with one or more equivalent locations.
+
+    QASPER annotations identify evidence by paragraph text.  The same text can
+    legitimately occur at more than one location in a paper, so locations are
+    alternatives for a single denominator unit rather than separate relevant
+    items.
+    """
+
+    unit_id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    alternative_paragraph_ids: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def alternative_locations_are_unique(self) -> GoldEvidenceUnit:
+        if any(not item.strip() for item in self.alternative_paragraph_ids):
+            raise ValueError("alternative paragraph IDs must be non-empty")
+        if len(self.alternative_paragraph_ids) != len(
+            set(self.alternative_paragraph_ids)
+        ):
+            raise ValueError("alternative paragraph IDs must not contain duplicates")
+        return self
+
+
+class GoldEvidenceSet(StrictModel):
+    """The complete evidence set supplied by one answerable annotator."""
+
+    annotation_id: str = Field(min_length=1)
+    units: list[GoldEvidenceUnit] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def evidence_units_are_unique(self) -> GoldEvidenceSet:
+        unit_ids = [item.unit_id for item in self.units]
+        if len(unit_ids) != len(set(unit_ids)):
+            raise ValueError("gold evidence unit IDs must not contain duplicates")
+        return self
+
+
+class QasperGoldLabels(StrictModel):
+    """All independently valid evidence annotations for one QASPER question."""
+
+    evidence_sets: list[GoldEvidenceSet] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def annotation_ids_are_unique(self) -> QasperGoldLabels:
+        annotation_ids = [item.annotation_id for item in self.evidence_sets]
+        if len(annotation_ids) != len(set(annotation_ids)):
+            raise ValueError("QASPER annotation IDs must not contain duplicates")
+        return self
+
+
 class RAGEvalCase(StrictModel):
     case_id: str = Field(min_length=1)
     dataset: str = Field(min_length=1)
@@ -35,6 +86,7 @@ class RAGEvalCase(StrictModel):
     relevant_ids: list[str] = Field(min_length=1)
     category: str = Field(min_length=1)
     answer: str | list[str] | float | int | None = None
+    qasper_gold: QasperGoldLabels | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -1020,9 +1072,10 @@ def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEva
         paper_title = str(paper.get("title", "")).strip()
         abstract = str(paper.get("abstract", "")).strip()
         if abstract:
+            abstract_id = f"{parent_id}:abstract"
             documents.append(
                 EvalCorpusDocument(
-                    document_id=f"{parent_id}:abstract",
+                    document_id=abstract_id,
                     text=abstract,
                     source_uri=f"qasper://{stable_paper_id}/abstract",
                     metadata={
@@ -1046,6 +1099,7 @@ def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEva
                     },
                 )
             )
+            evidence_to_ids.setdefault(abstract, []).append(abstract_id)
         full_text = paper.get("full_text")
         if not isinstance(full_text, list):
             raise ValueError("QASPER paper full_text must be an array")
@@ -1127,6 +1181,57 @@ def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEva
                     },
                 )
             )
+        figures_and_tables = paper.get("figures_and_tables", [])
+        if figures_and_tables is None:
+            figures_and_tables = []
+        if not isinstance(figures_and_tables, list):
+            raise ValueError("QASPER figures_and_tables must be an array")
+        for float_index, raw_float in enumerate(figures_and_tables):
+            if not isinstance(raw_float, Mapping):
+                raise ValueError("QASPER figure/table entry must be an object")
+            caption = str(raw_float.get("caption", "")).strip()
+            if not caption:
+                continue
+            file_name = str(raw_float.get("file", "")).strip()
+            lowered = f"{file_name} {caption}".casefold()
+            kind = "table" if "table" in lowered else "figure"
+            document_id = f"{parent_id}:float:{float_index}"
+            documents.append(
+                EvalCorpusDocument(
+                    document_id=document_id,
+                    text=caption,
+                    source_uri=(
+                        f"qasper://{stable_paper_id}/{kind}/{float_index}"
+                    ),
+                    metadata={
+                        "kind": kind,
+                        "node_type": f"{kind}_caption",
+                        "section": kind,
+                        "section_title": (
+                            "Tables" if kind == "table" else "Figures"
+                        ),
+                        "subsection_title": None,
+                        "section_id": f"{parent_id}:section:{kind}s",
+                        "parent_id": parent_id,
+                        "paper_title": paper_title,
+                        "paper_id": stable_paper_id,
+                        "source": "qasper",
+                        "parent_document_id": parent_id,
+                        "float_index": float_index,
+                        "float_file": file_name,
+                        "previous_document_id": None,
+                        "next_document_id": None,
+                        "char_start": 0,
+                        "char_end": len(caption),
+                        "sentence_spans": _qasper_sentence_spans(caption),
+                    },
+                )
+            )
+            # QASPER uses this marker in evidence annotations to point at a
+            # figure/table caption.  It is an alignment alias only; the marker
+            # is never injected into the indexed caption text.
+            for evidence_alias in (caption, f"FLOAT SELECTED: {caption}"):
+                evidence_to_ids.setdefault(evidence_alias, []).append(document_id)
         qas = paper.get("qas")
         if not isinstance(qas, list):
             raise ValueError("QASPER paper qas must be an array")
@@ -1142,28 +1247,75 @@ def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEva
                 raise ValueError(
                     "QASPER question requires question, question_id, and answers"
                 )
-            annotation = next(
-                (
-                    item.get("answer")
-                    for item in answers
-                    if isinstance(item, Mapping)
-                    and isinstance(item.get("answer"), Mapping)
-                    and not item["answer"].get("unanswerable", False)
-                ),
-                None,
-            )
-            if not isinstance(annotation, Mapping):
+            gold_sets: list[GoldEvidenceSet] = []
+            annotations: list[Mapping[str, Any]] = []
+            seen_annotation_ids: set[str] = set()
+            for answer_index, item in enumerate(answers):
+                if not isinstance(item, Mapping):
+                    continue
+                annotation = item.get("answer")
+                if (
+                    not isinstance(annotation, Mapping)
+                    or annotation.get("unanswerable", False)
+                ):
+                    continue
+                raw_evidence = annotation.get("evidence", [])
+                if not isinstance(raw_evidence, list):
+                    continue
+                evidence_texts = list(
+                    dict.fromkeys(
+                        text
+                        for value in raw_evidence
+                        if (text := str(value).strip())
+                    )
+                )
+                # A legal corpus-native annotation must resolve every evidence
+                # paragraph exactly against the official full text.  Never
+                # silently shorten a partially unresolved annotation because
+                # that would make its Recall denominator easier.
+                if not evidence_texts or any(
+                    text not in evidence_to_ids for text in evidence_texts
+                ):
+                    continue
+                raw_annotation_id = str(
+                    item.get("annotation_id") or f"annotation-{answer_index}"
+                ).strip()
+                annotation_id = raw_annotation_id
+                duplicate_suffix = 2
+                while annotation_id in seen_annotation_ids:
+                    annotation_id = f"{raw_annotation_id}-{duplicate_suffix}"
+                    duplicate_suffix += 1
+                seen_annotation_ids.add(annotation_id)
+                units: list[GoldEvidenceUnit] = []
+                for evidence_index, evidence_text in enumerate(evidence_texts):
+                    digest = hashlib.sha256(evidence_text.encode("utf-8")).hexdigest()[:16]
+                    units.append(
+                        GoldEvidenceUnit(
+                            unit_id=(
+                                f"qasper:{stable_paper_id}:{question_id}:"
+                                f"{annotation_id}:evidence:{evidence_index}:{digest}"
+                            ),
+                            text=evidence_text,
+                            alternative_paragraph_ids=list(
+                                dict.fromkeys(evidence_to_ids[evidence_text])
+                            ),
+                        )
+                    )
+                gold_sets.append(
+                    GoldEvidenceSet(annotation_id=annotation_id, units=units)
+                )
+                annotations.append(annotation)
+            if not gold_sets:
                 continue
-            relevant: list[str] = []
-            evidence = annotation.get("evidence", [])
-            if isinstance(evidence, list):
-                for raw_evidence in evidence:
-                    evidence_text = str(raw_evidence).strip()
-                    for document_id in evidence_to_ids.get(evidence_text, []):
-                        if document_id not in relevant:
-                            relevant.append(document_id)
-            if not relevant:
-                continue
+            # Transitional compatibility for generic retrieval components that
+            # still require one list of document IDs.  Strict QASPER scoring
+            # below and the direct-upload evaluator consume ``qasper_gold`` and
+            # never use this first-annotation projection.
+            relevant = [
+                unit.alternative_paragraph_ids[0]
+                for unit in gold_sets[0].units
+            ]
+            annotation = annotations[0]
             answer: object = annotation.get("free_form_answer", "")
             if not answer:
                 spans = annotation.get("extractive_spans", [])
@@ -1180,11 +1332,14 @@ def load_qasper_dataset(path: str | Path, *, limit: int | None = None) -> RAGEva
                     relevant_ids=relevant,
                     category="text",
                     answer=answer,
+                    qasper_gold=QasperGoldLabels(evidence_sets=gold_sets),
                     metadata={
                         "paper_id": stable_paper_id,
                         "parent_document_id": parent_id,
                         "question_id": question_id,
-                        "evidence_count": len(relevant),
+                        "evidence_count": len(gold_sets[0].units),
+                        "gold_annotation_count": len(gold_sets),
+                        "legacy_relevant_ids_projection": True,
                     },
                 )
             )
@@ -1312,6 +1467,9 @@ __all__ = [
     "AnswerGroundingEvaluationSummary",
     "CitedAnswerPrediction",
     "EvalCorpusDocument",
+    "GoldEvidenceSet",
+    "GoldEvidenceUnit",
+    "QasperGoldLabels",
     "RAGEvalCase",
     "RAGEvalDataset",
     "RetrievalCaseMetrics",

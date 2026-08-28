@@ -73,6 +73,14 @@ _MAX_CLAIM_JSON_NODES = 10_000
 _CASE_CONTEXT_CHAR_BUDGET = 16_000
 _CASE_CONTEXT_ITEM_VALUE_BUDGET = 2_000
 _CASE_CONTEXT_TEXT_BUDGET = 1_200
+_RESEARCH_EVIDENCE_SNIPPET_BUDGET = 800
+_RESEARCH_SELECTED_EVIDENCE_TOTAL_BUDGET = 7_200
+_RESEARCH_SELECTED_EVIDENCE_MAX_SNIPPET = 2_600
+_RESEARCH_EMPTY_SELECTION_EVIDENCE_COUNT = 3
+_RESEARCH_FALLBACK_EVIDENCE_COUNT = 0
+_RESEARCH_FALLBACK_EVIDENCE_SNIPPET_BUDGET = 400
+_RESEARCH_RECEIPT_TEXT_BUDGET = 400
+_RESEARCH_RECEIPT_INPUT_BUDGET = 2_000
 # Reserve headroom so the final truncated_sections list cannot push the
 # envelope back over the hard budget after the pop-to-budget loop.
 _CASE_CONTEXT_HEADROOM = 1_024
@@ -151,6 +159,115 @@ def _bounded_context_value(value: Any) -> Any:
         "serialized_chars": len(rendered),
         "sha256": hashlib.sha256(rendered.encode("utf-8")).hexdigest(),
     }
+
+
+def _bounded_research_evidence_card(
+    value: Mapping[str, Any],
+    *,
+    snippet_budget: int = _RESEARCH_EVIDENCE_SNIPPET_BUDGET,
+) -> dict[str, Any]:
+    """Keep citation identity and useful text inside the research handoff budget.
+
+    A full model-facing EvidenceCard can contain a 2,600-character snippet and
+    extensive retrieval diagnostics. Passing eight such cards through the
+    16,000-character role-context envelope can make the generic budget guard
+    discard the *entire* evaluator dependency. The downstream Writer needs the
+    exact evidence ID plus the passage, not another copy of retrieval traces.
+    """
+
+    if not 256 <= snippet_budget <= 3_000:
+        raise ValueError("research evidence snippet budget must be between 256 and 3000")
+    snippet = str(value.get("snippet") or "")
+    if len(snippet) > snippet_budget:
+        snippet = (
+            snippet[: snippet_budget - 35]
+            + "... [host evidence text truncated]"
+        )
+    output: dict[str, Any] = {
+        "evidence_id": value.get("evidence_id"),
+        "source": value.get("source"),
+        "paper_id": value.get("paper_id"),
+        "page": value.get("page"),
+        "section": value.get("section"),
+        "evidence_type": value.get("evidence_type"),
+        "snippet": snippet,
+        "score": value.get("score"),
+        "verification_status": value.get("verification_status"),
+    }
+    return {key: child for key, child in output.items() if child is not None}
+
+
+def _bounded_selected_research_evidence_cards(
+    cards: Sequence[Mapping[str, Any]],
+    evidence_ids: Sequence[str],
+) -> list[dict[str, Any]]:
+    """Project only receipt-verified Evaluator selections into Writer context."""
+
+    by_id = {
+        str(card.get("evidence_id")): card
+        for card in cards
+        if isinstance(card.get("evidence_id"), str)
+        and str(card.get("evidence_id")).strip()
+    }
+    selected_ids = [
+        str(value)
+        for value in dict.fromkeys(str(value) for value in evidence_ids)
+        if str(value) in by_id
+    ]
+    # Preserve the Evaluator's receipt-backed choices, but always retain a
+    # small ranked head as a safety net. The Evaluator may miss a relevant
+    # passage while screening broad evidence; dropping every unselected card
+    # makes that mistake irreversible before the Writer sees the context.
+    ranked_ids = [
+        str(card.get("evidence_id"))
+        for card in cards
+        if isinstance(card.get("evidence_id"), str)
+        and str(card.get("evidence_id")).strip()
+    ]
+    selected_ids = selected_ids[:10]
+    selected = [by_id[evidence_id] for evidence_id in selected_ids if evidence_id in by_id]
+    if not selected:
+        # If the Evaluator produced no valid receipt, the ranked head becomes
+        # the primary set and receives the normal per-card budget.
+        selected_ids = ranked_ids[:_RESEARCH_EMPTY_SELECTION_EVIDENCE_COUNT]
+        selected = [by_id[evidence_id] for evidence_id in selected_ids if evidence_id in by_id]
+    if not selected:
+        return []
+    snippet_budget = min(
+        _RESEARCH_SELECTED_EVIDENCE_MAX_SNIPPET,
+        max(
+            _RESEARCH_EVIDENCE_SNIPPET_BUDGET,
+            _RESEARCH_SELECTED_EVIDENCE_TOTAL_BUDGET // len(selected),
+        ),
+    )
+    projected = [
+        _bounded_research_evidence_card(card, snippet_budget=snippet_budget)
+        for card in selected
+    ]
+    selected_set = set(selected_ids)
+    fallback_ids = [
+        evidence_id
+        for evidence_id in ranked_ids[:_RESEARCH_FALLBACK_EVIDENCE_COUNT]
+        if evidence_id not in selected_set
+    ]
+    projected.extend(
+        _bounded_research_evidence_card(
+            by_id[evidence_id],
+            snippet_budget=_RESEARCH_FALLBACK_EVIDENCE_SNIPPET_BUDGET,
+        )
+        for evidence_id in fallback_ids
+    )
+    return projected
+
+
+def _bounded_research_receipt_text(value: Any) -> str:
+    """Repair only non-factual receipt prose before strict persistence."""
+
+    text = value if isinstance(value, str) else str(value)
+    if len(text) <= _RESEARCH_RECEIPT_TEXT_BUDGET:
+        return text
+    marker = "... [host receipt truncated]"
+    return text[: _RESEARCH_RECEIPT_TEXT_BUDGET - len(marker)] + marker
 
 
 class CaseRuntimeError(RuntimeError):
@@ -269,7 +386,9 @@ def submit_role_result_spec(
     # generic verdict claim.  Keeping the legacy envelope wider preserves the
     # existing non-research case adapter.
     max_claims = 1 if require_research_payload else 64
-    max_summary_chars = 400 if require_research_payload else 12_000
+    max_summary_chars = (
+        _RESEARCH_RECEIPT_INPUT_BUDGET if require_research_payload else 12_000
+    )
     max_evidence_refs = 4 if require_research_payload else 32
 
     payload_models = {
@@ -1031,6 +1150,13 @@ class CaseAgentExecutor:
                     )
             normalized_arguments = deepcopy(arguments)
             if require_research_payload:
+                for field_name in ("summary", "handoff_summary"):
+                    if field_name in normalized_arguments:
+                        normalized_arguments[field_name] = (
+                            _bounded_research_receipt_text(
+                                normalized_arguments[field_name]
+                            )
+                        )
                 expected_protocol = {
                     "retrieval_planner": "research.planner_handoff.v1",
                     "source_evaluator": "research.evaluator_handoff.v1",
@@ -1639,16 +1765,36 @@ class CaseAgentExecutor:
             if research_payload.get("protocol") == "research.evaluator_handoff.v1":
                 ledger = research_payload.get("ledger")
                 if isinstance(ledger, Mapping):
-                    # Never trust model-authored IDs as proof of retrieval.
-                    # Replace them in the downstream projection with the exact
-                    # cards parsed from the successful governed search receipt.
+                    # A model-authored ID is never proof of retrieval. Keep
+                    # only selections that are present in the successful,
+                    # governed search receipt. This preserves the Evaluator's
+                    # filtering decision without allowing invented IDs into
+                    # the Writer context.
                     actual_ids = [
                         str(card["evidence_id"])
                         for card in evidence_cards
                         if isinstance(card.get("evidence_id"), str)
                     ][:10]
+                    requested_ids = ledger.get("evidence_ids", [])
+                    selected_ids = (
+                        [
+                            value
+                            for value in dict.fromkeys(
+                                str(item) for item in requested_ids
+                            )
+                            if value in actual_ids
+                        ][:10]
+                        if isinstance(requested_ids, list)
+                        else []
+                    )
+                    # A provider may omit an optional array despite the role
+                    # contract. Fall back to a small ranked head, never all
+                    # eight cards, so the dependency remains useful and fits
+                    # the bounded context envelope.
+                    if not selected_ids:
+                        selected_ids = actual_ids[:3]
                     projected_ledger = dict(ledger)
-                    projected_ledger["evidence_ids"] = actual_ids
+                    projected_ledger["evidence_ids"] = selected_ids
                     projected_ledger["receipt_ids"] = [
                         receipt.call_id
                         for receipt in tool_results
@@ -1660,7 +1806,7 @@ class CaseAgentExecutor:
                         "ledger": projected_ledger,
                     }
                     retrieved_evidence_refs = list(
-                        dict.fromkeys([*retrieved_evidence_refs, *actual_ids])
+                        dict.fromkeys([*retrieved_evidence_refs, *selected_ids])
                     )[:64]
             elif research_payload.get("protocol") == "research.writer_handoff.v1":
                 raw_manifest = research_payload.get("claim_manifest", [])
@@ -1675,6 +1821,12 @@ class CaseAgentExecutor:
             "evidence_ids": retrieved_evidence_refs[:64],
             "evidence_cards": evidence_cards,
             "claim_manifest": claim_manifest,
+            "direct_answer": (
+                str(research_payload.get("direct_answer") or "")[:500]
+                if isinstance(research_payload, Mapping)
+                and research_payload.get("protocol") == "research.writer_handoff.v1"
+                else ""
+            ),
             "research_payload": research_payload,
             "receipt_ids": [
                 receipt.call_id
@@ -1781,13 +1933,14 @@ class CaseAgentExecutor:
                 )
             )
 
-        def add(section: str, item: dict[str, Any]) -> None:
+        def add(section: str, item: dict[str, Any]) -> bool:
             values = envelope[section]
             assert isinstance(values, list)
             values.append(item)
             while values and rendered_size() >= _CONTEXT_EFFECTIVE_BUDGET:
                 values.pop()
                 truncated.add(section)
+            return bool(values and values[-1] is item)
 
         facts = sorted(
             self.store.list_shared_facts(access),
@@ -1864,14 +2017,37 @@ class CaseAgentExecutor:
                     delta["research_plan"] = deepcopy(payload.get("plan"))
                 elif slot.role_id == "synthesis_writer":
                     if payload_protocol == "research.evaluator_handoff.v1":
-                        delta["evidence_ledger"] = deepcopy(payload.get("ledger"))
-                        delta["evidence_cards"] = list(board.get("evidence_cards", []))[:10]
+                        ledger = payload.get("ledger")
+                        ledger = ledger if isinstance(ledger, Mapping) else {}
+                        delta["evidence_ledger"] = deepcopy(ledger)
+                        raw_cards = [
+                            card
+                            for card in list(board.get("evidence_cards", []))[:10]
+                            if isinstance(card, Mapping)
+                        ]
+                        raw_ids = ledger.get("evidence_ids", [])
+                        selected_ids = (
+                            [str(value) for value in raw_ids]
+                            if isinstance(raw_ids, list)
+                            else []
+                        )
+                        delta["evidence_cards"] = (
+                            _bounded_selected_research_evidence_cards(
+                                raw_cards,
+                                selected_ids,
+                            )
+                        )
                     else:
                         delta["evidence_ids"] = list(board.get("evidence_ids", []))[:64]
-                        delta["evidence_cards"] = list(board.get("evidence_cards", []))[:16]
+                        delta["evidence_cards"] = [
+                            _bounded_research_evidence_card(card)
+                            for card in list(board.get("evidence_cards", []))[:10]
+                            if isinstance(card, Mapping)
+                        ]
                 elif slot.role_id == "critical_reviewer":
                     if payload_protocol == "research.writer_handoff.v1":
                         delta["draft"] = deepcopy(payload.get("draft"))
+                        delta["direct_answer"] = str(payload.get("direct_answer") or "")[:500]
                         delta["claim_manifest"] = list(payload.get("claim_manifest", []))[:64]
                     else:
                         delta["claim_manifest"] = list(board.get("claim_manifest", []))[:32]

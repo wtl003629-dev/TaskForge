@@ -23,8 +23,11 @@ BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+from taskforge.config import Settings
 from taskforge.knowledge import KnowledgeChunk
 from taskforge.persistent_context import SQLiteKnowledgeStore
+from taskforge.postgres_context_store import PostgresContextStores
+from taskforge.postgres_runtime import PostgresRuntime
 
 _ATOM = "http://www.w3.org/2005/Atom"
 
@@ -89,7 +92,6 @@ def main() -> int:
     papers = fetch_arxiv(args.query, max_results=args.count)
     if not papers:
         raise SystemExit("arxiv returned no papers for the query")
-    store = SQLiteKnowledgeStore(args.store)
     chunks = []
     for paper in papers:
         chunk_id = hashlib.sha256(paper["id"].encode("utf-8")).hexdigest()[:24]
@@ -116,9 +118,34 @@ def main() -> int:
                 },
             )
         )
-    store.upsert_many(chunks)
+    settings = Settings()
+    if settings.database_backend == "postgres":
+        runtime = PostgresRuntime(
+            settings.database_url or "",
+            min_size=settings.postgres_pool_min_size,
+            max_size=settings.postgres_pool_max_size,
+            connect_timeout_seconds=settings.postgres_connect_timeout_seconds,
+        )
+        stores = PostgresContextStores(
+            settings.database_url or "",
+            min_size=settings.postgres_pool_min_size,
+            max_size=settings.postgres_pool_max_size,
+            connect_timeout=int(settings.postgres_connect_timeout_seconds),
+            runtime=runtime,
+        )
+        try:
+            stores.knowledge.upsert_many(chunks)
+        finally:
+            stores.close()
+            runtime.close()
+        destination = "PostgreSQL taskforge.taskforge.knowledge_chunks"
+    else:
+        args.store.parent.mkdir(parents=True, exist_ok=True)
+        with SQLiteKnowledgeStore(args.store) as store:
+            store.upsert_many(chunks)
+        destination = str(args.store.resolve())
     print(
-        f"seeded {len(chunks)} arxiv chunks into {args.store.resolve()} "
+        f"seeded {len(chunks)} arxiv chunks into {destination} "
         f"(kb=enterprise-review, acl=user:{args.user})"
     )
     return 0

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
+import struct
 
 import pytest
 from pydantic import ValidationError
@@ -1190,6 +1191,49 @@ def test_fastembed_cache_reuses_document_and_query_vectors(
     assert second.embed_query("same") == query_vector
     assert FakeTextEmbedding.document_batches == [["same"], ["second"]]
     assert FakeTextEmbedding.query_calls == ["same"]
+
+
+def test_fastembed_uses_injected_cache_transport_without_sqlite(monkeypatch, tmp_path) -> None:
+    class FakeTextEmbedding:
+        def __init__(self, *, model_name: str) -> None:
+            assert model_name == "fake-semantic"
+
+        def embed(self, documents, *, batch_size: int = 256):
+            values = list(documents)
+            if values == ["dimension probe"]:
+                return iter([[0.0, 1.0]])
+            return iter([[float(len(value)), 0.5] for value in values])
+
+        def query_embed(self, query: str):
+            return iter([[float(len(query)), 1.0]])
+
+    class CacheTransport:
+        def __init__(self) -> None:
+            self.rows: dict[str, list[float]] = {}
+            self.loads = 0
+            self.stores = 0
+
+        def load(self, *, identities, **_kwargs):
+            self.loads += 1
+            return {key: self.rows[key] for key, _ in identities if key in self.rows}
+
+        def store(self, rows):
+            self.stores += 1
+            for cache_key, _model, _kind, _digest, _dimension, blob in rows:
+                self.rows[cache_key] = list(struct.unpack("<2f", blob))
+
+    monkeypatch.setattr(hybrid_module, "TextEmbedding", FakeTextEmbedding)
+    cache = CacheTransport()
+    embedder = FastEmbedEmbedder(
+        "fake-semantic",
+        cache_store=cache,
+    )
+
+    assert embedder.embed_documents(["document"])[0] == [8.0, 0.5]
+    assert embedder.embed_query("query") == [5.0, 1.0]
+    assert cache.loads == 2
+    assert cache.stores == 2
+    assert not list(tmp_path.glob("*.sqlite3"))
 
 
 def test_fastembed_cache_corruption_fails_closed(monkeypatch, tmp_path) -> None:

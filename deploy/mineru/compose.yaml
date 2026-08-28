@@ -1,0 +1,48 @@
+services:
+  mineru:
+    profiles: ["mineru"]
+    build:
+      context: ../..
+      dockerfile: deploy/mineru/Dockerfile
+      args:
+        MINERU_VERSION: "3.4.4"
+    restart: unless-stopped
+    ports:
+      # Bound to loopback: TaskForge's default security policy permits local
+      # HTTP sidecars but requires HTTPS for a remote MinerU endpoint.
+      - "127.0.0.1:8001:8000"
+    environment:
+      # The pipeline model bundle is downloaded once into the D-drive bind
+      # mount. Runtime startup is intentionally offline/deterministic.
+      MINERU_MODEL_SOURCE: ${MINERU_MODEL_SOURCE:-local}
+      MINERU_API_OUTPUT_ROOT: /var/lib/mineru/output
+      HF_HOME: /opt/mineru-cache/huggingface
+      HUGGINGFACE_HUB_CACHE: /opt/mineru-cache/huggingface/hub
+      MODELSCOPE_CACHE: /opt/mineru-cache/modelscope
+      MINERU_TOOLS_CONFIG_JSON: /opt/mineru-cache/config/mineru.json
+    volumes:
+      - ${TASKFORGE_MINERU_DATA_ROOT:-D:/TaskForge/mineru}/cache:/opt/mineru-cache
+      - ${TASKFORGE_MINERU_DATA_ROOT:-D:/TaskForge/mineru}/output:/var/lib/mineru/output
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)); assert d['status']=='healthy' and d['version']=='3.4.4'",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s

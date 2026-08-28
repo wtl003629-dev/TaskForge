@@ -13,11 +13,14 @@ BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+from taskforge.config import Settings
 from taskforge.ingestion import (
     ingest_workspace_document,
     ingest_workspace_pdf,
 )
 from taskforge.persistent_context import SQLiteKnowledgeStore
+from taskforge.postgres_context_store import PostgresContextStores
+from taskforge.postgres_runtime import PostgresRuntime
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,33 +47,60 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    args.database.parent.mkdir(parents=True, exist_ok=True)
-    with SQLiteKnowledgeStore(args.database) as store:
-        common = {
-            "workspace_root": args.workspace,
-            "relative_path": args.path,
-            "tenant_id": args.tenant,
-            "knowledge_base_id": args.knowledge_base,
-            "version": args.version,
-            "version_order": args.version_order,
-            "acl": tuple(dict.fromkeys(args.acl)),
-            "chunk_chars": args.chunk_chars,
-        }
+    settings = Settings()
+    common = {
+        "workspace_root": args.workspace,
+        "relative_path": args.path,
+        "tenant_id": args.tenant,
+        "knowledge_base_id": args.knowledge_base,
+        "version": args.version,
+        "version_order": args.version_order,
+        "acl": tuple(dict.fromkeys(args.acl)),
+        "chunk_chars": args.chunk_chars,
+    }
+
+    def ingest(store: object):
         if Path(args.path).suffix.casefold() == ".pdf":
-            result = ingest_workspace_pdf(
+            return ingest_workspace_pdf(
                 store,
                 **common,
                 max_bytes=args.max_pdf_bytes,
                 max_pages=args.max_pdf_pages,
                 max_blocks=args.max_pdf_blocks,
             )
-        else:
-            result = ingest_workspace_document(
-                store,
-                **common,
-                overlap_chars=args.overlap_chars,
-            )
+        return ingest_workspace_document(
+            store,
+            **common,
+            overlap_chars=args.overlap_chars,
+        )
+
+    if settings.database_backend == "postgres":
+        runtime = PostgresRuntime(
+            settings.database_url or "",
+            min_size=settings.postgres_pool_min_size,
+            max_size=settings.postgres_pool_max_size,
+            connect_timeout_seconds=settings.postgres_connect_timeout_seconds,
+        )
+        stores = PostgresContextStores(
+            settings.database_url or "",
+            min_size=settings.postgres_pool_min_size,
+            max_size=settings.postgres_pool_max_size,
+            connect_timeout=int(settings.postgres_connect_timeout_seconds),
+            runtime=runtime,
+        )
+        try:
+            result = ingest(stores.knowledge)
+        finally:
+            stores.close()
+            runtime.close()
+        destination = "PostgreSQL taskforge.taskforge.knowledge_chunks"
+    else:
+        args.database.parent.mkdir(parents=True, exist_ok=True)
+        with SQLiteKnowledgeStore(args.database) as store:
+            result = ingest(store)
+        destination = str(args.database.resolve())
     print(json.dumps(asdict(result), ensure_ascii=False, indent=2, sort_keys=True))
+    print(f"persisted to {destination}")
     return 0
 
 

@@ -1,0 +1,245 @@
+{
+  "schema_version": "1.0",
+  "split_id": "taskforge-chinese-paper-fulltext-15-v1",
+  "dataset": "TaskForge Paper RAG",
+  "source": "Five open-access Journal of Software full-paper PDFs",
+  "source_files": [
+    {
+      "paper_id": "jos-7684",
+      "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-papers-jos-v1\\7684.pdf",
+      "sha256": "e77b81fc57cddc52f72dd23dc44aba9f9f7b3f40b45eaee3a5dac4539d9b454f"
+    },
+    {
+      "paper_id": "jos-7514",
+      "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-papers-jos-v1\\7514.pdf",
+      "sha256": "1b47e9bd5dac21584a3cd429f6793c4ac9a78a802605b07e5bcfca4e7dd058d8"
+    },
+    {
+      "paper_id": "jos-7369",
+      "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-papers-jos-v1\\7369.pdf",
+      "sha256": "a7d9142da43fdc97863e955a23b54dfce30e86b5b890df2289e299c0a220f890"
+    },
+    {
+      "paper_id": "jos-7595",
+      "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-papers-jos-v1\\7595.pdf",
+      "sha256": "a41eb81864a55e774bbf0c169279c481afc3b1d827eed705228883d5fbcc2be3"
+    },
+    {
+      "paper_id": "jos-6508",
+      "path": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-papers-jos-v1\\6508.pdf",
+      "sha256": "df4163ef6ca002fa404146960d2bb46c3860e91b8d1a31c152b6322dc441e5b8"
+    }
+  ],
+  "selection_policy": "Three manually authored evidence-grounded questions per paper",
+  "case_ids": [
+    "qasper:jos-7684:c5eabe88e945b91f9ea42c141ca664613829a20a",
+    "qasper:jos-7684:0eb4754302422fbafed222eda930f28c00251a1e",
+    "qasper:jos-7684:56e50c8854c1e74762a6179ed05017af58c049e5",
+    "qasper:jos-7514:8660d6b779375a55b26a8861c478ba24e030ffdb",
+    "qasper:jos-7514:b28bdda3ac90c78158eb66872b076319c7be49d1",
+    "qasper:jos-7514:ee0d4226e93d227e3a4c0b85e7aeff4d6b151c7c",
+    "qasper:jos-7369:09ceafa593ab6400eb7444456cdfc6cf6f3550d8",
+    "qasper:jos-7369:ce5e33998cf27795ae194176a38be50ab52690db",
+    "qasper:jos-7369:8ead884a19eb5737a6c7300e9b5724631c0621c6",
+    "qasper:jos-7595:c6ceacce14f9f752e3fb09f6dc30a493dc15720e",
+    "qasper:jos-7595:5d5bb19588aac71334d97289b59668931f78c3b4",
+    "qasper:jos-7595:01741dcc1a06a409e452590f60c9bfe794eedcb2",
+    "qasper:jos-6508:065c8b0ba0ccab433f5fd4d7fb0744104b19a943",
+    "qasper:jos-6508:be42b848cd4c71e92bf3acbc1003b457418e8370",
+    "qasper:jos-6508:d2e435e3d9029a62cf23a9533ee323dce136fedb"
+  ],
+  "selected_rows": [
+    {
+      "case_id": "qasper:jos-7684:c5eabe88e945b91f9ea42c141ca664613829a20a",
+      "paper_id": "jos-7684",
+      "question": "综述从哪两个方面对检索增强生成技术路线进行分类？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "摘 要: 随着深度学习和Transformer架构的不断发展, 基于大语言模型的自然语言处理任务取得了显著进展, 但 依然存在着认知幻觉、信息滞后和专业领域知识缺乏等问题. 为解决这些问题, 通过引入外部知识库的检索机制, 检索增强生成技术使模型不仅借助已有的知识, 还能实时检索外部数据, 从而提高生成内容的准确性、时"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7684:0eb4754302422fbafed222eda930f28c00251a1e",
+      "paper_id": "jos-7684",
+      "question": "RAG技术融合了哪两个过程，从而能够动态查询外部知识库？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        2
+      ],
+      "evidence_preview": [
+        "RAG技术融合了信息检索(information retrieval, IR)与自然语言生成(natural language generation, NLG), 如图2 所示, 使得语言模型在生成过程中可以动态查询外部知识库, 从而提升生成内容的准确性和可控性. 早期的检索增 强方法主要依赖于搜索引擎或知识图谱(如2"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7684:56e50c8854c1e74762a6179ed05017af58c049e5",
+      "paper_id": "jos-7684",
+      "question": "论文指出RAG更适合哪些类型的应用任务？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        6
+      ],
+      "evidence_preview": [
+        "从最重要应用场景的适应性来看, 传统微调适用于任务边界明确、数据充足的情境, 例如文本分类、实体识 别等; 提示工程适用于对准确率要求不高、交互成本较低的轻量型任务; 而RAG更适合用于知识密集、答案可 追溯性强、交互复杂的任务, 如企业内部问答系统、技术文档搜索、科研文献问答等场景, 具备更强的通用性与 扩展性."
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7514:8660d6b779375a55b26a8861c478ba24e030ffdb",
+      "paper_id": "jos-7514",
+      "question": "NALSpatial方法包含哪两个核心阶段？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "然而, 由于空间数据涉及复杂的几何关系、多样化的查询类型和对高精度语义理解的需求, 现有的Text2SQL技术 难以直接适用于空间数据库领域. 为了解决上述问题, 降低普通用户与空间数据库的交互门槛, 提出了面向空间数 据库的自然语言查询 (natural language query, NLQ)转换方法. 该方法有两"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7514:b28bdda3ac90c78158eb66872b076319c7be49d1",
+      "paper_id": "jos-7514",
+      "question": "在自然语言理解阶段，NALSpatial如何确定查询类型？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "然而, 由于空间数据涉及复杂的几何关系、多样化的查询类型和对高精度语义理解的需求, 现有的Text2SQL技术 难以直接适用于空间数据库领域. 为了解决上述问题, 降低普通用户与空间数据库的交互门槛, 提出了面向空间数 据库的自然语言查询 (natural language query, NLQ)转换方法. 该方法有两"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7514:ee0d4226e93d227e3a4c0b85e7aeff4d6b151c7c",
+      "paper_id": "jos-7514",
+      "question": "论文报告的NALSpatial平均响应时间、可翻译性和翻译精度分别是多少？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        3
+      ],
+      "evidence_preview": [
+        "实验结果表明, NALSpatial的平均响应时间约为2.5 s, 可翻译性为95%, 翻译精度为92%. 综合考虑评估指标, NALSpatial优于基于传统规则或机器学习的3种方法和基于大语言模型GPT-4o的方法. 此外, 验证了NALSpatial 的性能稳定性及其各个模块的有效性."
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7369:09ceafa593ab6400eb7444456cdfc6cf6f3550d8",
+      "paper_id": "jos-7369",
+      "question": "论文将Issue中的代码补充信息整理成多少种类型？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "基于 Issue检索增强大语言模型的补充性代码注释生成 * 潘兴禄 1,2, 赵衔麟 1,2, 刘陈晓 1,2, 邹艳珍 1,2, 谢 冰 1,2 1(高可信软件技术教育部重点实验室 (北京大学), 北京 100871) 2(北京大学 计算机学院, 北京 100871) 通信作者: 邹艳珍, E-mail: zouyz"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7369:ce5e33998cf27795ae194176a38be50ab52690db",
+      "paper_id": "jos-7369",
+      "question": "该方法从Issue中检索信息后，如何用于补充性代码注释生成？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "基于 Issue检索增强大语言模型的补充性代码注释生成 * 潘兴禄 1,2, 赵衔麟 1,2, 刘陈晓 1,2, 邹艳珍 1,2, 谢 冰 1,2 1(高可信软件技术教育部重点实验室 (北京大学), 北京 100871) 2(北京大学 计算机学院, 北京 100871) 通信作者: 邹艳珍, E-mail: zouyz"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7369:8ead884a19eb5737a6c7300e9b5724631c0621c6",
+      "paper_id": "jos-7369",
+      "question": "实验中GPT-4o生成注释对人工补充性注释的覆盖率提升到了多少？",
+      "evidence_block_count": 2,
+      "evidence_pages": [
+        1,
+        3
+      ],
+      "evidence_preview": [
+        "72.2%, 将GPT-4o生成注释对于人工补充性注释的覆盖率从35.8%提升至88.4%, 显著地提升了补充性代码注释",
+        "针对上述问题, 本文提出一种基于Issue检索增强大语言模型的补充性代码注释生成方法. 在现代软件开发过 程中, 缺陷跟踪系统(Issue tracking system)例如Jira (https://www.atlassian.com/software/jira)或Bugzilla (https://www.bug"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7595:c6ceacce14f9f752e3fb09f6dc30a493dc15720e",
+      "paper_id": "jos-7595",
+      "question": "SmartGen-AADL方法的核心流程包括哪三个阶段？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "SmartGen-AADL: 多智能体系统需求分析与AADL模型生成* 葛楚妍, 王培远, 王甜甜, 黄钇茗, 杨小天 (哈尔滨工业大学 计算学部, 黑龙江 哈尔滨 150001) 通信作者: 王甜甜, E-mail: wangtiantian@hit.edu.cn 摘 要: 嵌入式系统建模是基于模型的软件开发的重要组"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7595:5d5bb19588aac71334d97289b59668931f78c3b4",
+      "paper_id": "jos-7595",
+      "question": "SmartGen-AADL中的RAG模块主要解决什么问题？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        1
+      ],
+      "evidence_preview": [
+        "SmartGen-AADL: 多智能体系统需求分析与AADL模型生成* 葛楚妍, 王培远, 王甜甜, 黄钇茗, 杨小天 (哈尔滨工业大学 计算学部, 黑龙江 哈尔滨 150001) 通信作者: 王甜甜, E-mail: wangtiantian@hit.edu.cn 摘 要: 嵌入式系统建模是基于模型的软件开发的重要组"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-7595:01741dcc1a06a409e452590f60c9bfe794eedcb2",
+      "paper_id": "jos-7595",
+      "question": "与仅依赖简单提示工程相比，该方法在组件错误率和FBERT上有什么变化？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        35
+      ],
+      "evidence_preview": [
+        "复杂嵌入式系统的设计正日益依赖自动化与智能化的建模技术, 以应对需求复杂性与架构约束不断增长的挑 战. 本文针对自然语言需求向嵌入式系统形式化架构模型自动转换过程中存在的结构不清、组件边界模糊与交互 关系缺失等问题, 提出了一种面向复杂系统的多智能体协同建模方法. 该方法融合了结构树构建、连接关系识别 和知识库信息检索"
+      ]
+    },
+    {
+      "case_id": "qasper:jos-6508:065c8b0ba0ccab433f5fd4d7fb0744104b19a943",
+      "paper_id": "jos-6508",
+      "question": "TWE-NMF方法针对Mashup服务短文本的哪些问题进行改进？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        2
+      ],
+      "evidence_preview": [
+        "(1) Mashup服务描述文档通常比较简短、特征稀疏、信息量少, LDA等模型在处理短文本上效果远远不如 长文本, 导致目前大部分主题模型很难对缺乏训练语料的短文本进行很好地建模[17,18]. 另一方面, 由于短文本内单 词基本都是出现一次, 缺少高频词信息, 对于TF-IDF等模型而言则很难计算出单词的语义权重["
+      ]
+    },
+    {
+      "case_id": "qasper:jos-6508:be42b848cd4c71e92bf3acbc1003b457418e8370",
+      "paper_id": "jos-6508",
+      "question": "TWE-NMF如何自动确定主题数量？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        2
+      ],
+      "evidence_preview": [
+        "(1) 我们将狄利克雷过程混合模型(Dirichlet process multinomial mixture, DPMM)与NMF求解主题特征相结 合, 通过DPMM模型自动估算主题的个数, 从而克服传统NMF模型需要人工预先指定主题数的缺陷."
+      ]
+    },
+    {
+      "case_id": "qasper:jos-6508:d2e435e3d9029a62cf23a9533ee323dce136fedb",
+      "paper_id": "jos-6508",
+      "question": "与现有服务聚类方法相比，TWE-NMF实验结果的总体趋势是什么？",
+      "evidence_block_count": 1,
+      "evidence_pages": [
+        20
+      ],
+      "evidence_preview": [
+        "为了能够有效提升Mashup服务聚类的精度, 本文提出一种基于TWE-NMF主题模型的Mashup聚类方法. 该 方法首先对Mashup服务进行规范化处理, 包括提取服务描述, 服务标签, API组成等特征信息, 去除标点符号, 停 用词, 低频词等干扰信息. 然后在NMF中引入GSDPMM模型, 自动确定主题数K, "
+      ]
+    }
+  ],
+  "pdf_manifest": "D:\\my-coding\\TaskForge\\.taskforge\\eval-cache\\chinese-paper-fulltext-real-pdfs-v1.json",
+  "synthetic_pdf_layout": null,
+  "report_metadata": {
+    "evaluation_type": "chinese_real_pdf_fulltext_retrieval",
+    "benchmark_track": "scholarly_paper_fulltext_retrieval",
+    "dataset": "TaskForge Paper RAG Chinese full-text smoke cohort",
+    "license": "Each source PDF follows its publisher terms; use for evaluation only",
+    "annotation_status": "manual_auditable_smoke_cohort",
+    "limitation": "This is not a public benchmark annotation; labels are frozen and evidence is parser-native."
+  }
+}

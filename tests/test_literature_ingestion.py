@@ -40,6 +40,19 @@ class _Resolver:
         return None
 
 
+class _EmbeddingPrewarmer:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.fail = fail
+        self.calls: list[list[str]] = []
+
+    def embed_documents(self, texts):  # type: ignore[no-untyped-def]
+        values = list(texts)
+        self.calls.append(values)
+        if self.fail:
+            raise RuntimeError("provider details must not reach ingestion status")
+        return [[1.0, 0.0, 0.0] for _ in values]
+
+
 def _pdf_bytes(text: str = "User uploaded evidence document.") -> bytes:
     buffer = BytesIO()
     document = canvas.Canvas(buffer)
@@ -93,6 +106,7 @@ async def test_user_uploaded_pdf_is_required_and_preserves_user_acl(tmp_path: Pa
         repository,
         knowledge,
         tmp_path / "artifacts",
+        chunking_mode="parent_child",
     )
     uploaded = service.upload_pdf(
         access,
@@ -115,8 +129,127 @@ async def test_user_uploaded_pdf_is_required_and_preserves_user_acl(tmp_path: Pa
     other_chunks = knowledge.visible_chunks(
         AccessContext(tenant_id="tenant-a", user_id="user-b")
     )
-    assert len(owner_chunks) == 1
+    assert len(owner_chunks) == 2
+    assert {chunk.metadata.get("retrieval_role") for chunk in owner_chunks} == {
+        "parent",
+        "child",
+    }
+    child = next(
+        chunk
+        for chunk in owner_chunks
+        if chunk.metadata.get("retrieval_role") == "child"
+    )
+    parent = next(
+        chunk
+        for chunk in owner_chunks
+        if chunk.metadata.get("retrieval_role") == "parent"
+    )
+    assert child.metadata["parent_chunk_id"] == parent.chunk_id
+    assert evidence[0].chunk_id == child.chunk_id
     assert other_chunks == ()
+
+
+@pytest.mark.asyncio
+async def test_hybrid_pdf_ingestion_stores_flat_primary_and_child_auxiliary_lanes(
+    tmp_path: Path,
+) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    scope = _seed_scope(repository, access)
+    service = PaperIngestionService(
+        repository,
+        knowledge,
+        tmp_path / "artifacts",
+        chunking_mode="hybrid",
+    )
+    service.upload_pdf(
+        access,
+        scope.scope_id,
+        "paper-1",
+        _pdf_bytes(),
+        filename="paper.pdf",
+    )
+
+    statuses = await service.ingest_scope(access, scope.scope_id)
+
+    assert statuses[0].status == "indexed"
+    chunks = knowledge.visible_chunks(
+        AccessContext(tenant_id="tenant-a", user_id="user-a")
+    )
+    lanes = {
+        str(chunk.metadata.get("hybrid_route"))
+        for chunk in chunks
+        if chunk.metadata.get("hybrid_route")
+    }
+    assert lanes == {"flat_primary", "child_aux"}
+    assert sum(
+        chunk.metadata.get("hybrid_route") == "flat_primary" for chunk in chunks
+    ) == 1
+    assert sum(
+        chunk.metadata.get("hybrid_route") == "child_aux"
+        and chunk.metadata.get("retrieval_role") == "child"
+        for chunk in chunks
+    ) == 1
+
+
+@pytest.mark.asyncio
+async def test_bailian_embedding_is_prewarmed_before_pdf_is_indexed(tmp_path: Path) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    scope = _seed_scope(repository, access)
+    prewarmer = _EmbeddingPrewarmer()
+    service = PaperIngestionService(
+        repository,
+        knowledge,
+        tmp_path / "artifacts",
+        chunking_mode="parent_child",
+        embedding_prewarmer=prewarmer,
+    )
+    service.upload_pdf(
+        access,
+        scope.scope_id,
+        "paper-1",
+        _pdf_bytes(),
+        filename="paper.pdf",
+    )
+
+    statuses = await service.ingest_scope(access, scope.scope_id)
+
+    assert statuses[0].status == "indexed"
+    assert len(prewarmer.calls) == 1
+    assert len(prewarmer.calls[0]) == 1
+
+
+@pytest.mark.asyncio
+async def test_embedding_prewarmer_failure_keeps_document_unindexed(tmp_path: Path) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    scope = _seed_scope(repository, access)
+    service = PaperIngestionService(
+        repository,
+        knowledge,
+        tmp_path / "artifacts",
+        chunking_mode="parent_child",
+        embedding_prewarmer=_EmbeddingPrewarmer(fail=True),
+    )
+    service.upload_pdf(
+        access,
+        scope.scope_id,
+        "paper-1",
+        _pdf_bytes(),
+        filename="paper.pdf",
+    )
+
+    statuses = await service.ingest_scope(access, scope.scope_id)
+
+    assert statuses[0].status == "failed"
+    assert statuses[0].error == "embedding prewarm failed (RuntimeError)"
+    assert knowledge.visible_chunks(
+        AccessContext(tenant_id="tenant-a", user_id="user-a")
+    ) == ()
 
 
 @pytest.mark.asyncio

@@ -39,6 +39,7 @@ class OpenAICompatibleQueryRewriter:
         model: str,
         base_url: str,
         timeout_seconds: float = 30.0,
+        trust_env: bool = True,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         if not api_key.strip() or not model.strip() or not base_url.strip():
@@ -50,7 +51,7 @@ class OpenAICompatibleQueryRewriter:
         self._base_url = base_url.rstrip("/")
         self._timeout = httpx.Timeout(timeout_seconds)
         self._owns_client = client is None
-        self._client = client or httpx.AsyncClient()
+        self._client = client or httpx.AsyncClient(trust_env=trust_env)
         self.request_count = 0
         self.prompt_tokens = 0
         self.completion_tokens = 0

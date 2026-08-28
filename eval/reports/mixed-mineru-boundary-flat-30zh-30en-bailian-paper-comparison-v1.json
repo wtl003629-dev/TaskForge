@@ -1,0 +1,103 @@
+{
+  "schema_version": "taskforge.rag_boundary_flat_comparison.v1",
+  "status": "complete",
+  "decision": "rejected",
+  "reason": "Boundary correction preserved Recall@50 but reduced Recall@10, MRR@10 and NDCG@10, with a material Chinese ranking regression. The current Flat 2000/0 chain remains the default and rollback path.",
+  "fixed_conditions": {
+    "papers": 60,
+    "questions": 177,
+    "english_papers": 30,
+    "chinese_papers": 30,
+    "retrieval_scope": "paper",
+    "parser": "MinerU 3.4.4",
+    "embedding_model": "text-embedding-v4",
+    "reranker_model": "qwen3-rerank",
+    "candidate_k": 50,
+    "retrieval_text": false,
+    "parent_child": false,
+    "graph": false
+  },
+  "baseline": {
+    "name": "Flat 2000/0",
+    "report": "eval/reports/mixed-mineru-flat2000-30zh-30en-bailian-paper-scoped-final-v1.json",
+    "metrics": {
+      "recall_at_10": 0.9261770244821093,
+      "recall_at_50": 0.976271186440678,
+      "mrr_at_10": 0.6366334857860282,
+      "ndcg_at_10": 0.6551082274793439,
+      "english_recall_at_10": 0.9015325670498084,
+      "chinese_recall_at_10": 0.95,
+      "p95_ms": 384.04940000009447
+    },
+    "same_run_control": {
+      "report": "eval/reports/mixed-mineru-flat2000-30zh-30en-bailian-paper-boundary-control-v1.json",
+      "p95_ms": 3998.3280000005834
+    }
+  },
+  "candidate": {
+    "name": "boundary_aware_flat_v1",
+    "report": "eval/reports/mixed-mineru-boundary-flat-30zh-30en-bailian-paper-final-v1.json",
+    "state_dir": ".taskforge/eval-runs/mixed-mineru-boundary-flat-30zh-30en-paper-final-v1",
+    "parameters": {
+      "target_chars": 2000,
+      "min_chars": 1000,
+      "max_chars": 2600,
+      "search_chars": 400,
+      "overlap_chars": 0,
+      "hard_heading_policy": "numbered_or_common_top_level_only"
+    },
+    "index_statistics": {
+      "chunks": 1617,
+      "mineru_blocks": 11002
+    },
+    "metrics": {
+      "recall_at_10": 0.9103578154425611,
+      "recall_at_50": 0.976271186440678,
+      "mrr_at_10": 0.62267509640391,
+      "ndcg_at_10": 0.6393180623849397,
+      "english_recall_at_10": 0.9153256704980843,
+      "chinese_recall_at_10": 0.9055555555555556,
+      "p95_ms": 4332.731700000295
+    }
+  },
+  "deltas_candidate_minus_frozen_baseline": {
+    "recall_at_10": -0.015819209039548143,
+    "recall_at_50": 0.0,
+    "mrr_at_10": -0.013958389382118241,
+    "ndcg_at_10": -0.01579016509440423,
+    "english_recall_at_10": 0.01379310344827589,
+    "chinese_recall_at_10": -0.0444444444444444,
+    "p95_ms": 3948.6823000002005,
+    "p95_ratio": 11.281704124519473
+  },
+  "same_run_latency": {
+    "candidate_p95_ms": 4332.731700000295,
+    "control_p95_ms": 3998.3280000005834,
+    "candidate_to_control_ratio": 1.083635884799762,
+    "within_1_25_ratio": true,
+    "note": "The frozen baseline p95 was collected under a different provider-latency state; the same-run control is the fair latency comparison."
+  },
+  "regression_gate": {
+    "overall_recall_at_10_non_decreasing": false,
+    "overall_recall_at_50_non_decreasing": true,
+    "overall_mrr_at_10_non_decreasing": false,
+    "overall_ndcg_at_10_non_decreasing": false,
+    "english_recall_at_10_non_decreasing": true,
+    "chinese_recall_at_10_non_decreasing": false,
+    "same_run_p95_within_1_25": true,
+    "passed": false
+  },
+  "artifacts": {
+    "candidate_full_report": "eval/reports/mixed-mineru-boundary-flat-30zh-30en-bailian-paper-final-v1.json",
+    "same_run_control_report": "eval/reports/mixed-mineru-flat2000-30zh-30en-bailian-paper-boundary-control-v1.json",
+    "balanced_smoke_candidate": "eval/reports/mixed-mineru-boundary-flat-30zh-30en-bailian-paper-smoke-v3.json",
+    "balanced_smoke_control": "eval/reports/mixed-mineru-flat-30zh-30en-bailian-paper-smoke-boundary-control-v1.json",
+    "unit_test": "tests/test_pdf_parsing.py"
+  },
+  "rollback": {
+    "active_chain": "Flat 2000/0",
+    "candidate_index_isolated": true,
+    "production_switch_performed": false,
+    "action": "Keep the existing current/Flat profile; do not route queries to boundary_aware_flat_v1."
+  }
+}

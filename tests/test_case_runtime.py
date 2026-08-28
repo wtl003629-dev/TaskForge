@@ -13,6 +13,9 @@ from taskforge.case_runtime import (
     CaseAgentExecutor,
     CaseBindingError,
     RoleResultSubmission,
+    _bounded_research_evidence_card,
+    _bounded_research_receipt_text,
+    _bounded_selected_research_evidence_cards,
     submit_role_result_spec,
 )
 from taskforge.checkpoints import CheckpointNotFoundError, SQLiteCheckpointStore
@@ -61,6 +64,64 @@ class BlockingScriptedProvider(ScriptedProvider):
             self.started.set()
             await self.release.wait()
         return await super().complete(**kwargs)
+
+
+def test_research_evidence_context_projection_keeps_id_and_bounded_text() -> None:
+    evidence_id = "evidence:scope:v1:child-1"
+    projected = _bounded_research_evidence_card(
+        {
+            "protocol": "research.evidence_card.v1",
+            "evidence_id": evidence_id,
+            "source": "paper://paper-1",
+            "paper_id": "paper-1",
+            "page": "3",
+            "section": "Methods",
+            "evidence_type": "paragraph",
+            "snippet": "answer text " * 300,
+            "score": 0.9,
+            "verification_status": "read",
+            "retrieval_sources": ["bm25", "dense", "multi_query_rrf"],
+            "visual_artifact_ids": ["large-diagnostic-value"],
+        }
+    )
+
+    assert projected["evidence_id"] == evidence_id
+    assert projected["source"] == "paper://paper-1"
+    assert "answer text" in projected["snippet"]
+    assert len(projected["snippet"]) <= 800
+    assert "retrieval_sources" not in projected
+    assert "visual_artifact_ids" not in projected
+
+
+def test_research_receipt_text_is_host_bounded_without_becoming_empty() -> None:
+    projected = _bounded_research_receipt_text("useful receipt " * 100)
+
+    assert projected.startswith("useful receipt")
+    assert projected.endswith("[host receipt truncated]")
+    assert len(projected) <= 400
+
+
+def test_writer_context_preserves_selected_evidence_without_experimental_fallback() -> None:
+    cards = [
+        {
+            "evidence_id": f"evidence-{index}",
+            "source": "paper://paper-1",
+            "snippet": f"selected-{index} " + ("x" * 2_700),
+        }
+        for index in range(5)
+    ]
+
+    projected = _bounded_selected_research_evidence_cards(
+        cards,
+        ["evidence-3", "invented", "evidence-1"],
+    )
+
+    assert [item["evidence_id"] for item in projected] == [
+        "evidence-3",
+        "evidence-1",
+    ]
+    assert all(len(item["snippet"]) <= 2_600 for item in projected)
+    assert all(len(item["snippet"]) > 800 for item in projected)
 
 
 def access(
@@ -760,8 +821,8 @@ def test_research_submit_schema_uses_short_nonduplicating_envelope() -> None:
 
     properties = spec.parameters["properties"]
     assert properties["claims"]["maxItems"] == 1
-    assert properties["summary"]["maxLength"] == 400
-    assert properties["handoff_summary"]["maxLength"] == 400
+    assert properties["summary"]["maxLength"] == 2_000
+    assert properties["handoff_summary"]["maxLength"] == 2_000
     assert properties["claims"]["items"]["properties"]["evidence_refs"][
         "maxItems"
     ] == 4

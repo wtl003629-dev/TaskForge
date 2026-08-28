@@ -93,6 +93,15 @@ def _parse_category_minimums(values: Sequence[str]) -> dict[str, int]:
     return minimums
 
 
+def _qasper_parent_from_case_id(case_id: str) -> str | None:
+    """Recover the paper scope from a stable QASPER case identifier."""
+
+    parts = str(case_id).split(":", 2)
+    if len(parts) != 3 or parts[0] != "qasper" or not parts[1].strip():
+        return None
+    return f"qasper:{parts[1].strip()}:paper"
+
+
 def _category_counts(groups: Sequence[tuple[str, Sequence[object]]]) -> Counter[str]:
     return Counter(
         getattr(case, "category", "")
@@ -247,6 +256,12 @@ def main(argv: list[str] | None = None) -> int:
         excluded.update(manifest.case_ids)
         excluded_split_ids.append(manifest.split_id)
         if args.group_by_parent:
+            if args.dataset_adapter == "qasper":
+                excluded_parents.update(
+                    parent
+                    for case_id in manifest.case_ids
+                    if (parent := _qasper_parent_from_case_id(case_id))
+                )
             excluded_parents.update(
                 str(case.metadata.get("parent_document_id", "")).strip()
                 for case in dataset.cases

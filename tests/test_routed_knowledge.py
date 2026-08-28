@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytest
+
+from taskforge.config import Settings
 from taskforge.context import ContextAssembler
 from taskforge.knowledge import AccessContext, InMemoryKnowledgeStore, KnowledgeChunk
 from taskforge.routed_knowledge import RoutedKnowledgeStore
@@ -120,3 +123,61 @@ def test_context_main_path_exposes_selected_profile_and_backend() -> None:
     assert context.retrieval_profile == "general_text"
     assert context.retrieval_backend == "bm25_general_text"
     assert context.knowledge_hits[0].chunk.chunk_id == "policy"
+
+
+def test_bailian_route_uses_isolated_provider_configuration(monkeypatch, tmp_path) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeBailianEmbedder:
+        model_name = "text-embedding-v4"
+        index_name = "knowledge-bailian-text-embedding-v4-1024-v1"
+        dimension = 3
+
+        def __init__(self, **kwargs: object) -> None:
+            captured.update(kwargs)
+
+        def embed_documents(self, texts):  # type: ignore[no-untyped-def]
+            return [[float(len(text)), 1.0, 0.0] for text in texts]
+
+        def embed_query(self, text):  # type: ignore[no-untyped-def]
+            return [float(len(text)), 1.0, 0.0]
+
+    monkeypatch.setattr(
+        "taskforge.routed_knowledge.BailianDenseEmbedder",
+        FakeBailianEmbedder,
+    )
+    cache = tmp_path / "embeddings-bailian.sqlite3"
+    routed = RoutedKnowledgeStore(
+        InMemoryKnowledgeStore(
+            [_chunk("policy", "The approval policy requires reviewer evidence.")]
+        ),
+        general_text_backend="bailian",
+        bailian_api_key="configured-secret",
+        bailian_cache_path=str(cache),
+    )
+    hits = routed.search(
+        "approval policy",
+        AccessContext("tenant-a"),
+    )
+    assert hits[0].retrieval_backend == "bailian_dense:text-embedding-v4"
+    assert captured["api_key"] == "configured-secret"
+    assert captured["cache_path"] == str(cache)
+
+
+def test_bailian_settings_require_key_and_fixed_dimension(tmp_path) -> None:
+    with pytest.raises(ValueError, match="requires bailian_api_key"):
+        Settings(
+            _env_file=None,
+            general_text_backend="bailian",
+            bailian_api_key=None,
+        )
+
+    settings = Settings(
+        _env_file=None,
+        general_text_backend="bailian",
+        bailian_api_key="configured-secret",
+        bailian_cache_path=tmp_path / "bailian.sqlite3",
+    )
+    assert settings.bailian_api_key is not None
+    assert settings.bailian_api_key.get_secret_value() == "configured-secret"
+    assert settings.bailian_embedding_dimension == 1_024

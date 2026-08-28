@@ -6,6 +6,7 @@ import pytest
 
 from scripts.create_eval_split import (
     _parse_category_minimums,
+    _qasper_parent_from_case_id,
     _select_parent_disjoint_cases,
     parser,
 )
@@ -46,6 +47,13 @@ def test_qasper_adapter_can_be_selected_explicitly() -> None:
         ]
     )
     assert args.dataset_adapter == "qasper"
+
+
+def test_qasper_parent_can_be_recovered_across_source_partitions() -> None:
+    assert _qasper_parent_from_case_id(
+        "qasper:1912.01214:question-hash"
+    ) == "qasper:1912.01214:paper"
+    assert _qasper_parent_from_case_id("tatqa:context:question") is None
 
 
 def _case(case_id: str, parent: str) -> SimpleNamespace:

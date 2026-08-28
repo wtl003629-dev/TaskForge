@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "manifest": "D:\\my-coding\\TaskForge\\eval\\queries\\qasper-clean-holdout-100-v2.json",
+  "manifest_sha256": "d829f41a21b916ec49b4c65bfabcd1c29f2bd86c8b225e8457c0bc2d0ecfabbe",
+  "variants": 100,
+  "issues": [],
+  "passed": true,
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
+    "temperature": 0
+  },
+  "intent_counts": {
+    "experimental_setup": 13,
+    "general_fact": 71,
+    "method_definition": 7,
+    "cross_paper_comparison": 6,
+    "numeric_table": 3
+  },
+  "synonym_word_count": {
+    "min": 4,
+    "max": 20,
+    "mean": 8.77
+  },
+  "keyword_word_count": {
+    "min": 2,
+    "max": 17,
+    "mean": 6.81
+  }
+}

@@ -149,6 +149,13 @@ def test_heading_boundaries_and_chunk_neighbors_span_pages(tmp_path: Path) -> No
     assert result.chunks[1].previous_block_id == result.chunks[0].block_ids[-1]
 
 
+def test_uncased_chinese_body_text_is_not_an_all_caps_heading() -> None:
+    chinese_body = "该研究分析多篇科学论文并比较不同检索方法"
+
+    assert document_ingestion._heading_level(chinese_body) is None
+    assert document_ingestion._heading_level("SECURITY CONTROLS") == 1
+
+
 def test_page_boundary_mode_prevents_small_pages_from_merging(tmp_path: Path) -> None:
     pdf = tmp_path / "two-pages-without-headings.pdf"
     _write_pdf(pdf, pages=2, include_table=False, include_headings=False)

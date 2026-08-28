@@ -5,9 +5,9 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import ipaddress
+import re
 import socket
 from collections.abc import Sequence
-from dataclasses import replace
 from pathlib import Path
 from typing import Protocol
 from urllib.parse import urljoin, urlparse
@@ -15,15 +15,39 @@ from uuid import uuid4
 
 import httpx
 
-from ..document_ingestion import DocumentIngestionError, extract_pdf_document
-from ..ingestion import _pdf_knowledge_chunks
+from ..document_ingestion import DocumentIngestionError
 from ..knowledge import KnowledgeChunk
+from ..pdf_parsing.contracts import DocumentBlock
+from ..pdf_parsing.hierarchy import (
+    HierarchicalUnit,
+    build_flat_units,
+    build_parent_child_units,
+    build_sliding_window_units,
+)
+from ..pdf_parsing.native_parser import NativePDFParser
+from ..pdf_parsing.router import ParserRoutingError, PDFParserRouter
+from ..pdf_parsing.structure_policy import build_structure_aware_units
+from ..pdf_parsing.visual_evidence import (
+    VisualEvidenceExtractor,
+    enrich_visual_evidence,
+)
+from ..rag_experiment_profile import (
+    RAGExperimentProfile,
+    resolve_rag_experiment_profile,
+)
 from ..research_protocol import EvidenceCard, IngestionStatus, PaperCard
 from .repository import LiteratureAccess, SQLiteLiteratureRepository
 
 
 class KnowledgeWriter(Protocol):
     def replace_document_version(self, chunks: Sequence[KnowledgeChunk]) -> int: ...
+
+
+class EmbeddingPrewarmer(Protocol):
+    def embed_documents(
+        self,
+        texts: Sequence[str],
+    ) -> Sequence[Sequence[float]]: ...
 
 
 class OAPDFResolver(Protocol):
@@ -34,6 +58,74 @@ class OAPDFResolver(Protocol):
 
 class PaperDownloadError(RuntimeError):
     pass
+
+
+_REFERENTIAL_CHILD_START = re.compile(
+    r"^(?:(?:this|that|these|those|such|it|they|we|our)\b|"
+    r"the\s+(?:method|model|dataset|corpus|baseline|classifier|approach|system|"
+    r"framework|experiment|evaluation|result|metric)\b)",
+    re.IGNORECASE,
+)
+_PREVIOUS_CONTEXT_CHARS = 600
+
+
+def _child_retrieval_text(
+    unit: HierarchicalUnit,
+    *,
+    document_title: str,
+    previous_child: HierarchicalUnit | None,
+    blocks: Sequence[DocumentBlock] = (),
+) -> str:
+    """Build deterministic search text without changing citation text.
+
+    Every Parent-Child retrieval unit receives document and section context.
+    A bounded previous-child tail is included only for passages whose opening
+    contains an obvious backward reference.  The authoritative Child body
+    remains ``KnowledgeChunk.text`` and is therefore still the citation unit.
+    """
+
+    pieces: list[str] = []
+    title = str(document_title).strip()
+    if title:
+        pieces.append(f"Document: {title}")
+    heading = " > ".join(value.strip() for value in unit.heading_path if value.strip())
+    if heading:
+        pieces.append(f"Section: {heading}")
+    content_types = [
+        value
+        for value in dict.fromkeys(unit.block_types)
+        if value != "title"
+    ]
+    if content_types:
+        pieces.append(f"Content type: {', '.join(content_types)}")
+    captions = [block.text.strip() for block in blocks if block.block_type == "caption" and block.text.strip()]
+    if captions:
+        pieces.append("Caption: " + " ".join(captions)[:1_000])
+    table_headers: list[str] = []
+    for block in blocks:
+        if block.block_type != "table":
+            continue
+        rendered = block.text.strip() or str(
+            block.structured_content.get("textual_rendering") or ""
+        ).strip()
+        first_line = next((line.strip() for line in rendered.splitlines() if line.strip()), "")
+        if first_line:
+            table_headers.append(first_line)
+    if table_headers:
+        pieces.append("Table header: " + " | ".join(table_headers)[:1_000])
+    if (
+        previous_child is not None
+        and previous_child.role == "child"
+        and previous_child.parent_id == unit.parent_id
+        and _REFERENTIAL_CHILD_START.search(unit.text.lstrip())
+    ):
+        context = previous_child.text.strip()[-_PREVIOUS_CONTEXT_CHARS:]
+        if context:
+            pieces.append(f"Previous context:\n{context}")
+    if not pieces:
+        return unit.text
+    pieces.append(f"Content:\n{unit.text}")
+    return "\n\n".join(pieces)
 
 
 class SafePDFDownloader:
@@ -138,6 +230,21 @@ class PaperIngestionService:
         concurrency: int = 3,
         max_pages: int = 300,
         max_upload_bytes: int = 25_000_000,
+        parser_router: PDFParserRouter | None = None,
+        parent_target_tokens: int = 2_000,
+        parent_max_tokens: int = 3_000,
+        child_target_tokens: int = 400,
+        child_max_tokens: int = 500,
+        child_overlap_tokens: int = 60,
+        visual_evidence_extractor: VisualEvidenceExtractor | None = None,
+        embedding_prewarmer: EmbeddingPrewarmer | None = None,
+        # The Agent keeps the historical single-lane modes. ``hybrid`` is an
+        # explicit opt-in that stores a Flat lane plus a Child/Parent lane in
+        # the same document version; retrieval decides whether to use it.
+        chunking_mode: str = "parent_child",
+        flat_chunk_chars: int = 2_000,
+        flat_overlap_chars: int = 0,
+        experiment_profile: RAGExperimentProfile | None = None,
     ) -> None:
         if concurrency < 1 or concurrency > 10:
             raise ValueError("ingestion concurrency must be between 1 and 10")
@@ -151,6 +258,34 @@ class PaperIngestionService:
         if not 1 <= max_upload_bytes <= 100_000_000:
             raise ValueError("max_upload_bytes must be between 1 and 100000000")
         self.max_upload_bytes = int(max_upload_bytes)
+        self.parser_router = parser_router or PDFParserRouter(
+            NativePDFParser(
+                max_bytes=self.max_upload_bytes,
+                max_pages=self.max_pages,
+            ),
+            backend="native",
+        )
+        self.parent_target_tokens = parent_target_tokens
+        self.parent_max_tokens = parent_max_tokens
+        self.child_target_tokens = child_target_tokens
+        self.child_max_tokens = child_max_tokens
+        self.child_overlap_tokens = child_overlap_tokens
+        self.visual_evidence_extractor = visual_evidence_extractor
+        self.embedding_prewarmer = embedding_prewarmer
+        if chunking_mode not in {"flat", "parent_child", "hybrid", "sliding"}:
+            raise ValueError(
+                "PDF chunking mode must be flat, parent_child, hybrid, or sliding"
+            )
+        if not 256 <= flat_chunk_chars <= 50_000:
+            raise ValueError("flat PDF chunk target is outside the supported range")
+        if not 0 <= flat_overlap_chars < flat_chunk_chars:
+            raise ValueError("flat PDF chunk overlap must be smaller than target")
+        self.chunking_mode = chunking_mode
+        self.flat_chunk_chars = flat_chunk_chars
+        self.flat_overlap_chars = flat_overlap_chars
+        self.experiment_profile = experiment_profile or resolve_rag_experiment_profile(
+            "current"
+        )
 
     def _target(self, access: LiteratureAccess, scope_id: str, version: int, paper_id: str) -> Path:
         tenant = hashlib.sha256(access.tenant_id.encode()).hexdigest()[:16]
@@ -171,6 +306,8 @@ class PaperIngestionService:
                 scope_version=scope_version,
                 paper_id=paper.paper_id,
                 chunk_id=chunk.chunk_id,
+                rag_profile=str(chunk.metadata.get("rag_profile") or "current"),
+                rag_ablation=str(chunk.metadata.get("rag_ablation") or "a"),
                 source=chunk.source_uri,
                 title=paper.canonical_title,
                 section=(str(chunk.metadata.get("heading")) if chunk.metadata.get("heading") else None),
@@ -180,11 +317,17 @@ class PaperIngestionService:
                     else None
                 ),
                 evidence_type=str(chunk.metadata.get("kind") or "paragraph"),
-                snippet=chunk.text[:500],
+                visual_artifact_ids=[
+                    str(value)
+                    for value in chunk.metadata.get("visual_artifact_ids", [])
+                ],
+                visual_pending=bool(chunk.metadata.get("visual_pending")),
+                snippet=chunk.text[:3_000],
                 score=0.0,
                 retrieval_sources=["scope_ingestion"],
             )
             for chunk in chunks
+            if chunk.metadata.get("retrieval_role") != "parent"
         ]
 
     def _abstract_chunks(
@@ -197,9 +340,19 @@ class PaperIngestionService:
         text = paper.abstract.strip()
         if not text:
             return []
-        chunk_id = hashlib.sha256(
-            f"{access.tenant_id}\0{scope_id}\0{scope_version}\0{paper.paper_id}\0abstract".encode()
-        ).hexdigest()[:24]
+        current_document_id = f"research-paper:{scope_id}:{paper.paper_id}"
+        stable_document_id = self.experiment_profile.document_id(current_document_id)
+        current_knowledge_base_id = f"research-scope:{scope_id}:v{scope_version}"
+        knowledge_base_id = self.experiment_profile.knowledge_base_id(
+            current_knowledge_base_id
+        )
+        chunk_identity = (
+            f"{access.tenant_id}\0{scope_id}\0{scope_version}\0"
+            f"{paper.paper_id}\0abstract"
+            if self.experiment_profile.name == "current"
+            else f"{access.tenant_id}\0{stable_document_id}\0{scope_version}\0abstract"
+        )
+        chunk_id = hashlib.sha256(chunk_identity.encode()).hexdigest()[:24]
         evidence_id = f"evidence:{scope_id}:v{scope_version}:{chunk_id}"
         return [
             KnowledgeChunk(
@@ -207,12 +360,13 @@ class PaperIngestionService:
                 tenant_id=access.tenant_id,
                 text=text,
                 source_uri=f"paper://{paper.paper_id}",
-                document_id=f"research-paper:{scope_id}:{paper.paper_id}",
+                document_id=stable_document_id,
                 version=str(scope_version),
                 version_order=scope_version,
                 acl=frozenset({f"user:{access.user_id}"}),
                 metadata={
-                    "knowledge_base_id": f"research-scope:{scope_id}:v{scope_version}",
+                    "knowledge_base_id": knowledge_base_id,
+                    **self.experiment_profile.metadata(),
                     "scope_id": scope_id,
                     "scope_version": scope_version,
                     "paper_id": paper.paper_id,
@@ -227,7 +381,7 @@ class PaperIngestionService:
             )
         ]
 
-    def _pdf_chunks(
+    async def _pdf_chunks(
         self,
         access: LiteratureAccess,
         scope_id: str,
@@ -236,40 +390,245 @@ class PaperIngestionService:
         path: Path,
     ) -> list[KnowledgeChunk]:
         source_uri = f"paper://{paper.paper_id}"
-        document = extract_pdf_document(
+        parsed = await self.parser_router.parse(
             path,
             source_uri=source_uri,
-            max_bytes=self.max_upload_bytes,
-            max_pages=self.max_pages,
-            chunk_chars=2_000,
-            preserve_page_boundaries=True,
         )
-        chunks = _pdf_knowledge_chunks(
-            document,
-            tenant_id=access.tenant_id,
-            knowledge_base_id=f"research-scope:{scope_id}:v{scope_version}",
-            document_id=f"research-paper:{scope_id}:{paper.paper_id}",
-            version=str(scope_version),
-            version_order=scope_version,
-            acl=(f"user:{access.user_id}",),
+        parsed = await enrich_visual_evidence(
+            parsed,
+            self.visual_evidence_extractor,
         )
-        return [
-            replace(
-                chunk,
-                metadata={
-                    **chunk.metadata,
-                    "scope_id": scope_id,
-                    "scope_version": scope_version,
-                    "paper_id": paper.paper_id,
-                    "title": paper.canonical_title,
-                    "authors": paper.authors,
-                    "doi": paper.doi,
-                    "evidence_id": f"evidence:{scope_id}:v{scope_version}:{chunk.chunk_id}",
-                    "full_text_available": True,
-                },
+        # A hybrid document contains two independent retrieval lanes. The
+        # Flat lane is deliberately built from the same parser output and
+        # parameters as the legacy control; the Child lane may add structure
+        # context, but never replaces the Flat evidence or citation text.
+        unit_batches: list[tuple[str, str, tuple[HierarchicalUnit, ...], dict[str, int | bool] | None, str | None]] = []
+        if self.chunking_mode in {"parent_child", "hybrid"}:
+            structure_profile: dict[str, int | bool] | None = None
+            chunk_policy: str | None = None
+            effective_chunking_mode = "parent_child"
+            if self.experiment_profile.structure_aware_chunking_enabled:
+                result = build_structure_aware_units(
+                    parsed,
+                    parent_target_tokens=self.parent_target_tokens,
+                    parent_max_tokens=self.parent_max_tokens,
+                    child_target_tokens=self.child_target_tokens,
+                    child_max_tokens=self.child_max_tokens,
+                    child_overlap_tokens=self.child_overlap_tokens,
+                    fallback_target_chars=self.flat_chunk_chars,
+                    fallback_overlap_chars=self.flat_overlap_chars,
+                )
+                child_units = result.units
+                structure_profile = result.profile.as_metadata()
+                chunk_policy = result.policy.name
+                effective_chunking_mode = "structure_aware"
+            else:
+                child_units = build_parent_child_units(
+                    parsed,
+                    parent_target_tokens=self.parent_target_tokens,
+                    parent_max_tokens=self.parent_max_tokens,
+                    child_target_tokens=self.child_target_tokens,
+                    child_max_tokens=self.child_max_tokens,
+                    child_overlap_tokens=self.child_overlap_tokens,
+                )
+            unit_batches.append(
+                (
+                    "child_aux" if self.chunking_mode == "hybrid" else "single",
+                    effective_chunking_mode,
+                    child_units,
+                    structure_profile,
+                    chunk_policy,
+                )
             )
-            for chunk in chunks
-        ]
+        elif self.chunking_mode == "flat":
+            flat_units = build_flat_units(
+                parsed,
+                target_chars=self.flat_chunk_chars,
+                overlap_chars=self.flat_overlap_chars,
+            )
+            unit_batches.append(("single", "flat", flat_units, None, None))
+        else:
+            sliding_units = build_sliding_window_units(
+                parsed,
+                window_chars=self.flat_chunk_chars,
+                overlap_chars=self.flat_overlap_chars,
+            )
+            unit_batches.append(("single", "sliding", sliding_units, None, None))
+        if self.chunking_mode == "hybrid":
+            flat_units = build_flat_units(
+                parsed,
+                target_chars=self.flat_chunk_chars,
+                overlap_chars=self.flat_overlap_chars,
+            )
+            # Flat is appended first so deterministic card/evidence ordering
+            # keeps the legacy lane easy to inspect and compare.
+            unit_batches.insert(0, ("flat_primary", "flat", flat_units, None, None))
+        current_document_id = f"research-paper:{scope_id}:{paper.paper_id}"
+        stable_document_id = self.experiment_profile.document_id(current_document_id)
+        current_knowledge_base_id = f"research-scope:{scope_id}:v{scope_version}"
+        knowledge_base_id = self.experiment_profile.knowledge_base_id(
+            current_knowledge_base_id
+        )
+        units = tuple(unit for _, _, batch, _, _ in unit_batches for unit in batch)
+        stored_ids = {
+            unit.unit_id: hashlib.sha256(
+                (
+                    f"{access.tenant_id}\0{stable_document_id}\0{scope_version}\0"
+                    f"{unit.unit_id}"
+                ).encode()
+            ).hexdigest()[:24]
+            for unit in units
+        }
+        blocks_by_id = {block.block_id: block for block in parsed.blocks}
+        units_by_id = {unit.unit_id: unit for unit in units}
+        chunks: list[KnowledgeChunk] = []
+        for lane, effective_chunking_mode, batch, structure_profile, chunk_policy in unit_batches:
+            for unit in batch:
+                chunk_id = stored_ids[unit.unit_id]
+                selected_blocks = [
+                    blocks_by_id[block_id]
+                    for block_id in unit.block_ids
+                    if block_id in blocks_by_id
+                ]
+                provenance = [
+                    {
+                        "block_id": block.block_id,
+                        "page": block.page,
+                        "bbox": list(block.bbox),
+                        "block_type": block.block_type,
+                        "content_hash": block.content_hash,
+                        "parser": block.parser,
+                        "parser_version": block.parser_version,
+                    }
+                    for block in selected_blocks
+                ]
+                kind = (
+                    "parent"
+                    if unit.role == "parent"
+                    else unit.block_types[0]
+                    if len(unit.block_types) == 1
+                    else "mixed"
+                )
+                retrieval_text = (
+                    _child_retrieval_text(
+                        unit,
+                        document_title=paper.canonical_title,
+                        previous_child=(
+                            units_by_id.get(unit.previous_unit_id)
+                            if unit.previous_unit_id is not None
+                            else None
+                        ),
+                        blocks=selected_blocks,
+                    )
+                    if self.experiment_profile.retrieval_text_enabled
+                    and unit.role == "child"
+                    and lane != "flat_primary"
+                    else None
+                )
+                chunks.append(
+                    KnowledgeChunk(
+                    chunk_id=chunk_id,
+                    tenant_id=access.tenant_id,
+                    text=unit.text,
+                    source_uri=source_uri,
+                    document_id=stable_document_id,
+                    version=str(scope_version),
+                    version_order=scope_version,
+                    acl=frozenset({f"user:{access.user_id}"}),
+                    metadata={
+                        "knowledge_base_id": knowledge_base_id,
+                        **self.experiment_profile.metadata(),
+                        "scope_id": scope_id,
+                        "scope_version": scope_version,
+                        "paper_id": paper.paper_id,
+                        "title": paper.canonical_title,
+                        "authors": paper.authors,
+                        "doi": paper.doi,
+                        "retrieval_role": unit.role,
+                        "retrieval_text": retrieval_text,
+                        "retrieval_text_version": (
+                            "parent-child-title-context-v1"
+                            if retrieval_text is not None
+                            else None
+                        ),
+                        "chunking_mode": effective_chunking_mode,
+                        "hybrid_route": lane if self.chunking_mode == "hybrid" else None,
+                        "chunk_policy": chunk_policy,
+                        "structure_profile": structure_profile,
+                        "flat_chunk_chars": self.flat_chunk_chars,
+                        "flat_overlap_chars": self.flat_overlap_chars,
+                        "parent_chunk_id": stored_ids[unit.parent_id],
+                        "hierarchy_order": unit.order,
+                        "chunk_index": unit.order,
+                        "heading": " > ".join(unit.heading_path) or None,
+                        "heading_path": list(unit.heading_path),
+                        "pages": list(unit.pages),
+                        "block_ids": list(unit.block_ids),
+                        "block_types": list(unit.block_types),
+                        "visual_artifact_ids": [
+                            block.image_artifact_id
+                            for block in selected_blocks
+                            if block.image_artifact_id is not None
+                        ],
+                        "visual_evidence": [
+                            block.structured_content["visual_evidence"]
+                            for block in selected_blocks
+                            if isinstance(
+                                block.structured_content.get("visual_evidence"),
+                                dict,
+                            )
+                        ],
+                        "visual_text_ready": all(
+                            block.block_type not in {"image", "chart"}
+                            or block.structured_content.get("visual_analysis_status")
+                            != "pending"
+                            for block in selected_blocks
+                        ),
+                        "visual_pending": any(
+                            block.block_type in {"image", "chart"}
+                            and (
+                                block.structured_content.get(
+                                    "visual_analysis_status"
+                                )
+                                == "pending"
+                                or (
+                                    not block.text.strip()
+                                    and not block.structured_content.get(
+                                        "textual_rendering"
+                                    )
+                                )
+                            )
+                            for block in selected_blocks
+                        ),
+                        "kind": kind,
+                        "provenance": provenance,
+                        "previous_chunk_id": (
+                            stored_ids[unit.previous_unit_id]
+                            if unit.previous_unit_id is not None
+                            else None
+                        ),
+                        "next_chunk_id": (
+                            stored_ids[unit.next_unit_id]
+                            if unit.next_unit_id is not None
+                            else None
+                        ),
+                        "oversized_atomic": unit.oversized_atomic,
+                        "parser": parsed.parser,
+                        "parser_version": parsed.parser_version,
+                        "parser_backend": parsed.parser_backend,
+                        "parse_quality": parsed.quality.model_dump(mode="json"),
+                        "parser_attempts": [
+                            attempt.model_dump(mode="json")
+                            for attempt in parsed.attempts
+                        ],
+                        "raw_parse_artifact": parsed.raw_output_artifact,
+                        "document_sha256": parsed.sha256,
+                        "evidence_id": f"evidence:{scope_id}:v{scope_version}:{chunk_id}",
+                        "full_text_available": True,
+                    },
+                )
+                )
+        return chunks
 
     def upload_pdf(
         self,
@@ -368,14 +727,14 @@ class PaperIngestionService:
             else:
                 publish("parsing")
                 try:
-                    chunks = self._pdf_chunks(
+                    chunks = await self._pdf_chunks(
                         access,
                         scope.scope_id,
                         scope.scope_version,
                         paper,
                         target,
                     )
-                except (DocumentIngestionError, OSError) as exc:
+                except (DocumentIngestionError, ParserRoutingError, OSError) as exc:
                     failure = f"{type(exc).__name__}: {exc}"
         if not chunks:
             failed = publish("failed", error=failure or "paper has no retrievable text")
@@ -384,6 +743,35 @@ class PaperIngestionService:
                 paper.model_copy(update={"full_text_status": "failed"}),
             )
             return failed
+        if self.embedding_prewarmer is not None:
+            searchable = [
+                chunk
+                for chunk in chunks
+                if chunk.metadata.get("retrieval_role") != "parent"
+            ]
+            texts = [
+                str(chunk.metadata.get("retrieval_text") or chunk.text)
+                for chunk in searchable
+            ]
+            try:
+                vectors = await asyncio.to_thread(
+                    self.embedding_prewarmer.embed_documents,
+                    texts,
+                )
+                if len(vectors) != len(texts):
+                    raise RuntimeError(
+                        "embedding prewarmer returned an unexpected vector count"
+                    )
+            except Exception as exc:
+                failed = publish(
+                    "failed",
+                    error=f"embedding prewarm failed ({type(exc).__name__})",
+                )
+                self.repository.upsert_paper(
+                    access,
+                    paper.model_copy(update={"full_text_status": "failed"}),
+                )
+                return failed
         self.knowledge_store.replace_document_version(chunks)
         cards = self._evidence_cards(scope.scope_id, scope.scope_version, paper, chunks)
         self.repository.save_evidence(access, cards)
@@ -433,10 +821,14 @@ class PaperIngestionService:
         return list(results)
 
     async def aclose(self) -> None:
+        await self.parser_router.aclose()
         if self.downloader is not None:
             await self.downloader.aclose()
         if self.oa_resolver is not None:
             await self.oa_resolver.aclose()
+        close = getattr(self.visual_evidence_extractor, "aclose", None)
+        if callable(close):
+            await close()
 
 
 __all__ = [
