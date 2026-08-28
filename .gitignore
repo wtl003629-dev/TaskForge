@@ -11,3 +11,15 @@ node_modules/
 frontend/dist/
 .taskforge/
 
+# Local-only evaluation state and generated reports.
+# Checked-in reports remain tracked; these rules prevent new runs from
+# polluting the working tree.
+eval/.live-literature-state/
+eval/.rag-profile-*/
+eval/reports/*.json
+eval/reports/*.jsonl
+eval/reports/*/
+
+# Local scratch and unrelated tooling.
+tmp/
+resume_work/
