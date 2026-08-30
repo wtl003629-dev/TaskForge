@@ -2,24 +2,27 @@
 
 [![CI](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml/badge.svg)](https://github.com/wtl003629-dev/TaskForge/actions/workflows/ci.yml)
 
-TaskForge 当前定位为一个 **交互式论文研究 Agent**：系统先根据用户需求执行多源开放文献发现，由用户选择研究论文；Host 随后创建不可由 Agent 改写的 `ResearchScope`，在所选论文内执行结构感知证据检索，最后由 Planner、Evaluator、Writer、Critic 四角色完成计划、筛证、写作和逐条审校。
+TaskForge 是一个面向论文检索、全文问答和研究报告生成的 **论文研究助手**。用户输入研究问题后，系统会从 Semantic Scholar、OpenAlex、arXiv 和 Crossref 查找候选论文；用户选定范围后，系统获取可用全文、建立索引、找出可引用的证据片段，再生成一份等待人工核对的中文报告。
 
 ```text
-研究需求 -> 开放论文发现 -> 用户选文 -> ResearchScope
-         -> PDF/摘要摄取 -> 有界证据检索 -> 四 Agent -> 人工复核
+提出问题 -> 多源检索 -> 选择论文 -> 获取/同步全文
+         -> 证据检索 -> 生成中文报告 -> 人工核对引用
 ```
 
-底层仍是 Provider-neutral、权限受控、可恢复的 Agent Harness：模型只提出 `ToolRequest`，宿主负责身份、权限、Schema、执行、幂等、checkpoint、证据账本和评测。论文原文不在角色间复制，模型也不是授权系统。
+为了避免模型自行扩大研究范围，用户选中的论文会被固化为不可由 Agent 改写的 `ResearchScope`。Planner、Evaluator、Writer、Critic 只在这个范围内计划、筛选证据、写作和审校。底层仍是 Provider-neutral、权限受控、可恢复的 Agent Harness：模型提出 `ToolRequest`，宿主负责身份、权限、执行、幂等、checkpoint 和证据账本。
 
 ## 当前能运行什么
 
-论文研究工作台是当前产品主链；同一套 `AgentRuntime` 也保留下列可配置能力，无需复制核心循环：
+论文研究工作台是当前产品主线，不再以旧版的通用运行台或企业审查页作为主要入口。目前可以：
 
-- 论文研究：四源候选发现、PaperCard 选择/排除、Scope 安全摄取、有界证据卡、四角色结构化交接；
-- 通用研究与报告：ACL 过滤知识检索、作用域记忆召回、审批后生成报告；
-- 代码库诊断：安全 `workspace_grep`、按行读取、证据化结论；
-- 文档审阅：真实 PDF/表格分块、本地文档与知识库检索、版本/来源保留、结构化交付；
-- 企业变更审查：受理、合规、风险、决策四角色固定 DAG，最终只生成 `model_untrusted` 建议，必须由人工批准或拒绝。
+- 用中文或英文检索论文，并选择“综合、中文优先、英文优先”；中文查询会额外走 OpenAlex 中文通道，再与英文语义检索结果合并；
+- 合并 Semantic Scholar、OpenAlex、arXiv、Crossref 的结果，按 DOI、标题等信息去重，并展示作者、出版来源、引用量和可核对状态；
+- 自动下载合法开放获取的 PDF；受限论文可从本机 Zotero 只读同步，也可手动上传 PDF；
+- 对成功解析的全文建立索引，过滤重复片段、参考文献目录和明显的占位内容；
+- 在已选论文内提问，查看短版证据卡和完整原文，并生成带编号引用的中文研究报告；
+- 让 Planner、Evaluator、Writer、Critic 完成结构化交接，最终进入 `waiting_human_review`，由用户核对引用。
+
+同一套 `AgentRuntime` 仍保留通用研究、代码库诊断、文档审阅和企业变更审查能力，供开发与评测使用；它们不是当前前端的主产品入口。
 
 完整演示链路是：
 
@@ -46,7 +49,7 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 | 产品主链已接入 | FastAPI/Workbench 的默认或可配置运行路径会调用该能力 | 仍不等于外部依赖、生产认证或规模化部署已验证 |
 | live 已验证 | 使用真实凭据和真实外部服务显式执行并留存结果 | 只有这一层才能声明对应真实服务链路通过 |
 
-当前默认使用 PostgreSQL，正式 PostgreSQL 路径已覆盖 Task/Profile/Run、操作队列、编排、ReviewCase、Verification、Knowledge/Memory、文献仓库、Provider cache 和 embedding cache；选择 `TASKFORGE_DATABASE_BACKEND=sqlite` 才会启用 SQLite 兼容/测试路径，PostgreSQL 连接失败时不会回退到 SQLite。RAG 仍在 tenant/ACL、Scope 版本、有效期和知识库过滤后执行，pgvector 提供 exact cosine 主路径和显式 opt-in 的 HNSW 路径。真实 PostgreSQL/pgvector 验收需按 `../migration/README.md` 完成后，才能把对应能力标为 live。
+当前默认使用 PostgreSQL，已覆盖 Task/Profile/Run、操作队列、编排、ReviewCase、Verification、Knowledge/Memory、文献仓库、Provider cache 和 embedding cache；选择 `TASKFORGE_DATABASE_BACKEND=sqlite` 才会启用 SQLite 兼容/测试路径，PostgreSQL 连接失败时不会回退到 SQLite。RAG 会先执行 tenant/ACL、Scope 版本、有效期和知识库过滤，pgvector 提供 exact cosine 主路径和显式 opt-in 的 HNSW 路径。现有数据库升级时需依次应用 `migrations/postgres/` 下的迁移脚本。
 
 ## 核心能力
 
@@ -65,7 +68,7 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 - Memory：tenant/org/user/agent/task 五级 scope、过期时间和 provenance；
 - 多角色编排：固定有向无环图、角色 capability、RoleRun 尝试/恢复、分层上下文、handoff、proposed/verified fact 与一次性 host verification receipt；引用有据的 claim（其 evidence refs 全部来自该角色本次运行真实检索到的 knowledge_search 回执）由宿主自动签发 `authority=tool` receipt 并置为 verified，随后向下游依赖角色创建 handoff；未检索到引用的 claim 保持 `model_untrusted`/`proposed`；
 - 业务决策边界：模型只能提交结构化建议，case 状态和最终批准由宿主状态机与人工身份控制；
-- 持久化基础设施：PostgreSQL 是默认 durable backend，SQLite 仅由 `TASKFORGE_DATABASE_BACKEND=sqlite` 显式选择；Neo4j 1/2-hop 图检索和图/向量 RRF 融合仍默认关闭；未连接真实 PostgreSQL 服务时不宣称 live；
+- 持久化基础设施：PostgreSQL 是默认 durable backend，SQLite 仅由 `TASKFORGE_DATABASE_BACKEND=sqlite` 显式选择；本地 Compose 的 PostgreSQL/pgvector 已完成启动、连接和索引验证，Neo4j 1/2-hop 图检索及图/向量 RRF 融合仍默认关闭；
 - Vue Workbench：Profile/Skill 选择、inline/queued Run、Job 轮询、轨迹、Tool Call、Evidence、批准/拒绝、Audit/Metrics 与脱敏 MCP 状态；
 - 离线评测：task success、工具使用、终态、步数和 safety hard-fail 指标。
 
@@ -104,7 +107,46 @@ eval/cases.json        可复现离线用例
 docs/                  架构与威胁模型
 ```
 
-## 本地启动（Windows PowerShell）
+## 快速开始（推荐使用 Docker Compose）
+
+当前 Compose 会启动前端、后端、PostgreSQL 和 Worker。仓库按下面的同级目录组织时，可以同时初始化 TaskForge 与 PatchPilot 的数据库：
+
+```text
+my-coding/
+  TaskForge/
+  PatchPilot/
+```
+
+首次启动先复制环境变量模板，并至少填写三个 PostgreSQL 密码。真实模型的 API Key 只放在本地 `.env`，不要提交到 Git：
+
+```powershell
+cd D:\my-coding\TaskForge
+Copy-Item .env.example .env
+# 编辑 .env，填写 TASKFORGE_POSTGRES_ADMIN_PASSWORD、
+# TASKFORGE_POSTGRES_TASKFORGE_PASSWORD、TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD
+docker compose up -d --build
+docker compose ps
+```
+
+启动后访问：
+
+- 前端：`http://127.0.0.1:5173`
+- 后端 API：`http://127.0.0.1:8000`
+- API 文档：`http://127.0.0.1:8000/docs`
+
+默认 `TASKFORGE_PROVIDER=demo`，适合验证界面和流程。需要生成真实研究报告时，请在 `.env` 中配置百炼、OpenAI 或 DeepSeek；当前本地开发组合是 PostgreSQL + 阿里云百炼 `qwen-plus`。
+
+### 使用论文研究助手
+
+1. 输入研究问题，选择结果数量和语言偏好；
+2. 从候选列表中选论文，核对作者、期刊/出版社和来源链接；
+3. 保存清单后，让系统尝试开放获取下载；受限全文可从 Zotero 同步或手动上传；
+4. 等全文完成解析后，在已选论文中提问并查看证据；
+5. 点击“生成研究报告”，等待状态进入“待核对”，再逐条检查引用。
+
+“找到 10 条证据”表示找到了 10 个论文片段，不是 10 篇论文；“覆盖 100%”只表示每篇已选论文至少命中一个片段，不代表全文都已覆盖。
+
+## 从源码启动（Windows PowerShell）
 
 后端要求 Python 3.11+：
 
@@ -139,6 +181,18 @@ pnpm dev
 访问 `http://127.0.0.1:5173`。API 文档位于 `http://127.0.0.1:8000/docs`。
 
 默认身份头为 `X-TaskForge-Tenant: local` 和 `X-TaskForge-User: demo`，仅适合本地演示，不等于生产认证。
+
+## 切换阿里云百炼 Provider
+
+复制 `.env.example` 为 `.env`，填写：
+
+```dotenv
+TASKFORGE_PROVIDER=bailian
+TASKFORGE_BAILIAN_API_KEY=...
+TASKFORGE_BAILIAN_CHAT_MODEL=qwen-plus
+```
+
+百炼路径使用 OpenAI-compatible Chat Completions，并把结构化工具调用接回同一套宿主权限和证据链。API Key 或模型名缺失时服务会直接报错，不会悄悄改用 Demo Provider。
 
 ## 切换真实 OpenAI Provider
 
@@ -184,24 +238,22 @@ TASKFORGE_DEEPSEEK_MODEL=deepseek-chat
 
 ## 评测
 
-论文研究采用三层互不替代的报告：
+论文研究采用多层、互不替代的报告。下面的数值主要是可复现的工程评测和历史冻结基线，不应理解为当前线上质量或生产 SLA：
 
 | 层级 | 数据量 | 当前结果 |
 |---|---:|---|
-| 开放论文发现 | 100 个真实需求、792 个已知相关 arXiv 标签 | 本机匿名 Provider live：Recall@20/50 `0.001/0.001`，**质量门禁失败**；336 个 Provider/查询组失败暴露了限流和跨语言查询短板 |
+| 开放论文发现（历史冻结基线） | 100 个真实需求、792 个已知相关 arXiv 标签 | 当时匿名 Provider 的 Recall@20/50 为 `0.001/0.001`，质量门禁失败；此结果早于当前中英双路检索和 OpenAlex 中文通道，不代表现版本已达标，也不代表现版本仍是同一结果 |
 | 用户选文后的证据检索 | 414 个锁定资产 | TAT-QA `0.9902/0.9902`、QASPER B2 `0.6282/0.9738`、MultiHop `0.9199/0.9893`、PDF `1.0/1.0`（Recall@10/Candidate@50） |
-| 用户直接上传 PDF 后的核心召回 | QASPER real-PDF strict track | MinerU 3.4.4 locked 100 题的冻结 Flat 对照通过 90%/90% 对齐门禁，段落 Recall@1/5/10/50 为 `0.2728/0.7367/0.8625/0.9830`，Agent-visible Recall@8 为 `0.8250`；旧 Parent–Child A/B 的 Recall@5/10 为 `0.7022/0.8447`、Agent-visible Recall@8 为 `0.7938`。当前默认已改为标题增强、Parent-aware 二次重排和 lineage diversity 的 Parent–Child 链路，但尚未重跑，未声称超过冻结对照（见 [chunking gate](eval/reports/qasper-pdf-chunking-gate-v2-top8.json)） |
+| 用户直接上传 PDF 后的核心召回 | QASPER real-PDF strict track | MinerU 3.4.4 locked 100 题的冻结 Flat 对照通过 90%/90% 对齐门禁，段落 Recall@1/5/10/50 为 `0.2728/0.7367/0.8625/0.9830`，Agent-visible Recall@8 为 `0.8250`；旧 Parent–Child A/B 的 Recall@5/10 为 `0.7022/0.8447`、Agent-visible Recall@8 为 `0.7938`。当前默认已改为标题增强、Parent-aware 二次重排和 lineage diversity 的 Parent–Child 链路，但尚未重跑，未声称超过冻结对照 |
 | 端到端 | 用户上传硬边界回归 + 历史四 Agent 100 题 direct-answer replay | 当前 upload → PDF indexing → bounded evidence 回归通过；历史四 Agent Token F1 为 `0.4761`（旧基线 +36.35 个百分点），但使用旧 Parent–Child trace，仅作历史记录；当前 Flat 配置的 live E2E 暂不重复消耗 API |
 
-此前 clean holdout 的页级重合数字已经全部作废，不能作为段落召回、验收或简历成果。当前链路采用原生文本快速抽取、MinerU 3.4.4 结构化回退、可选独立 VLM；flat 2000 字符、零 overlap、原始 Query 是当前锁定默认，生产搜索只向 Agent 暴露 8 个查询中心窗口。相较同解析/分块、无精排的单 Query locked baseline，Cross-Encoder 使段落 Recall@10 提升 2.70 个百分点、Recall@5 提升约 2.68 个百分点；Flat overlap、滑动窗口、多组 Parent–Child 参数和规则关键词查询均未稳定提升 Recall@5/@10，因此保留为显式 ablation。段落 Recall 只在 Gold→Child 对齐门通过时发布，详见 [`docs/PDF_RAG_PIPELINE.md`](docs/PDF_RAG_PIPELINE.md)、[`eval/reports/qasper-pdf-reranker-uplift-v1.json`](eval/reports/qasper-pdf-reranker-uplift-v1.json)、[`eval/reports/qasper-pdf-chunking-gate-v2-top8.json`](eval/reports/qasper-pdf-chunking-gate-v2-top8.json)、[`eval/reports/qasper-query-expansion-locked100-v1.json`](eval/reports/qasper-query-expansion-locked100-v1.json) 与 [`eval/reports/QASPER_RETRIEVAL_DEPRECATION.md`](eval/reports/QASPER_RETRIEVAL_DEPRECATION.md)。
+此前 clean holdout 的页级重合数字已经全部作废，不能作为段落召回、验收或简历成果。当前链路采用原生文本快速抽取、MinerU 3.4.4 结构化回退、可选独立 VLM；flat 2000 字符、零 overlap、原始 Query 是当前锁定默认，生产搜索只向 Agent 暴露 8 个查询中心窗口。相较同解析/分块、无精排的单 Query locked baseline，Cross-Encoder 使段落 Recall@10 提升 2.70 个百分点、Recall@5 提升约 2.68 个百分点；Flat overlap、滑动窗口、多组 Parent–Child 参数和规则关键词查询均未稳定提升 Recall@5/@10，因此保留为显式 ablation。段落 Recall 只在 Gold→Child 对齐门通过时发布，方法和作废口径见 [`docs/PDF_RAG_PIPELINE.md`](docs/PDF_RAG_PIPELINE.md) 与 [`eval/reports/QASPER_RETRIEVAL_DEPRECATION.md`](eval/reports/QASPER_RETRIEVAL_DEPRECATION.md)。
 
-开放发现只返回标题、来源链接和一句话介绍，不自动下载论文。用户选择并上传 PDF 后才建立 RAG；未上传论文禁止用摘要回退。开放发现低分不是有界检索低分，也不会被标题型冒烟覆盖。离线 20 题同义改写筛选与原始 Query 的 Recall@5/10、Agent-visible Recall@8 完全相同，因此没有进行全量同义改写或 API 调用；D 盘真实多语言模型两题 smoke 正确选择 multilingual route 并排在预期证据首位，但不作为中文质量提升结论。历史报告分别见：
+开放发现阶段返回的是候选元数据，不会把标题或摘要冒充全文证据。用户保存论文清单后，系统会尝试合法的开放获取 PDF 下载并建立 RAG；无法公开下载的论文可通过 Zotero 只读同步或手动上传。只有成功解析和索引的全文才会进入 ready Scope，摘要不会作为失败回退。早期开放发现和同义改写评测仍作为历史对照保留；当前中英双路检索、OpenAlex `language:zh` 通道和语言偏好仍需用同一数据集重新评测后，才能声明质量提升。历史报告分别见：
 
 - [`eval/reports/literature-discovery-full100-live.json`](eval/reports/literature-discovery-full100-live.json)
 - [`eval/reports/paper-research-e2e-30-deterministic.json`](eval/reports/paper-research-e2e-30-deterministic.json)
 - [`eval/reports/paper-research-business-e2e-live.json`](eval/reports/paper-research-business-e2e-live.json)
-- [`eval/reports/qasper-query-expansion-synonym-screen20-v1.json`](eval/reports/qasper-query-expansion-synonym-screen20-v1.json)
-- [`eval/reports/multilingual-retrieval-smoke-v2.json`](eval/reports/multilingual-retrieval-smoke-v2.json)
 
 完整定位、复现命令和口径见 [`docs/PAPER_RESEARCH_AGENT.md`](docs/PAPER_RESEARCH_AGENT.md) 与 [`docs/EVALUATION.md`](docs/EVALUATION.md)。
 
@@ -233,7 +285,7 @@ Top-20 低置信度升级 Top-30 的两段式 Cross-Encoder 预算也已实现�
 
 ## 持久知识与 Memory
 
-默认 `TASKFORGE_DATABASE_BACKEND=postgres`，必须配置 `TASKFORGE_DATABASE_URL`；切换到 SQLite 仅用于显式兼容测试或迁移工具。首次使用 PostgreSQL 前应完成 `../migration/README.md` 中的 schema、数据、RLS、备份和回滚门禁。用户 Memory 可通过 `/api/memory` 创建、检索，并删除自己拥有的 user/agent/task scope 记录；tenant/org 共享记录的可见性不会自动授予删除权。Agent 只能经 `memory_remember` 能力写入，并受 profile、审批、幂等和宿主绑定的 tenant/scope 约束。
+默认 `TASKFORGE_DATABASE_BACKEND=postgres`，必须配置 `TASKFORGE_DATABASE_URL`；切换到 SQLite 仅用于显式兼容测试或迁移工具。首次使用 PostgreSQL 前应应用 `migrations/postgres/` 中的 schema，并完成数据、RLS、备份和回滚门禁。用户 Memory 可通过 `/api/memory` 创建、检索，并删除自己拥有的 user/agent/task scope 记录；tenant/org 共享记录的可见性不会自动授予删除权。Agent 只能经 `memory_remember` 能力写入，并受 profile、审批、幂等和宿主绑定的 tenant/scope 约束。
 
 将工作区内 UTF-8 文档安全摄取到知识库：
 
@@ -256,16 +308,16 @@ python scripts/migrate_sqlite_to_postgres.py --verify `
   --database-url "$env:TASKFORGE_DATABASE_URL"
 
 python scripts/freeze_rag_query_set.py `
-  --output "..\migration\rag-query-vectors.json" `
+  --output ".taskforge\migration\rag-query-vectors.json" `
   --tenant-id local --acl tenant --acl user:demo
 
 python scripts/verify_pgvector_retrieval.py `
-  --queries "..\migration\rag-query-vectors.json" `
+  --queries ".taskforge\migration\rag-query-vectors.json" `
   --sqlite-source-root ".taskforge" `
   --database-url "$env:TASKFORGE_DATABASE_URL" `
   --tenant-id local --acl tenant --acl user:demo `
   --exact-only `
-  --report "..\migration\rag-pgvector-exact-report.json"
+  --report ".taskforge\migration\rag-pgvector-exact-report.json"
 
 # Only after the exact migration/RAG gate passes:
 psql "$env:TASKFORGE_POSTGRES_ADMIN_DSN" -v ON_ERROR_STOP=1 `
@@ -276,14 +328,14 @@ psql "$env:TASKFORGE_POSTGRES_ADMIN_DSN" -v ON_ERROR_STOP=1 `
   -f migrations/postgres/004_literature_evidence_replace.sql
 
 python scripts/verify_pgvector_retrieval.py `
-  --queries "..\migration\rag-query-vectors.json" `
+  --queries ".taskforge\migration\rag-query-vectors.json" `
   --sqlite-source-root ".taskforge" `
   --database-url "$env:TASKFORGE_DATABASE_URL" `
   --tenant-id local --acl tenant --acl user:demo `
-  --report "..\migration\rag-pgvector-report.json"
+  --report ".taskforge\migration\rag-pgvector-report.json"
 ```
 
-应用角色没有 DDL 权限，迁移工具以只读方式打开 SQLite，并以批次、幂等冲突处理和内容/状态/主键/外键校验导入 PostgreSQL。`freeze_rag_query_set.py` 从不重新调用百炼，只冻结现有 1024 维查询缓存并记录 SQLite+NumPy Top-K 基线；`verify_pgvector_retrieval.py` 再比较 SQLite+NumPy、PostgreSQL exact 与 HNSW，记录 Recall@5/10/50、MRR@10、NDCG@8/10、Agent-visible Recall 和 P50/P95 延迟。完整真实验收仍以 `../migration/README.md` 的 live 结果为准。
+应用角色没有 DDL 权限，迁移工具以只读方式打开 SQLite，并以批次、幂等冲突处理和内容/状态/主键/外键校验导入 PostgreSQL。`freeze_rag_query_set.py` 不会重新调用百炼，只冻结现有 1024 维查询缓存并记录 SQLite+NumPy Top-K 基线；`verify_pgvector_retrieval.py` 再比较 SQLite+NumPy、PostgreSQL exact 与 HNSW，记录 Recall@5/10/50、MRR@10、NDCG@8/10、Agent-visible Recall 和 P50/P95 延迟。只有 schema、迁移校验、exact/HNSW 对照、备份和恢复演练全部通过，才能把对应部署标记为 live。
 
 ## 受控 MCP
 
@@ -335,21 +387,22 @@ python scripts/verify_pgvector_retrieval.py `
 ## Docker Compose
 
 ```powershell
-docker compose up --build
+docker compose up -d --build
+docker compose ps
 ```
 
-前端映射到 `5173`，后端映射到 `8000`，独立 Worker 与 API 共享 artifact volume；Compose 默认启动 PostgreSQL，数据 bind 到 D 盘，并由两个独立数据库和应用角色承载运行状态。需要 SQLite 时，显式设置 `TASKFORGE_DATABASE_BACKEND=sqlite` 并使用本地启动路径。当前开发机的 Docker Desktop 引擎不可用，因此仓库内 Compose/Dockerfile 已完成配置校验但未在本机完成镜像构建和真实 PostgreSQL 启动验证。
+前端映射到 `5173`，后端映射到 `8000`，独立 Worker 与 API 共享 artifact volume；Compose 默认启动 PostgreSQL/pgvector，数据 bind 到 D 盘，并由独立数据库和应用角色承载运行状态。需要 SQLite 时，显式设置 `TASKFORGE_DATABASE_BACKEND=sqlite` 并使用源码启动路径。当前开发环境已实际验证 frontend、backend、postgres 和 worker 均能健康启动，PostgreSQL 持久化与 HNSW 索引可用；这属于本地集成验证，不等同于生产高并发或公网部署验收。
 
 ## 已知边界
 
-- 产品主链已把 PostgreSQL（默认）与 SQLite（显式兼容）durable store 都接入应用配置；PostgreSQL 启动失败会 fail closed，不回退 SQLite。真实 PostgreSQL/RLS/pgvector、Neo4j 与远程 MCP 仍分别以各自 live 验收为准；
-- 默认 `general_text` 使用 FastEmbed BGE-small；设置 `TASKFORGE_GENERAL_TEXT_BACKEND=bm25` 可显式回退到 BM25。上传链路默认使用 Jina + MiniLM 归一化集成以优先 Recall，BGE-M3 零样本在 20 题验证上为负结果，领域微调入口已提供但需 GPU 才适合完整训练；本地 Qdrant/hash 与图重排仍是评测或显式 opt-in 路径；真实远程 Qdrant、PostgreSQL、Neo4j 与远程 MCP 均无 live 成功声明；
+- 产品主链已把 PostgreSQL（默认）与 SQLite（显式兼容）durable store 都接入应用配置；PostgreSQL 启动失败会 fail closed，不回退 SQLite。本地 Compose 的 PostgreSQL/pgvector 已验证，生产 RLS、Neo4j 与远程 MCP 仍分别以部署环境的 live 验收为准；
+- 默认 `general_text` 使用 FastEmbed BGE-small；设置 `TASKFORGE_GENERAL_TEXT_BACKEND=bm25` 可显式回退到 BM25。上传链路默认使用 Jina + MiniLM 归一化集成以优先 Recall，BGE-M3 零样本在 20 题验证上为负结果，领域微调入口已提供但需 GPU 才适合完整训练；本地 Qdrant/hash 与图重排仍是评测或显式 opt-in 路径；远程 Qdrant、Neo4j 与远程 MCP 均无 live 成功声明；
 - 演示知识只为 `local` tenant 加载显式 allowlist 文档，其他 tenant 会检索为空而不是跨租户回退；
 - API header 是演示 identity，需要在生产前替换为可信认证与 RBAC；
 - Worker 已有 SQLite/PostgreSQL lease/CAS；审批 API 的业务写入在 PostgreSQL 路径使用数据库事务，横向扩容仍需完成真实并发验收；
-- 开放发现卡片不是证据；只有用户上传并成功解析的 PDF 才能进入 ready Scope。历史摘要回退 E2E 已失效，需按新上传协议重跑；
+- 开放发现卡片不是证据；只有通过开放获取下载、Zotero 同步或手动上传，并成功解析的全文才能进入 ready Scope。历史摘要回退 E2E 已失效，需按当前全文协议重跑；
 - 论文 MCP Server 已验证 stdio/HTTP JSON-RPC 与本地客户端互操作；通用远程 MCP Client 仍是 JSON response 子集。没有模型生成 shell 或容器代码执行；四角色是已接入产品 API 的宿主固定 DAG，不是开放式群聊；
-- 100 题匿名 Provider 开放发现质量门禁当前失败，本轮主要伴随 Semantic Scholar/OpenAlex/arXiv 限流和中文查询未翻译；代码已加入礼貌全局限速、联系身份、API Key 入口和保守的中英学术术语桥接，但在正式配额下用同一数据重跑前，不能在简历中声称 Paper Recall/Precision/nDCG 达标；
+- 历史 100 题匿名 Provider 开放发现质量门禁失败；当前已加入礼貌全局限速、联系身份、API Key 入口、中英双路检索、OpenAlex 中文通道和语言偏好，但在正式配额下用同一数据重跑前，不能声称 Paper Recall/Precision/nDCG 已达标，也不能保证固定的中文论文比例；
 - RoleRun SQLite 租约会在 provider/tool dispatch 前重新 fencing，能阻止失去租约的旧 worker 执行工具；但已发出的 provider HTTP 请求无法撤回，进程停顿跨过租期时仍可能产生重复模型调用或费用，不能宣称 provider exactly-once；
 - PostgreSQL 路径把 Queue/审计/checkpoint 放入同一数据库体系，但 provider HTTP 请求和下游副作用仍不具备 exactly-once；下游必须自行尊重 idempotency key；
 - 创建 queued Run 尚无客户端请求幂等键；网络结果不明确时不会伪造 mock 成功，但调用方仍需先按业务请求标识查询再决定是否重试；
