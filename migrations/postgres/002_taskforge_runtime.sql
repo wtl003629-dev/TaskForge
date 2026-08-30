@@ -581,6 +581,7 @@ GRANT USAGE ON SCHEMA core, taskforge, operations, orchestration, review, verifi
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA core, taskforge, operations, orchestration, review, verification, literature, vector TO taskforge_app;
 GRANT DELETE ON taskforge.knowledge_chunks TO taskforge_app;
 GRANT DELETE ON taskforge.memory_items TO taskforge_app;
+GRANT DELETE ON literature.evidence_cards TO taskforge_app;
 -- Role execution claims are released after every role run.  Keep the
 -- application role unable to delete other append-only/runtime records while
 -- allowing this lease cleanup path to complete.

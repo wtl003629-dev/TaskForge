@@ -442,6 +442,64 @@ class PostgresLiteratureRepository:
                 )
             self._audit(cursor, access, "save_evidence", "research_scope", scope.scope_id, {"count": len(cards), "version": scope.scope_version})
 
+    def replace_paper_evidence(
+        self,
+        access: LiteratureAccess,
+        scope_id: str,
+        scope_version: int,
+        paper_id: str,
+        cards: list[EvidenceCard],
+    ) -> None:
+        scope = self.get_scope(access, scope_id, version=scope_version)
+        if paper_id not in scope.selected_paper_ids:
+            raise LiteratureAccessError("evidence paper is outside the selected scope")
+        if any(
+            card.scope_id != scope.scope_id
+            or card.scope_version != scope.scope_version
+            or card.paper_id != paper_id
+            for card in cards
+        ):
+            raise LiteratureConflictError("replacement evidence must match one scope paper")
+        with self.runtime.transaction(access.tenant_id) as (_, cursor):
+            cursor.execute(
+                """
+                DELETE FROM literature.evidence_cards
+                WHERE tenant_id = %s AND scope_id = %s
+                    AND scope_version = %s AND paper_id = %s
+                """,
+                (access.tenant_id, scope.scope_id, scope.scope_version, paper_id),
+            )
+            for card in cards:
+                cursor.execute(
+                    """
+                    INSERT INTO literature.evidence_cards(
+                        tenant_id, evidence_id, scope_id, scope_version,
+                        paper_id, card_json, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        access.tenant_id,
+                        card.evidence_id,
+                        scope.scope_id,
+                        scope.scope_version,
+                        paper_id,
+                        _json(card),
+                        utc_now(),
+                    ),
+                )
+            self._audit(
+                cursor,
+                access,
+                "replace_paper_evidence",
+                "research_scope",
+                scope.scope_id,
+                {
+                    "count": len(cards),
+                    "paper_id": paper_id,
+                    "version": scope.scope_version,
+                },
+            )
+
     def list_evidence(self, access: LiteratureAccess, scope_id: str, *, version: int | None = None, paper_id: str | None = None) -> list[EvidenceCard]:
         scope = self.get_scope(access, scope_id, version=version)
         where = ["tenant_id = %s", "scope_id = %s", "scope_version = %s"]

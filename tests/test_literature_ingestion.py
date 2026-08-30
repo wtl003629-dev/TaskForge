@@ -217,6 +217,82 @@ async def test_hybrid_pdf_ingestion_stores_flat_primary_and_child_auxiliary_lane
 
 
 @pytest.mark.asyncio
+async def test_zotero_fulltext_is_indexed_without_pdf_and_filters_references(
+    tmp_path: Path,
+) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    scope = _seed_scope(repository, access)
+    scope = repository.transition_scope_status(
+        access,
+        scope.scope_id,
+        "ingesting",
+        expected_version=scope.scope_version,
+    )
+    service = PaperIngestionService(repository, knowledge, tmp_path / "artifacts")
+
+    status = await service.ingest_zotero_text(
+        access,
+        scope.scope_id,
+        "paper-1",
+        item_key="AB12CD34",
+        full_text="""
+## Page 1
+# Introduction
+This paper introduces a host-controlled retrieval pipeline with explicit scope boundaries and verifiable citations for every generated claim.
+
+## Page 2
+# Method
+The deterministic ingestion service reads Zotero content as untrusted data and preserves its source location for later evidence review.
+
+# References
+[1] A citation that must never become retrievable evidence in this scope.
+""",
+    )
+
+    assert status.status == "indexed"
+    assert status.evidence_count == 2
+    assert repository.get_scope(access, scope.scope_id).status == "ready"
+    chunks = knowledge.visible_chunks(
+        AccessContext(tenant_id="tenant-a", user_id="user-a")
+    )
+    assert len(chunks) == 2
+    assert {chunk.source_uri for chunk in chunks} == {"paper://paper-1"}
+    assert {chunk.metadata["zotero_source_uri"] for chunk in chunks} == {
+        "zotero://AB12CD34"
+    }
+    assert {tuple(chunk.metadata["pages"]) for chunk in chunks} == {(1,), (2,)}
+    assert all("citation that must never" not in chunk.text for chunk in chunks)
+
+
+@pytest.mark.asyncio
+async def test_zotero_fulltext_rejects_placeholder_only_extraction(
+    tmp_path: Path,
+) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    scope = _seed_scope(repository, access)
+    service = PaperIngestionService(repository, knowledge, tmp_path / "artifacts")
+
+    status = await service.ingest_zotero_text(
+        access,
+        scope.scope_id,
+        "paper-1",
+        item_key="AB12CD34",
+        full_text="| relevant doc 1 |\n| --- |\n| relevant doc 2 |",
+    )
+
+    assert status.status == "failed"
+    assert "占位内容" in (status.error or "")
+    assert (
+        knowledge.visible_chunks(AccessContext(tenant_id="tenant-a", user_id="user-a"))
+        == ()
+    )
+
+
+@pytest.mark.asyncio
 async def test_bailian_embedding_is_prewarmed_before_pdf_is_indexed(
     tmp_path: Path,
 ) -> None:

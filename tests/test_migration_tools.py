@@ -116,6 +116,14 @@ def test_taskforge_runtime_migration_covers_rls_audit_and_fixed_vector_index() -
     assert "knowledge_embeddings_hnsw_cosine_idx" not in normalised
     assert "embedding_cache_hnsw_cosine_idx" not in normalised
     assert "literature.audit_event_id_seq" in normalised
+    assert "grant delete on literature.evidence_cards to taskforge_app" in normalised
+    evidence_replace_sql = (
+        root / "migrations/postgres/004_literature_evidence_replace.sql"
+    ).read_text(encoding="utf-8")
+    assert (
+        "grant delete on literature.evidence_cards to taskforge_app"
+        in " ".join(evidence_replace_sql.casefold().split())
+    )
 
 
 def test_taskforge_pgvector_search_keeps_authorization_predicates_before_ordering() -> None:

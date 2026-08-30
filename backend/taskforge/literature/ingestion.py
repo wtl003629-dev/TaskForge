@@ -67,6 +67,121 @@ _REFERENTIAL_CHILD_START = re.compile(
     re.IGNORECASE,
 )
 _PREVIOUS_CONTEXT_CHARS = 600
+_ZOTERO_ITEM_KEY = re.compile(r"^[A-Z0-9]{8}$", re.IGNORECASE)
+_ZOTERO_PAGE_HEADING = re.compile(r"^#{1,6}\s+Page\s+(\d+)\s*$", re.IGNORECASE)
+_ZOTERO_SECTION_HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+_ZOTERO_REFERENCE_HEADING = re.compile(
+    r"^(?:references?|bibliography|works\s+cited|参考文献|引用文献)\s*$",
+    re.IGNORECASE,
+)
+
+
+def _bounded_zotero_parts(text: str, *, max_chars: int) -> list[str]:
+    """Split MCP-supplied prose on sentence boundaries without trusting markup."""
+
+    value = " ".join(text.split()).strip()
+    if not value:
+        return []
+    if len(value) <= max_chars:
+        return [value]
+    sentences = [
+        part.strip()
+        for part in re.split(r"(?<=[.!?。！？；;])\s+", value)
+        if part.strip()
+    ]
+    if len(sentences) == 1:
+        return [
+            value[index : index + max_chars]
+            for index in range(0, len(value), max_chars)
+        ]
+    result: list[str] = []
+    current = ""
+    for sentence in sentences:
+        if len(sentence) > max_chars:
+            if current:
+                result.append(current)
+                current = ""
+            result.extend(
+                sentence[index : index + max_chars]
+                for index in range(0, len(sentence), max_chars)
+            )
+            continue
+        candidate = f"{current} {sentence}".strip()
+        if current and len(candidate) > max_chars:
+            result.append(current)
+            current = sentence
+        else:
+            current = candidate
+    if current:
+        result.append(current)
+    return result
+
+
+def _zotero_text_is_useful(text: str) -> bool:
+    """Reject empty/template-only fragments such as placeholder PDF tables."""
+
+    visible = re.sub(r"[`*_#|<>\[\](){}\\-]+", " ", text)
+    visible = " ".join(visible.split()).strip()
+    if not visible:
+        return False
+    chinese = re.findall(r"[\u3400-\u9fff]", visible)
+    tokens = re.findall(r"[A-Za-z0-9]+", visible.casefold())
+    unique = {token for token in tokens if len(token) > 1}
+    return len(chinese) >= 12 or len(tokens) >= 8 or len(unique) >= 6
+
+
+def _zotero_markdown_segments(
+    text: str,
+    *,
+    max_chars: int,
+) -> list[tuple[str | None, int | None, str]]:
+    """Project untrusted Zotero Markdown into bounded, reference-free segments."""
+
+    normalised = text.replace("\r\n", "\n").replace("\r", "\n")
+    heading: str | None = None
+    page: int | None = None
+    in_references = False
+    paragraph: list[str] = []
+    raw: list[tuple[str | None, int | None, str]] = []
+
+    def flush() -> None:
+        if not paragraph:
+            return
+        value = "\n".join(paragraph).strip()
+        paragraph.clear()
+        if in_references or not _zotero_text_is_useful(value):
+            return
+        for part in _bounded_zotero_parts(value, max_chars=max_chars):
+            if _zotero_text_is_useful(part):
+                raw.append((heading, page, part))
+
+    for raw_line in normalised.split("\n"):
+        line = raw_line.strip()
+        page_match = _ZOTERO_PAGE_HEADING.fullmatch(line)
+        if page_match:
+            flush()
+            page = int(page_match.group(1))
+            continue
+        section_match = _ZOTERO_SECTION_HEADING.fullmatch(line)
+        if section_match:
+            flush()
+            candidate = " ".join(section_match.group(2).split()).strip()
+            if _ZOTERO_REFERENCE_HEADING.fullmatch(candidate):
+                in_references = True
+            elif not in_references:
+                heading = candidate[:1_000]
+            continue
+        if not line:
+            flush()
+            continue
+        if in_references:
+            continue
+        if line.startswith("**") and ":**" in line:
+            # zotero-mcp metadata belongs to the item record, not citation text.
+            continue
+        paragraph.append(line)
+    flush()
+    return raw[:2_000]
 
 
 def _child_retrieval_text(
@@ -679,6 +794,212 @@ class PaperIngestionService:
                 )
         return chunks
 
+    async def ingest_zotero_text(
+        self,
+        access: LiteratureAccess,
+        scope_id: str,
+        paper_id: str,
+        *,
+        item_key: str,
+        full_text: str,
+    ) -> IngestionStatus:
+        """Index full text already present in Zotero, without a PDF upload.
+
+        The host selects the scope, paper and Zotero item.  MCP output is
+        treated strictly as untrusted document content and never as Agent
+        instructions.  Reference sections and low-information extraction
+        placeholders are excluded before they can become evidence cards.
+        """
+
+        clean_key = item_key.strip().upper()
+        if not _ZOTERO_ITEM_KEY.fullmatch(clean_key):
+            raise ValueError("Zotero item key must be an 8-character key")
+        if not isinstance(full_text, str) or not full_text.strip():
+            raise ValueError("Zotero item has no readable full text")
+        encoded = full_text.encode("utf-8")
+        if len(encoded) > 5_000_000:
+            raise ValueError("Zotero full text exceeds the ingestion limit")
+
+        scope = self.repository.get_scope(access, scope_id)
+        if scope.status not in {"confirmed", "ingesting"}:
+            raise ValueError("scope must be confirmed before Zotero ingestion")
+        if paper_id not in scope.selected_paper_ids:
+            raise ValueError("paper is outside the selected scope")
+        if scope.status == "confirmed":
+            scope = self.repository.transition_scope_status(
+                access,
+                scope.scope_id,
+                "ingesting",
+                expected_version=scope.scope_version,
+            )
+        paper = self.repository.get_paper(access, paper_id)
+        job_id = f"zotero-ingestion-{uuid4()}"
+
+        def publish(
+            state: str,
+            *,
+            count: int = 0,
+            error: str | None = None,
+        ) -> IngestionStatus:
+            value = IngestionStatus(
+                job_id=job_id,
+                scope_id=scope.scope_id,
+                paper_id=paper.paper_id,
+                status=state,
+                evidence_count=count,
+                error=error,
+            )
+            self.repository.save_ingestion_status(
+                access,
+                value,
+                scope_version=scope.scope_version,
+            )
+            return value
+
+        publish("parsing")
+        segments = _zotero_markdown_segments(
+            full_text,
+            max_chars=self.flat_chunk_chars,
+        )
+        if not segments:
+            failed = publish(
+                "failed",
+                error="Zotero 全文未提取出可引用正文（参考文献和占位内容已排除）。",
+            )
+            self.repository.upsert_paper(
+                access,
+                paper.model_copy(update={"full_text_status": "failed"}),
+            )
+            return failed
+
+        current_document_id = f"research-paper:{scope.scope_id}:{paper.paper_id}"
+        stable_document_id = self.experiment_profile.document_id(current_document_id)
+        current_knowledge_base_id = (
+            f"research-scope:{scope.scope_id}:v{scope.scope_version}"
+        )
+        knowledge_base_id = self.experiment_profile.knowledge_base_id(
+            current_knowledge_base_id
+        )
+        digest = hashlib.sha256(encoded).hexdigest()
+        # ScopeBoundEvidenceService authorises exact paper:// source URIs.
+        # Keep Zotero provenance in metadata while retaining that immutable
+        # paper boundary as the retrieval authority.
+        source_uri = f"paper://{paper.paper_id}"
+        chunks: list[KnowledgeChunk] = []
+        for index, (heading, page, text) in enumerate(segments):
+            # Index-based IDs deliberately remain stable across a refreshed
+            # Zotero extraction so evidence rows are replaced, not duplicated.
+            chunk_id = hashlib.sha256(
+                (
+                    f"{access.tenant_id}\0{stable_document_id}\0"
+                    f"{scope.scope_version}\0zotero\0{index}"
+                ).encode()
+            ).hexdigest()[:24]
+            pages = [page] if page is not None else []
+            chunks.append(
+                KnowledgeChunk(
+                    chunk_id=chunk_id,
+                    tenant_id=access.tenant_id,
+                    text=text,
+                    source_uri=source_uri,
+                    document_id=stable_document_id,
+                    version=str(scope.scope_version),
+                    version_order=scope.scope_version,
+                    acl=frozenset({f"user:{access.user_id}"}),
+                    metadata={
+                        "knowledge_base_id": knowledge_base_id,
+                        **self.experiment_profile.metadata(),
+                        "scope_id": scope.scope_id,
+                        "scope_version": scope.scope_version,
+                        "paper_id": paper.paper_id,
+                        "title": paper.canonical_title,
+                        "authors": paper.authors,
+                        "doi": paper.doi,
+                        "retrieval_role": "child",
+                        "retrieval_text": text,
+                        "retrieval_text_version": "zotero-markdown-v1",
+                        "chunking_mode": "zotero_markdown",
+                        "chunk_index": index,
+                        "heading": heading,
+                        "heading_path": [heading] if heading else [],
+                        "pages": pages,
+                        "kind": "paragraph",
+                        "parser": "zotero-mcp",
+                        "parser_version": "0.11.0",
+                        "parser_backend": "mcp-fulltext",
+                        "document_sha256": digest,
+                        "zotero_item_key": clean_key,
+                        "zotero_source_uri": f"zotero://{clean_key}",
+                        "evidence_id": (
+                            f"evidence:{scope.scope_id}:v{scope.scope_version}:"
+                            f"{chunk_id}"
+                        ),
+                        "full_text_available": True,
+                    },
+                )
+            )
+
+        if self.embedding_prewarmer is not None:
+            try:
+                vectors = await asyncio.to_thread(
+                    self.embedding_prewarmer.embed_documents,
+                    [chunk.text for chunk in chunks],
+                )
+                if len(vectors) != len(chunks):
+                    raise RuntimeError(
+                        "embedding prewarmer returned an unexpected vector count"
+                    )
+            except Exception as exc:
+                failed = publish(
+                    "failed",
+                    error=f"embedding prewarm failed ({type(exc).__name__})",
+                )
+                self.repository.upsert_paper(
+                    access,
+                    paper.model_copy(update={"full_text_status": "failed"}),
+                )
+                return failed
+
+        self.knowledge_store.replace_document_version(chunks)
+        cards = self._evidence_cards(
+            scope.scope_id,
+            scope.scope_version,
+            paper,
+            chunks,
+        )
+        self.repository.replace_paper_evidence(
+            access,
+            scope.scope_id,
+            scope.scope_version,
+            paper.paper_id,
+            cards,
+        )
+        self.repository.upsert_paper(
+            access,
+            paper.model_copy(update={"full_text_status": "ingested"}),
+        )
+        indexed = publish("indexed", count=len(cards))
+
+        latest_scope = self.repository.get_scope(access, scope.scope_id)
+        statuses = self.repository.list_ingestion_statuses(
+            access,
+            scope.scope_id,
+            version=scope.scope_version,
+        )
+        by_paper = {status.paper_id: status for status in statuses}
+        if latest_scope.status == "ingesting" and all(
+            by_paper.get(selected) is not None
+            and by_paper[selected].status == "indexed"
+            for selected in scope.selected_paper_ids
+        ):
+            self.repository.transition_scope_status(
+                access,
+                scope.scope_id,
+                "ready",
+                expected_version=scope.scope_version,
+            )
+        return indexed
+
     def upload_pdf(
         self,
         access: LiteratureAccess,
@@ -862,7 +1183,13 @@ class PaperIngestionService:
                 return failed
         self.knowledge_store.replace_document_version(chunks)
         cards = self._evidence_cards(scope.scope_id, scope.scope_version, paper, chunks)
-        self.repository.save_evidence(access, cards)
+        self.repository.replace_paper_evidence(
+            access,
+            scope.scope_id,
+            scope.scope_version,
+            paper.paper_id,
+            cards,
+        )
         full_text = any(
             bool(chunk.metadata.get("full_text_available")) for chunk in chunks
         )

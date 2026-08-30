@@ -815,6 +815,66 @@ class SQLiteLiteratureRepository:
                 {"count": len(cards), "version": scope.scope_version},
             )
 
+    def replace_paper_evidence(
+        self,
+        access: LiteratureAccess,
+        scope_id: str,
+        scope_version: int,
+        paper_id: str,
+        cards: list[EvidenceCard],
+    ) -> None:
+        """Atomically replace one paper's cards so retries cannot leave stale rows."""
+
+        scope = self.get_scope(access, scope_id, version=scope_version)
+        if paper_id not in scope.selected_paper_ids:
+            raise LiteratureAccessError("evidence paper is outside the selected scope")
+        if any(
+            card.scope_id != scope.scope_id
+            or card.scope_version != scope.scope_version
+            or card.paper_id != paper_id
+            for card in cards
+        ):
+            raise LiteratureConflictError("replacement evidence must match one scope paper")
+        with self._lock, self._connect() as connection:
+            connection.execute(
+                """
+                DELETE FROM evidence_cards
+                WHERE tenant_id = ? AND scope_id = ?
+                    AND scope_version = ? AND paper_id = ?
+                """,
+                (access.tenant_id, scope.scope_id, scope.scope_version, paper_id),
+            )
+            for card in cards:
+                connection.execute(
+                    """
+                    INSERT INTO evidence_cards (
+                        tenant_id, evidence_id, scope_id, scope_version,
+                        paper_id, card_json, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        access.tenant_id,
+                        card.evidence_id,
+                        scope.scope_id,
+                        scope.scope_version,
+                        paper_id,
+                        _json(card),
+                        utc_now().isoformat(),
+                    ),
+                )
+            self._audit(
+                connection,
+                access,
+                "replace_paper_evidence",
+                "research_scope",
+                scope.scope_id,
+                {
+                    "count": len(cards),
+                    "paper_id": paper_id,
+                    "version": scope.scope_version,
+                },
+            )
+
     def list_evidence(
         self,
         access: LiteratureAccess,

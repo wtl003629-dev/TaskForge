@@ -22,4 +22,6 @@ eval/reports/*/
 
 # Local scratch and unrelated tooling.
 tmp/
+.tmp/
+config/mcp.zotero.local.json
 resume_work/

@@ -10,6 +10,11 @@ from .query_rewriter import OpenAICompatibleQueryRewriter
 from .repository import LiteratureAccess, SQLiteLiteratureRepository
 from .rule_query_expander import RuleEvidenceQueryExpander
 from .service import LiteratureDiscoveryService
+from .zotero_mcp import (
+    ZoteroItem,
+    ZoteroMCPError,
+    ZoteroMCPService,
+)
 
 __all__ = [
     "DiscoveryResult",
@@ -27,4 +32,7 @@ __all__ = [
     "PostgresLiteratureRepository",
     "plan_literature_queries",
     "route_evidence_intent",
+    "ZoteroItem",
+    "ZoteroMCPError",
+    "ZoteroMCPService",
 ]

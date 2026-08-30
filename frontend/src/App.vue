@@ -11,6 +11,7 @@ import {
   decideApproval,
   getMetrics,
   getResearchScope,
+  getZoteroStatus,
   getReviewCase,
   getRun,
   getRunAudit,
@@ -21,6 +22,8 @@ import {
   listReviewCases,
   expandLiterature,
   ingestResearchScope,
+  importResearchPaperFromZotero,
+  listZoteroItems,
   runReviewCaseUntilReview,
   searchLiterature,
   searchResearchEvidence,
@@ -52,6 +55,8 @@ import type {
   RunRecord,
   ScopeEvidenceResult,
   SkillPack,
+  ZoteroConnectionStatus,
+  ZoteroLibraryItem,
 } from './types'
 
 type WorkbenchMode = 'research' | 'agent' | 'review'
@@ -110,6 +115,10 @@ const researchError = ref('')
 const researchMessage = ref('')
 const directUploadTitle = ref('')
 const researchWorkspaceView = ref<ResearchWorkspaceView>('sources')
+const zoteroStatus = ref<ZoteroConnectionStatus | null>(null)
+const zoteroCandidates = ref<Record<string, ZoteroLibraryItem[]>>({})
+const zoteroLoadingPaperId = ref('')
+const zoteroChecking = ref(false)
 
 const exampleResearchQueries = [
   'RAG 的最新技术方向与评测方法有哪些？',
@@ -166,13 +175,13 @@ const researchStep = computed(() => {
 const researchSteps = [
   { number: 1, title: '提出问题', detail: '设置检索需求' },
   { number: 2, title: '选择论文', detail: '确认研究清单' },
-  { number: 3, title: '获取全文', detail: '自动获取或上传 PDF' },
+  { number: 3, title: '获取全文', detail: '开放获取或 Zotero 同步' },
   { number: 4, title: '证据与报告', detail: '检索原文并生成草稿' },
 ] as const
 const researchStepGuide = computed(() => ({
   1: '输入研究问题，其他筛选条件可稍后展开设置。',
   2: '从结果中选择论文，然后保存研究清单。',
-  3: '等待开放论文自动索引；受限论文请按提示上传 PDF。',
+  3: '开放论文自动索引；已登录站点的论文可从 Zotero 直接同步。',
   4: '可以搜索论文全文，也可以直接生成带引用的研究报告。',
 })[researchStep.value])
 const pendingIngestionCount = computed(() => {
@@ -676,6 +685,8 @@ function startNewResearch(): void {
   researchError.value = ''
   researchMessage.value = ''
   directUploadTitle.value = ''
+  zoteroCandidates.value = {}
+  zoteroLoadingPaperId.value = ''
   researchWorkspaceView.value = 'sources'
 }
 
@@ -730,7 +741,7 @@ function fullTextLabel(status: string): string {
     available: '开放全文',
     ingested: '已建立索引',
     abstract_only: '仅摘要',
-    failed: '需要上传',
+    failed: '待同步全文',
     not_requested: '待获取全文',
   }[status] ?? status
 }
@@ -743,7 +754,7 @@ function ingestionStatusLabel(status: string): string {
     parsing: '正在解析',
     indexed: '已完成索引',
     abstract_only: '仅有摘要',
-    failed: '需要手动上传',
+    failed: '可从 Zotero 同步',
   }[status] ?? status
 }
 
@@ -866,14 +877,14 @@ async function handleConfirmScope(): Promise<void> {
     closeEvidenceDrawer()
     researchAgentDetail.value = null
     reportEvidence.value = []
-    researchMessage.value = '论文清单已保存，正在自动获取可合法下载的开放 PDF…'
+    researchMessage.value = '论文清单已保存，正在获取开放全文；受限论文可随后从 Zotero 同步…'
     ingestionStatuses.value = await ingestResearchScope(researchScope.value.scopeId)
     researchScope.value = await getResearchScope(researchScope.value.scopeId)
     researchWorkspaceView.value = researchScope.value.status === 'ready' ? 'ask' : 'sources'
     const indexed = ingestionStatuses.value.filter((item) => item.status === 'indexed').length
     const manual = ingestionStatuses.value.filter((item) => item.status === 'failed').length
     researchMessage.value = manual
-      ? `已自动获取并索引 ${indexed} 篇；另有 ${manual} 篇受访问权限限制，请通过来源链接自行下载后上传。`
+      ? `已自动获取并索引 ${indexed} 篇；另有 ${manual} 篇可通过 Zotero Connector 保存后直接同步。`
       : `已自动获取并索引全部 ${indexed} 篇开放论文。`
   } catch (error) {
     researchError.value = error instanceof Error ? error.message : '确认研究边界失败。'
@@ -893,12 +904,94 @@ async function handleScopeIngestion(): Promise<void> {
     const indexed = ingestionStatuses.value.filter((item) => item.status === 'indexed').length
     const manual = ingestionStatuses.value.filter((item) => item.status === 'failed').length
     researchMessage.value = manual
-      ? `已索引 ${indexed} 篇；仍有 ${manual} 篇需要通过来源链接自行下载后上传。`
+      ? `已索引 ${indexed} 篇；仍有 ${manual} 篇可从 Zotero 馆藏直接同步。`
       : `已将 ${indexed} 篇 PDF 写入当前论文清单的有界索引。`
   } catch (error) {
     researchError.value = error instanceof Error ? error.message : '论文获取或索引失败。'
   } finally {
     researchLoading.value = false
+  }
+}
+
+async function loadZoteroConnection(announce = true): Promise<void> {
+  if (zoteroChecking.value) return
+  zoteroChecking.value = true
+  if (announce) researchError.value = ''
+  try {
+    const status = await getZoteroStatus()
+    zoteroStatus.value = status
+    if (announce) {
+      researchMessage.value = status.connected
+        ? 'Zotero 已连接。保存到 Zotero 的论文可以在全文准备步骤直接同步。'
+        : status.configured
+          ? status.message
+          : 'Zotero MCP 尚未启用。请先安装 Zotero Desktop、Connector，并启动本地 MCP 服务。'
+    }
+  } catch (error) {
+    zoteroStatus.value = {
+      configured: false,
+      connected: false,
+      availableTools: [],
+      message: 'Zotero MCP 状态暂时不可用。',
+    }
+    if (announce) {
+      researchError.value = error instanceof Error
+        ? error.message
+        : 'Zotero MCP 状态暂时不可用，请确认本地服务正在运行。'
+    }
+  } finally {
+    zoteroChecking.value = false
+  }
+}
+
+async function findPaperInZotero(paper: PaperCard): Promise<void> {
+  if (!zoteroStatus.value?.connected) {
+    await loadZoteroConnection()
+  }
+  if (!zoteroStatus.value?.connected) {
+    researchError.value = 'Zotero 尚未连接。请先启动 Zotero Desktop 和本地 MCP 服务。'
+    return
+  }
+  zoteroLoadingPaperId.value = paper.paperId
+  researchError.value = ''
+  try {
+    const items = await listZoteroItems({ query: paper.title, limit: 5 })
+    zoteroCandidates.value = { ...zoteroCandidates.value, [paper.paperId]: items }
+    researchMessage.value = items.length
+      ? `在 Zotero 中找到 ${items.length} 个候选条目，请核对后同步全文。`
+      : 'Zotero 中还没有这篇论文。请在论文页面点击 Zotero Connector 保存，然后重试。'
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : '读取 Zotero 馆藏失败。'
+  } finally {
+    zoteroLoadingPaperId.value = ''
+  }
+}
+
+async function syncPaperFromZotero(
+  paper: PaperCard,
+  item: ZoteroLibraryItem,
+): Promise<void> {
+  if (!researchScope.value) return
+  zoteroLoadingPaperId.value = paper.paperId
+  researchError.value = ''
+  try {
+    const next = await importResearchPaperFromZotero(
+      researchScope.value.scopeId,
+      paper.paperId,
+      item.itemKey,
+    )
+    ingestionStatuses.value = [
+      ...ingestionStatuses.value.filter((status) => status.paperId !== paper.paperId),
+      next,
+    ]
+    researchScope.value = await getResearchScope(researchScope.value.scopeId)
+    zoteroCandidates.value = { ...zoteroCandidates.value, [paper.paperId]: [] }
+    researchMessage.value = `已从 Zotero 同步并索引：${paper.title}`
+    if (researchScope.value.status === 'ready') researchWorkspaceView.value = 'ask'
+  } catch (error) {
+    researchError.value = error instanceof Error ? error.message : 'Zotero 全文同步失败。'
+  } finally {
+    zoteroLoadingPaperId.value = ''
   }
 }
 
@@ -1210,6 +1303,7 @@ watch(activeMode, (mode) => {
 onMounted(() => {
   void loadAgents()
   void loadMcpStatus()
+  void loadZoteroConnection(false)
   window.addEventListener('keydown', handleEvidenceKeydown)
 })
 onBeforeUnmount(() => {
@@ -1303,6 +1397,24 @@ onBeforeUnmount(() => {
               <i aria-hidden="true">→</i>
             </button>
           </div>
+        </div>
+
+        <div
+          v-if="!literatureResult && !researchScope"
+          class="zotero-home-entry"
+          :data-connected="zoteroStatus?.connected || false"
+        >
+          <span class="zotero-home-mark" aria-hidden="true">Z</span>
+          <div>
+            <div class="zotero-home-title">
+              <strong>Zotero 论文库</strong>
+              <span>{{ zoteroStatus?.connected ? '已连接' : '可选连接' }}</span>
+            </div>
+            <p>在论文网站登录后用 Zotero Connector 保存，确认论文后可直接同步全文，无需手动下载。</p>
+          </div>
+          <button type="button" :disabled="zoteroChecking" @click="() => loadZoteroConnection()">
+            {{ zoteroChecking ? '检查中…' : zoteroStatus?.connected ? '刷新连接' : '检查连接' }}
+          </button>
         </div>
 
         <div v-if="!literatureResult && !researchScope" class="example-queries" aria-label="示例研究问题">
@@ -1451,7 +1563,7 @@ onBeforeUnmount(() => {
             <button class="primary-button scope-confirm" data-action="save-scope" :disabled="researchLoading || !selectedPaperIds.length || !researchIntent.trim()" @click="handleConfirmScope">
               {{ researchLoading ? '正在准备…' : '确认论文并获取全文' }}
             </button>
-            <small class="scope-legal-note">仅自动获取合法开放的 PDF；不会绕过登录或付费限制。</small>
+            <small class="scope-legal-note">开放全文会自动获取；已登录可访问的论文可经 Zotero Connector 保存后同步，不会绕过登录或付费限制。</small>
           </template>
         </aside>
       </section>
@@ -1482,10 +1594,20 @@ onBeforeUnmount(() => {
             <div>
               <span class="section-kicker">全文准备</span>
               <h2>{{ researchScope.status === 'ready' ? '论文全文已经就绪' : '正在准备论文全文' }}</h2>
-              <p>{{ researchScope.status === 'ready' ? '现在可以检索原文证据，或生成带引用的研究报告。' : '开放论文会自动下载；受限论文需要你从来源页面下载后上传。' }}</p>
+              <p>{{ researchScope.status === 'ready' ? '现在可以检索原文证据，或生成带引用的研究报告。' : '开放论文会自动获取；受限论文可用 Zotero Connector 保存后直接同步。' }}</p>
             </div>
           </div>
           <div class="source-goal"><span>研究目标</span><p>{{ researchScope.userIntent }}</p></div>
+          <div class="zotero-connection" :data-connected="zoteroStatus?.connected || false">
+            <i aria-hidden="true" />
+            <div>
+              <strong>{{ zoteroStatus?.connected ? 'Zotero 已连接' : 'Zotero 尚未连接' }}</strong>
+              <p>{{ zoteroStatus?.connected ? '在论文页面点击 Zotero Connector 保存，回到这里即可同步全文，无需手动下载或上传。' : (zoteroStatus?.message || '启动 Zotero Desktop 与本地 MCP 服务后刷新连接。') }}</p>
+            </div>
+            <button type="button" :disabled="zoteroChecking" @click="() => loadZoteroConnection()">
+              {{ zoteroChecking ? '检查中…' : '刷新连接' }}
+            </button>
+          </div>
           <div class="source-library-list">
             <article v-for="paper in selectedPapers" :key="paper.paperId">
               <div class="source-paper-status" :data-status="ingestionForPaper(paper.paperId)?.status || 'queued'">
@@ -1495,11 +1617,32 @@ onBeforeUnmount(() => {
               <p>{{ paper.authors.slice(0, 4).join(', ') || '作者信息缺失' }}<template v-if="paper.year"> · {{ paper.year }}</template></p>
               <small v-if="ingestionForPaper(paper.paperId)?.error">{{ ingestionForPaper(paper.paperId)?.error }}</small>
               <div v-if="ingestionForPaper(paper.paperId)?.status !== 'indexed'" class="source-paper-actions">
-                <a v-for="source in paper.sourceUrls.slice(0, 2)" :key="source" :href="source" target="_blank" rel="noreferrer">打开论文来源 ↗</a>
-                <label class="source-upload-button">
-                  {{ uploadedPaperIds.includes(paper.paperId) ? 'PDF 已上传' : '上传对应 PDF' }}
-                  <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || uploadedPaperIds.includes(paper.paperId)" @change="handlePaperUpload(paper.paperId, $event)" />
-                </label>
+                <a v-for="source in paper.sourceUrls.slice(0, 1)" :key="source" :href="source" target="_blank" rel="noreferrer">打开论文页面并保存到 Zotero ↗</a>
+                <button
+                  class="source-zotero-button"
+                  type="button"
+                  :disabled="researchLoading || zoteroLoadingPaperId === paper.paperId"
+                  @click="findPaperInZotero(paper)"
+                >{{ zoteroLoadingPaperId === paper.paperId ? '正在查找…' : '从 Zotero 查找全文' }}</button>
+                <div v-if="zoteroCandidates[paper.paperId]?.length" class="zotero-candidates">
+                  <button
+                    v-for="item in zoteroCandidates[paper.paperId]"
+                    :key="item.itemKey"
+                    type="button"
+                    :disabled="zoteroLoadingPaperId === paper.paperId"
+                    @click="syncPaperFromZotero(paper, item)"
+                  >
+                    <span><strong>{{ item.title }}</strong><small>{{ item.authors.slice(0, 3).join(', ') || '作者未知' }}<template v-if="item.year"> · {{ item.year }}</template></small></span>
+                    <b>同步全文</b>
+                  </button>
+                </div>
+                <details class="source-upload-fallback">
+                  <summary>没有使用 Zotero？上传 PDF（备用）</summary>
+                  <label class="source-upload-button">
+                    {{ uploadedPaperIds.includes(paper.paperId) ? 'PDF 已上传' : '选择对应 PDF' }}
+                    <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || uploadedPaperIds.includes(paper.paperId)" @change="handlePaperUpload(paper.paperId, $event)" />
+                  </label>
+                </details>
               </div>
             </article>
           </div>
@@ -1508,7 +1651,7 @@ onBeforeUnmount(() => {
             class="primary-button source-retry"
             :disabled="researchLoading || !canRetryScopeIngestion"
             @click="handleScopeIngestion"
-          >{{ researchLoading ? '正在解析…' : '解析已上传的 PDF 并刷新状态' }}</button>
+          >{{ researchLoading ? '正在解析…' : '解析备用 PDF 并刷新状态' }}</button>
         </section>
 
         <div v-else-if="researchWorkspaceView === 'ask'" class="notebook-layout" data-stage="evidence">

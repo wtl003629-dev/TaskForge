@@ -1,0 +1,68 @@
+{
+  "servers": [
+    {
+      "profile_ids": [],
+      "server": {
+        "namespace": "zotero",
+        "endpoint": "http://host.docker.internal:8766/mcp",
+        "enabled": false,
+        "allowed_tools": [
+          "zotero_search_items",
+          "zotero_get_recent",
+          "zotero_get_item_metadata",
+          "zotero_get_item_fulltext",
+          "zotero_get_item_children",
+          "zotero_read_pdf_pages"
+        ],
+        "tool_policies": {
+          "zotero_search_items": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Search the operator's Zotero library."
+          },
+          "zotero_get_recent": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Read recently added Zotero items."
+          },
+          "zotero_get_item_metadata": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Read metadata for one Zotero item."
+          },
+          "zotero_get_item_fulltext": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Read extracted full text for one Zotero item."
+          },
+          "zotero_get_item_children": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Read attachments and notes for one Zotero item."
+          },
+          "zotero_read_pdf_pages": {
+            "risk": "read",
+            "side_effecting": false,
+            "requires_approval": false,
+            "description": "Read selected pages from a Zotero PDF attachment."
+          }
+        },
+        "allow_local_http": true,
+        "allow_private_network": true,
+        "allowed_ports": [
+          8766
+        ],
+        "timeout_seconds": 30,
+        "max_output_chars": 100000,
+        "max_response_bytes": 4000000,
+        "max_pages": 20,
+        "max_tools": 128
+      }
+    }
+  ]
+}

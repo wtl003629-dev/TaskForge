@@ -38,6 +38,8 @@ import type {
   SkillPack,
   ScopeEvidenceResult,
   ToolCall,
+  ZoteroConnectionStatus,
+  ZoteroLibraryItem,
 } from './types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -1146,6 +1148,31 @@ function normalizeIngestion(value: unknown): IngestionStatus {
   }
 }
 
+function normalizeZoteroStatus(value: unknown): ZoteroConnectionStatus {
+  const item = asRecord(value)
+  return {
+    configured: Boolean(item.configured),
+    connected: Boolean(item.connected),
+    availableTools: stringArray(item.available_tools),
+    message: text(item.message),
+  }
+}
+
+function normalizeZoteroItem(value: unknown): ZoteroLibraryItem {
+  const item = asRecord(value)
+  return {
+    itemKey: text(item.item_key),
+    title: text(item.title, '未命名 Zotero 条目'),
+    authors: stringArray(item.authors),
+    year: numberValue(item.year),
+    doi: text(item.doi) || undefined,
+    itemType: text(item.item_type),
+    abstract: text(item.abstract),
+    sourceUrl: text(item.source_url) || undefined,
+    hasFulltext: Boolean(item.has_fulltext),
+  }
+}
+
 function normalizeResearchEvidence(value: unknown): ResearchEvidenceCard {
   const item = asRecord(value)
   return {
@@ -1267,6 +1294,36 @@ export async function ingestResearchScope(scopeId: string): Promise<IngestionSta
       method: 'POST',
     }),
   ).map(normalizeIngestion)
+}
+
+export async function getZoteroStatus(): Promise<ZoteroConnectionStatus> {
+  return normalizeZoteroStatus(await request('/zotero/status'))
+}
+
+export async function listZoteroItems(input: {
+  query?: string
+  limit?: number
+} = {}): Promise<ZoteroLibraryItem[]> {
+  const query = new URLSearchParams()
+  if (input.query?.trim()) query.set('query', input.query.trim())
+  query.set('limit', String(input.limit ?? 20))
+  return asArray(await request(`/zotero/items?${query.toString()}`)).map(normalizeZoteroItem)
+}
+
+export async function importResearchPaperFromZotero(
+  scopeId: string,
+  paperId: string,
+  itemKey: string,
+): Promise<IngestionStatus> {
+  return normalizeIngestion(
+    await request(
+      `/research/scopes/${encodeURIComponent(scopeId)}/papers/${encodeURIComponent(paperId)}/zotero`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ item_key: itemKey }),
+      },
+    ),
+  )
 }
 
 export async function uploadResearchPaperPdf(

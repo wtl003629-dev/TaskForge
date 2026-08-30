@@ -444,6 +444,25 @@ export interface IngestionStatus {
   updatedAt: string
 }
 
+export interface ZoteroConnectionStatus {
+  configured: boolean
+  connected: boolean
+  availableTools: string[]
+  message: string
+}
+
+export interface ZoteroLibraryItem {
+  itemKey: string
+  title: string
+  authors: string[]
+  year?: number
+  doi?: string
+  itemType: string
+  abstract: string
+  sourceUrl?: string
+  hasFulltext: boolean
+}
+
 export interface ResearchEvidenceCard {
   evidenceId: string
   scopeId?: string

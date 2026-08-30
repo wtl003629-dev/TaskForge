@@ -61,6 +61,7 @@ services:
       - ./deploy/postgres/init/003-patchpilot-schema.sh:/docker-entrypoint-initdb.d/003-patchpilot-schema.sh:ro
       - ./migrations/postgres/002_taskforge_runtime.sql:/opt/taskforge/002_taskforge_runtime.sql:ro
       - ./migrations/postgres/003_taskforge_hnsw.sql:/opt/taskforge/003_taskforge_hnsw.sql:ro
+      - ./migrations/postgres/004_literature_evidence_replace.sql:/opt/taskforge/004_literature_evidence_replace.sql:ro
       - ../PatchPilot/migrations/postgres/001_queue.sql:/opt/patchpilot/001_queue.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U migration_admin -d taskforge"]

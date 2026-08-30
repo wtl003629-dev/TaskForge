@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from urllib.parse import unquote
@@ -66,8 +67,12 @@ from .literature import (
     SafePDFDownloader,
     ScopeBoundEvidenceService,
     SQLiteLiteratureRepository,
+    ZoteroItem,
+    ZoteroMCPError,
+    ZoteroMCPService,
 )
 from .literature.models import DiscoveryResult, ProviderReport
+from .literature.normalizer import normalise_doi, normalise_title
 from .literature.providers import (
     ArxivProvider,
     CrossrefProvider,
@@ -278,9 +283,12 @@ class JobSummary(StrictModel):
 
 
 class MCPBinding(StrictModel):
-    """Host-owned attachment of one MCP server to selected Agent profiles."""
+    """Host-owned MCP server, optionally exposed to selected Agent profiles."""
 
-    profile_ids: list[str] = Field(min_length=1)
+    # An empty list creates a deterministic host-service connection without
+    # exposing remote tools to a model profile.  Zotero ingestion uses this
+    # mode so the application, not the research Agent, chooses every tool.
+    profile_ids: list[str] = Field(default_factory=list)
     server: MCPServerConfig
 
     @model_validator(mode="after")
@@ -300,6 +308,17 @@ class MCPServerSummary(StrictModel):
     profile_ids: list[str]
     configured_tools: list[str]
     mounted_tools: list[str]
+
+
+class ZoteroConnectionSummary(StrictModel):
+    configured: bool
+    connected: bool
+    available_tools: list[str] = Field(default_factory=list, max_length=128)
+    message: str = Field(max_length=1_000)
+
+
+class ZoteroPaperImportCreate(StrictModel):
+    item_key: str = Field(pattern=r"^[A-Za-z0-9]{8}$")
 
 
 class ReviewCaseCreate(StrictModel):
@@ -635,6 +654,7 @@ class AppContainer:
     paper_ingestion: PaperIngestionService
     scope_evidence: ScopeBoundEvidenceService
     mcp_status: list[MCPServerSummary] = field(default_factory=list)
+    zotero_library: ZoteroMCPService | None = None
     approval_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
 
 
@@ -649,6 +669,23 @@ def _contains_root_override(value: Any) -> bool:
     elif isinstance(value, list):
         return any(_contains_root_override(item) for item in value)
     return False
+
+
+def _zotero_item_matches_paper(item: ZoteroItem, paper: PaperCard) -> bool:
+    """Require a strong identity match before binding Zotero text to a paper."""
+
+    item_doi = normalise_doi(item.doi)
+    paper_doi = normalise_doi(paper.doi)
+    if item_doi and paper_doi:
+        return item_doi == paper_doi
+    left = normalise_title(item.title)
+    right = normalise_title(paper.canonical_title)
+    if not left or not right or SequenceMatcher(None, left, right).ratio() < 0.92:
+        return False
+    if item.year is not None and paper.year is not None:
+        if abs(item.year - paper.year) > 1:
+            return False
+    return True
 
 
 def _principal(
@@ -1888,8 +1925,17 @@ def create_app(
                     continue
                 client = MCPStreamableHTTPClient(binding.server)
                 mcp_clients.append(client)
-                mounted = await mount_mcp_tools(registry, client)
-                mounted_names = list(mounted.values())
+                if binding.profile_ids:
+                    mounted = await mount_mcp_tools(registry, client)
+                    mounted_names = list(mounted.values())
+                else:
+                    await client.discover_tools()
+                    mounted_names = []
+                if binding.server.namespace == "zotero":
+                    container.zotero_library = ZoteroMCPService(
+                        client,
+                        max_output_chars=binding.server.max_output_chars,
+                    )
                 for profile_id in binding.profile_ids:
                     profile = profile_catalog[profile_id]
                     profile.allowed_tools.extend(
@@ -2207,6 +2253,62 @@ def create_app(
         # absent: this is an operational capability view, not a config dump.
         return [item.model_copy(deep=True) for item in container.mcp_status]
 
+    @api.get("/api/zotero/status", response_model=ZoteroConnectionSummary)
+    async def get_zotero_status(
+        _: Annotated[Principal, Depends(_principal)],
+    ) -> ZoteroConnectionSummary:
+        configured = any(
+            item.namespace == "zotero" and item.enabled
+            for item in container.mcp_status
+        )
+        if container.zotero_library is None:
+            return ZoteroConnectionSummary(
+                configured=configured,
+                connected=False,
+                message=(
+                    "Zotero MCP 尚未启用。"
+                    if not configured
+                    else "Zotero MCP 尚未建立连接。"
+                ),
+            )
+        try:
+            state = await container.zotero_library.status()
+        except ZoteroMCPError:
+            return ZoteroConnectionSummary(
+                configured=True,
+                connected=False,
+                message="Zotero MCP 连接检查失败，请确认 Zotero 和本地服务正在运行。",
+            )
+        tools = state.get("available_tools")
+        return ZoteroConnectionSummary(
+            configured=True,
+            connected=True,
+            available_tools=(
+                [str(value) for value in tools]
+                if isinstance(tools, list)
+                else []
+            ),
+            message="Zotero 已连接，可以直接同步馆藏全文。",
+        )
+
+    @api.get("/api/zotero/items", response_model=list[ZoteroItem])
+    async def list_zotero_items(
+        _: Annotated[Principal, Depends(_principal)],
+        query: Annotated[str | None, Query(max_length=2_000)] = None,
+        limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    ) -> list[ZoteroItem]:
+        if container.zotero_library is None:
+            raise HTTPException(status_code=503, detail="Zotero MCP 尚未连接")
+        try:
+            if query is not None and query.strip():
+                return await container.zotero_library.search(query.strip(), limit=limit)
+            return await container.zotero_library.recent(limit=limit)
+        except ZoteroMCPError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail="无法读取 Zotero 馆藏，请确认 Zotero 中已经保存该论文。",
+            ) from exc
+
     @api.post(
         "/api/literature/search",
         response_model=LiteratureDiscoveryResponse,
@@ -2473,6 +2575,51 @@ def create_app(
             )
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @api.post(
+        "/api/research/scopes/{scope_id}/papers/{paper_id}/zotero",
+        response_model=IngestionStatus,
+    )
+    async def import_research_paper_from_zotero(
+        scope_id: str,
+        paper_id: str,
+        body: ZoteroPaperImportCreate,
+        principal: Annotated[Principal, Depends(_principal)],
+    ) -> IngestionStatus:
+        if container.zotero_library is None:
+            raise HTTPException(status_code=503, detail="Zotero MCP 尚未连接")
+        access = literature_access(principal)
+        scope = container.literature_repository.get_scope(access, scope_id)
+        if paper_id not in scope.selected_paper_ids:
+            raise HTTPException(status_code=404, detail="论文不在当前研究范围内")
+        paper = container.literature_repository.get_paper(access, paper_id)
+        try:
+            item = await container.zotero_library.metadata(body.item_key)
+            if not _zotero_item_matches_paper(item, paper):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Zotero 条目与所选论文的 DOI/标题不一致，请重新选择。",
+                )
+            full_text = await container.zotero_library.document_text(body.item_key)
+            return await container.paper_ingestion.ingest_zotero_text(
+                access,
+                scope_id,
+                paper_id,
+                item_key=item.item_key,
+                full_text=full_text,
+            )
+        except HTTPException:
+            raise
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ZoteroMCPError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    "Zotero 中未找到可读取的全文。请先用 Zotero Connector "
+                    "保存论文，并等待附件同步完成。"
+                ),
+            ) from exc
 
     @api.get(
         "/api/research/scopes/{scope_id}/ingestion",

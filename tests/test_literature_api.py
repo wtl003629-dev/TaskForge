@@ -8,10 +8,19 @@ from reportlab.pdfgen import canvas
 
 from taskforge.app import create_app
 from taskforge.config import Settings
+from taskforge.domain import utc_now
+from taskforge.knowledge import AccessContext
 from taskforge.literature.models import ProviderPaper
+from taskforge.literature.repository import LiteratureAccess
 from taskforge.literature.service import LiteratureDiscoveryService
+from taskforge.literature.zotero_mcp import ZoteroItem
 from taskforge.orchestration import OrchestrationAccess
-from taskforge.research_protocol import SearchQuery
+from taskforge.research_protocol import (
+    LiteratureRequest,
+    PaperCard,
+    ResearchScope,
+    SearchQuery,
+)
 
 
 class _Provider:
@@ -69,6 +78,40 @@ class _Provider:
 
     async def citations(self, paper_id: str, limit: int) -> list[ProviderPaper]:
         return []
+
+
+class _ZoteroLibrary:
+    async def status(self):  # type: ignore[no-untyped-def]
+        return {"available_tools": ["zotero_get_item_fulltext"]}
+
+    async def search(self, query: str, limit: int = 20):  # type: ignore[no-untyped-def]
+        return [
+            ZoteroItem(
+                item_key="ABCD1234",
+                title="A Scope-Bound Research System",
+                authors=["Ada Researcher"],
+                year=2025,
+                doi="10.1000/scope",
+                has_fulltext=True,
+            )
+        ][:limit]
+
+    async def recent(self, limit: int = 20):  # type: ignore[no-untyped-def]
+        return await self.search("", limit)
+
+    async def metadata(self, item_key: str) -> ZoteroItem:
+        assert item_key == "ABCD1234"
+        return (await self.search("scope", 1))[0]
+
+    async def fulltext(self, item_key: str) -> str:
+        assert item_key == "ABCD1234"
+        return (
+            "## Page 1\n# Method\n"
+            "The Zotero-backed ingestion route keeps the selected research scope "
+            "host-controlled and preserves verifiable evidence provenance."
+        )
+
+    document_text = fulltext
 
 
 def _pdf_bytes() -> bytes:
@@ -154,6 +197,85 @@ def test_direct_pdf_upload_creates_scope_without_discovery(tmp_path: Path) -> No
         )
         assert evidence.status_code == 200, evidence.text
         assert evidence.json()["evidence"]
+
+
+def test_zotero_mcp_fulltext_sync_requires_identity_match_and_needs_no_upload(
+    tmp_path: Path,
+) -> None:
+    app = create_app(_settings(tmp_path))
+    headers = {"X-TaskForge-Tenant": "tenant-a", "X-TaskForge-User": "alice"}
+    access = LiteratureAccess("tenant-a", "alice", "zotero-conversation")
+    with TestClient(app) as client:
+        repository = app.state.container.literature_repository
+        repository.save_request(
+            access,
+            LiteratureRequest(request_id="zotero-request", query="scope retrieval"),
+        )
+        repository.upsert_paper(
+            access,
+            PaperCard(
+                paper_id="paper-zotero",
+                canonical_title="A Scope-Bound Research System",
+                authors=["Ada Researcher"],
+                year=2025,
+                doi="10.1000/scope",
+                verification_status="provider_verified",
+            ),
+        )
+        scope = repository.create_scope(
+            access,
+            ResearchScope(
+                scope_id="scope-zotero",
+                tenant_id="tenant-a",
+                owner_user_id="alice",
+                conversation_id="zotero-conversation",
+                request_id="zotero-request",
+                selected_paper_ids=["paper-zotero"],
+                user_intent="Explain the method.",
+                status="confirmed",
+                confirmed_at=utc_now(),
+            ),
+        )
+        app.state.container.zotero_library = _ZoteroLibrary()
+
+        status = client.get("/api/zotero/status", headers=headers)
+        assert status.status_code == 200
+        assert status.json()["connected"] is True
+        items = client.get(
+            "/api/zotero/items",
+            headers=headers,
+            params={"query": "Scope-Bound"},
+        )
+        assert items.status_code == 200
+        assert items.json()[0]["item_key"] == "ABCD1234"
+        imported = client.post(
+            f"/api/research/scopes/{scope.scope_id}/papers/paper-zotero/zotero",
+            headers=headers,
+            json={"item_key": "ABCD1234"},
+        )
+
+        assert imported.status_code == 200, imported.text
+        assert imported.json()["status"] == "indexed"
+        assert repository.get_scope(access, scope.scope_id).status == "ready"
+        chunks = app.state.container.knowledge_store.visible_chunks(
+            AccessContext(tenant_id="tenant-a", user_id="alice")
+        )
+        assert len(chunks) == 1
+        assert chunks[0].source_uri == "paper://paper-zotero"
+        assert chunks[0].metadata["zotero_source_uri"] == "zotero://ABCD1234"
+        evidence = client.post(
+            "/api/research/evidence/search",
+            headers=headers,
+            json={
+                "scope_id": scope.scope_id,
+                "scope_version": scope.scope_version,
+                "query": "How is the selected research scope controlled?",
+                "top_k": 5,
+                "candidate_k": 10,
+            },
+        )
+        assert evidence.status_code == 200, evidence.text
+        assert evidence.json()["evidence"][0]["paper_id"] == "paper-zotero"
 
 
 def test_literature_api_accepts_language_preference_and_returns_language(

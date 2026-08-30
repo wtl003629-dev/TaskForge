@@ -271,6 +271,10 @@ python scripts/verify_pgvector_retrieval.py `
 psql "$env:TASKFORGE_POSTGRES_ADMIN_DSN" -v ON_ERROR_STOP=1 `
   -f migrations/postgres/003_taskforge_hnsw.sql
 
+# Existing databases need this narrow grant before Zotero/PDF re-indexing:
+psql "$env:TASKFORGE_POSTGRES_ADMIN_DSN" -v ON_ERROR_STOP=1 `
+  -f migrations/postgres/004_literature_evidence_replace.sql
+
 python scripts/verify_pgvector_retrieval.py `
   --queries "..\migration\rag-query-vectors.json" `
   --sqlite-source-root ".taskforge" `
@@ -284,6 +288,10 @@ python scripts/verify_pgvector_retrieval.py `
 ## 受控 MCP
 
 论文研究能力已封装为独立 MCP Server，支持 stdio 与 HTTP `/mcp`，向 TaskForge、Claude Code 和 Hermes 暴露 8 个工具：`literature_search`、`literature_expand`、`literature_get`、`scope_get`、`paper_search`、`paper_read`、`citation_verify`、`scope_expansion_request`。其中 `paper_search` 强制要求 ready Scope；Scope 创建、修改和确认不作为 Agent 工具暴露。
+
+### Zotero 论文库（无需在 TaskForge 手动下载）
+
+受限全文可以由用户在论文网站登录后，使用 Zotero Connector 保存到本机 Zotero；TaskForge 通过只读 Zotero MCP 读取该条目的元数据和附件全文，再建立自己的检索索引。Connector/Zotero 负责合法获取附件，TaskForge 不绕过登录、付费墙或版权限制，也不会让模型直接调用写入工具。Windows 本地桥接服务和 Docker 配置示例见 [`docs/ZOTERO_MCP.md`](docs/ZOTERO_MCP.md) 与 [`config/mcp.zotero.example.json`](config/mcp.zotero.example.json)。
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_research_mcp.py --transport stdio `

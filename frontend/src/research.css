@@ -399,6 +399,92 @@ a:focus-visible {
   font-style: normal;
 }
 
+.zotero-home-entry {
+  display: flex;
+  max-width: 900px;
+  align-items: center;
+  gap: 12px;
+  margin: 14px auto 0;
+  padding: 12px 14px;
+  border: 1px solid #e4e8ef;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  text-align: left;
+}
+
+.zotero-home-entry[data-connected='true'] {
+  border-color: #cde9de;
+  background: #f5fcf9;
+}
+
+.zotero-home-mark {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: #6158ce;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.zotero-home-entry > div:not(.zotero-home-title) {
+  min-width: 0;
+  flex: 1;
+}
+
+.zotero-home-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zotero-home-title strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.zotero-home-title span {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #667085;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.zotero-home-entry[data-connected='true'] .zotero-home-title span {
+  background: #e7f6f0;
+  color: #168766;
+}
+
+.zotero-home-entry p {
+  margin: 3px 0 0;
+  color: #667085;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.zotero-home-entry button {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #c9c4f2;
+  border-radius: 7px;
+  background: #f7f6ff;
+  color: #554cbd;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 680;
+}
+
+.zotero-home-entry button:disabled,
+.zotero-connection button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .example-queries {
   display: flex;
   max-width: 900px;
@@ -1211,6 +1297,61 @@ a:focus-visible {
   line-height: 1.6;
 }
 
+.zotero-connection {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  max-width: 900px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e4e8ef;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.zotero-connection > i {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #c28a3d;
+  box-shadow: 0 0 0 4px #fff4e5;
+}
+
+.zotero-connection[data-connected='true'] > i {
+  background: #168766;
+  box-shadow: 0 0 0 4px #e7f6f0;
+}
+
+.zotero-connection > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.zotero-connection strong {
+  color: #344054;
+  font-size: 11px;
+}
+
+.zotero-connection p {
+  margin: 2px 0 0;
+  color: #667085;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.zotero-connection button,
+.source-zotero-button {
+  padding: 7px 10px;
+  border: 1px solid #c9c4f2;
+  border-radius: 7px;
+  background: #f7f6ff;
+  color: #554cbd;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 680;
+}
+
 .source-library-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1284,6 +1425,74 @@ a:focus-visible {
   font-size: 9px;
   font-weight: 620;
   text-decoration: none;
+}
+
+.source-paper-actions {
+  align-items: center;
+}
+
+.zotero-candidates {
+  display: grid;
+  width: 100%;
+  gap: 6px;
+}
+
+.zotero-candidates > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid #e1dff4;
+  border-radius: 8px;
+  background: #faf9ff;
+  color: #344054;
+  cursor: pointer;
+  text-align: left;
+}
+
+.zotero-candidates span {
+  min-width: 0;
+}
+
+.zotero-candidates strong,
+.zotero-candidates small {
+  display: block;
+}
+
+.zotero-candidates strong {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zotero-candidates small {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 9px;
+}
+
+.zotero-candidates b {
+  flex: 0 0 auto;
+  color: #554cbd;
+  font-size: 9px;
+}
+
+.source-upload-fallback {
+  width: 100%;
+  color: #667085;
+  font-size: 9px;
+}
+
+.source-upload-fallback summary {
+  cursor: pointer;
+}
+
+.source-upload-fallback .source-upload-button {
+  display: inline-block;
+  margin-top: 7px;
 }
 
 .source-retry {
@@ -1991,6 +2200,19 @@ a:focus-visible {
 
   .query-submit {
     min-width: 116px;
+  }
+
+  .zotero-home-entry {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .zotero-home-entry > div:not(.zotero-home-title) {
+    flex-basis: calc(100% - 43px);
+  }
+
+  .zotero-home-entry button {
+    margin-left: 39px;
   }
 
   .research-journey {
