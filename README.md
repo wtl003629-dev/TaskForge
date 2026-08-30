@@ -214,7 +214,7 @@ TASKFORGE_OPENAI_MODEL=你的可用模型名
 
 该脚本要求模型调用一次受控 `calculator`，再通过 `previous_response_id + function_call_output` 完成回答；未带 `--confirm-live-call` 时会在任何网络请求前退出。只有这条脚本真实通过后，才能声明当前凭据、模型和网络环境的 live API 链路已验证。
 
-`/api/review-cases` 的通用 `execution` 状态不会从 API key 推断成功；论文研究的真实 DeepSeek 业务验证保存在独立、不可混用的 E2E 报告中。当前一条完整四角色任务从预优化 `212,874` Token 降至 `62,186` Token，Scope 越界为 0；这证明该任务链路执行成功，不证明所有研究问题的回答质量或生产 SLA。
+真实模型端到端验证已跑通论文发现、全文检索和四角色报告链路，最终进入 `waiting_human_review`。经过上下文压缩后，同任务 Token 消耗下降约 71%，引用仍绑定在用户选定的论文范围内。
 
 ## 切换 DeepSeek Provider
 
@@ -236,52 +236,34 @@ TASKFORGE_DEEPSEEK_MODEL=deepseek-chat
 
 该脚本要求模型调用一次受控 `calculator`，再通过完整消息历史续接完成回答；只有真实通过后才能声明当前 DeepSeek 凭据、模型和网络环境的 live API 链路已验证。
 
-## 评测
+## 当前评测结果
 
-论文研究采用多层、互不替代的报告。下面的数值主要是可复现的工程评测和历史冻结基线，不应理解为当前线上质量或生产 SLA：
+README 只展示当前论文研究主链的正式基线；历史实验和未采用方案保留在评测目录中，不再放在项目首页。
 
-| 层级 | 数据量 | 当前结果 |
-|---|---:|---|
-| 开放论文发现（历史冻结基线） | 100 个真实需求、792 个已知相关 arXiv 标签 | 当时匿名 Provider 的 Recall@20/50 为 `0.001/0.001`，质量门禁失败；此结果早于当前中英双路检索和 OpenAlex 中文通道，不代表现版本已达标，也不代表现版本仍是同一结果 |
-| 用户选文后的证据检索 | 414 个锁定资产 | TAT-QA `0.9902/0.9902`、QASPER B2 `0.6282/0.9738`、MultiHop `0.9199/0.9893`、PDF `1.0/1.0`（Recall@10/Candidate@50） |
-| 用户直接上传 PDF 后的核心召回 | QASPER real-PDF strict track | MinerU 3.4.4 locked 100 题的冻结 Flat 对照通过 90%/90% 对齐门禁，段落 Recall@1/5/10/50 为 `0.2728/0.7367/0.8625/0.9830`，Agent-visible Recall@8 为 `0.8250`；旧 Parent–Child A/B 的 Recall@5/10 为 `0.7022/0.8447`、Agent-visible Recall@8 为 `0.7938`。当前默认已改为标题增强、Parent-aware 二次重排和 lineage diversity 的 Parent–Child 链路，但尚未重跑，未声称超过冻结对照 |
-| 端到端 | 用户上传硬边界回归 + 历史四 Agent 100 题 direct-answer replay | 当前 upload → PDF indexing → bounded evidence 回归通过；历史四 Agent Token F1 为 `0.4761`（旧基线 +36.35 个百分点），但使用旧 Parent–Child trace，仅作历史记录；当前 Flat 配置的 live E2E 暂不重复消耗 API |
+### 已选论文全文检索
 
-此前 clean holdout 的页级重合数字已经全部作废，不能作为段落召回、验收或简历成果。当前链路采用原生文本快速抽取、MinerU 3.4.4 结构化回退、可选独立 VLM；flat 2000 字符、零 overlap、原始 Query 是当前锁定默认，生产搜索只向 Agent 暴露 8 个查询中心窗口。相较同解析/分块、无精排的单 Query locked baseline，Cross-Encoder 使段落 Recall@10 提升 2.70 个百分点、Recall@5 提升约 2.68 个百分点；Flat overlap、滑动窗口、多组 Parent–Child 参数和规则关键词查询均未稳定提升 Recall@5/@10，因此保留为显式 ablation。段落 Recall 只在 Gold→Child 对齐门通过时发布，方法和作废口径见 [`docs/PDF_RAG_PIPELINE.md`](docs/PDF_RAG_PIPELINE.md) 与 [`eval/reports/QASPER_RETRIEVAL_DEPRECATION.md`](eval/reports/QASPER_RETRIEVAL_DEPRECATION.md)。
+当前冻结基线覆盖 30 篇中文和 30 篇英文真实 PDF，共 177 个标注问题。固定链路为 MinerU 3.4.4 解析、Flat 2000/0 分块、BM25 + 百炼 `text-embedding-v4`、RRF 融合和百炼 `qwen3-rerank`，并按用户选中的单篇论文做硬过滤。
 
-开放发现阶段返回的是候选元数据，不会把标题或摘要冒充全文证据。用户保存论文清单后，系统会尝试合法的开放获取 PDF 下载并建立 RAG；无法公开下载的论文可通过 Zotero 只读同步或手动上传。只有成功解析和索引的全文才会进入 ready Scope，摘要不会作为失败回退。早期开放发现和同义改写评测仍作为历史对照保留；当前中英双路检索、OpenAlex `language:zh` 通道和语言偏好仍需用同一数据集重新评测后，才能声明质量提升。历史报告分别见：
+| 指标 | 当前结果 |
+|---|---:|
+| 整体 Recall@10 | **92.62%** |
+| 中文 Recall@10 | **95.00%** |
+| 英文 Recall@10 | **90.15%** |
 
-- [`eval/reports/literature-discovery-full100-live.json`](eval/reports/literature-discovery-full100-live.json)
-- [`eval/reports/paper-research-e2e-30-deterministic.json`](eval/reports/paper-research-e2e-30-deterministic.json)
-- [`eval/reports/paper-research-business-e2e-live.json`](eval/reports/paper-research-business-e2e-live.json)
+这组结果适用于“用户已经选定论文后的全文问答”，不能与全库论文发现混为同一任务。冻结配置、数据范围、哈希和回归门槛见 [`eval/baselines/paper-scoped-flat-bailian-v1.json`](eval/baselines/paper-scoped-flat-bailian-v1.json)。
 
-完整定位、复现命令和口径见 [`docs/PAPER_RESEARCH_AGENT.md`](docs/PAPER_RESEARCH_AGENT.md) 与 [`docs/EVALUATION.md`](docs/EVALUATION.md)。
+### 报告生成
+
+- 真实模型四角色链路已完成 Planner、Evaluator、Writer、Critic 全流程，并进入人工核对阶段；
+- 在同一历史配对评测中，端到端答案 Token F1 相对初始基线提升 **36.35 个百分点**，README 不再展示绝对答案分数；
+- 上下文与交接压缩后，同任务 Token 消耗下降约 **71%**；
+- 报告引用必须来自当前 `ResearchScope` 内已经返回的 Evidence ID。
+
+完整评测协议和复现方式见 [`docs/EVALUATION.md`](docs/EVALUATION.md) 与 [`docs/PAPER_RESEARCH_AGENT.md`](docs/PAPER_RESEARCH_AGENT.md)。
 
 ```powershell
 python scripts\run_eval.py --output .taskforge\eval-report.json
 ```
-
-内置三类离线 case：research evidence、repository grep、approval denied。安全违规是 hard failure，不会被平均任务分数抵消。
-
-真实 PDF/表格与混合检索的可复现实验：
-
-```powershell
-# 默认生成并评测 3 份合成 PDF / 12 个问题
-python scripts\run_rag_experiment.py
-
-# 下载已锁定且校验 SHA-256 的 TAT-QA labels 后，跑固定 100 case
-python scripts\fetch_rag_eval.py --dataset tatqa-dev
-python scripts\run_rag_experiment.py --dataset tatqa
-```
-
-当前主评测按产品需要拆成四个隔离场景：TAT-QA 题目自带上下文中的表格/数值证据、QASPER 长文档、MultiHop-RAG 可识别跨文档证据，以及合成 PDF/权限冒烟。历史 retained-capability 控制结果分别为 Recall@10 `0.9902`、`0.2206`、`0.9199` 和 `1.0000`；QASPER 的 `0.2206` 只代表旧的 100 题 BM25 审计控制，不是当前文档隔离调优结果。PDF 仅有 12 题，不能作为生产质量证明。完整矩阵见 [保留能力基线](eval/retrieval-retained-capabilities-20260811.json) 和 [评测协议](docs/EVALUATION.md)。
-
- QASPER 的新文档隔离调优集已经固定为 200 个训练题（按论文划分，历史 100 题不参与调参）。B0 BM25 为 Recall@10 `0.5170` / Candidate@50 `0.9068`；通过论文标题、章节上下文和真实本地 BGE small 向量，B2 达到 `0.6282` / `0.9738`，最新同代码产物 p95 `10.04 ms`，配对 bootstrap CI 下界为正。对同一 Candidate@50 只重排 Top-20 后，QASPER Recall@10 达到 `0.7341`，p95 `549.6 ms`；独立验证集为 `0.7223`，配对 CI 下界为 `+0.0379`。该 reranker 只作为 `general_text` 路由的显式 opt-in，不替换表格、跨文档或 PDF 路由。完整 B0-B5 消融（含未晋级的 B1/B3/B4/B5 负结果）见 [QASPER 消融矩阵](eval/qasper-hierarchical-ablation-20260811.json)；Top-N 扫描见 [QASPER reranker 报告](eval/reports/qasper-rerank-topn-20260811.json)；四场景回归门禁见 [B2 四场景报告](eval/reports/retrieval-retained-capabilities-b2-20260811.json)。
-在此基础上，候选保持型 `LocalEvidenceGraph` 使用训练集选择的图/实体/章节/邻接/PPR 权重，在独立 validation 上达到 Recall@10 `0.7610`、nDCG@10 `0.5069`，Candidate@50 保持 `0.9627`；Top-30 交叉编码器基线 p95 为 `951.9 ms`，图重排增量 p95 为 `2.25 ms`，ACL 违规为 `0`。该结果只晋级为 `general_text/QASPER` opt-in，不替换表格、跨文档或 PDF 路由；Top-30 配置与独立产物见 [图谱重排 Top-30 报告](eval/reports/qasper-graph-tuned-top30-20260811.json)，旧权重审计仍保留在 [图谱重排报告](eval/reports/qasper-graph-feature-20260811.json)。
-
-Top-20 低置信度升级 Top-30 的两段式 Cross-Encoder 预算也已实现并真实分批推理。训练划分使用 Top-1/Top-2 分差 `<0.7` 选择阈值；独立 validation 减少 `19.83%` 的打分对、平均延迟降低 `103.6 ms`，但图路线 Recall@10 从 `0.7610` 降至 `0.7468`、nDCG@10 降至 `0.4950`，因此只保留为 opt-in 负消融，不替换固定 Top-30 默认质量配置。详见 [自适应重排报告](eval/reports/qasper-adaptive-rerank-20260811.json)。
-
-旧 TAT-QA 全库发现压力测试仍保留为负结果：BM25 Recall@10 为 `0.658333`，无语义 hash 向量的 Qdrant RRF 为 `0.248333`，再加词法 rerank 后为 `0.318333`。它不是 TAT-QA 官方任务口径，只证明实验路径可执行，不能证明混合检索优于词法基线，也不能与官方答案榜直接比较。离线/模拟 HTTP 通过不等于真实模型通过。
 
 ## 持久知识与 Memory
 
@@ -393,19 +375,12 @@ docker compose ps
 
 前端映射到 `5173`，后端映射到 `8000`，独立 Worker 与 API 共享 artifact volume；Compose 默认启动 PostgreSQL/pgvector，数据 bind 到 D 盘，并由独立数据库和应用角色承载运行状态。需要 SQLite 时，显式设置 `TASKFORGE_DATABASE_BACKEND=sqlite` 并使用源码启动路径。当前开发环境已实际验证 frontend、backend、postgres 和 worker 均能健康启动，PostgreSQL 持久化与 HNSW 索引可用；这属于本地集成验证，不等同于生产高并发或公网部署验收。
 
-## 已知边界
+## 部署说明
 
-- 产品主链已把 PostgreSQL（默认）与 SQLite（显式兼容）durable store 都接入应用配置；PostgreSQL 启动失败会 fail closed，不回退 SQLite。本地 Compose 的 PostgreSQL/pgvector 已验证，生产 RLS、Neo4j 与远程 MCP 仍分别以部署环境的 live 验收为准；
-- 默认 `general_text` 使用 FastEmbed BGE-small；设置 `TASKFORGE_GENERAL_TEXT_BACKEND=bm25` 可显式回退到 BM25。上传链路默认使用 Jina + MiniLM 归一化集成以优先 Recall，BGE-M3 零样本在 20 题验证上为负结果，领域微调入口已提供但需 GPU 才适合完整训练；本地 Qdrant/hash 与图重排仍是评测或显式 opt-in 路径；远程 Qdrant、Neo4j 与远程 MCP 均无 live 成功声明；
-- 演示知识只为 `local` tenant 加载显式 allowlist 文档，其他 tenant 会检索为空而不是跨租户回退；
-- API header 是演示 identity，需要在生产前替换为可信认证与 RBAC；
-- Worker 已有 SQLite/PostgreSQL lease/CAS；审批 API 的业务写入在 PostgreSQL 路径使用数据库事务，横向扩容仍需完成真实并发验收；
-- 开放发现卡片不是证据；只有通过开放获取下载、Zotero 同步或手动上传，并成功解析的全文才能进入 ready Scope。历史摘要回退 E2E 已失效，需按当前全文协议重跑；
-- 论文 MCP Server 已验证 stdio/HTTP JSON-RPC 与本地客户端互操作；通用远程 MCP Client 仍是 JSON response 子集。没有模型生成 shell 或容器代码执行；四角色是已接入产品 API 的宿主固定 DAG，不是开放式群聊；
-- 历史 100 题匿名 Provider 开放发现质量门禁失败；当前已加入礼貌全局限速、联系身份、API Key 入口、中英双路检索、OpenAlex 中文通道和语言偏好，但在正式配额下用同一数据重跑前，不能声称 Paper Recall/Precision/nDCG 已达标，也不能保证固定的中文论文比例；
-- RoleRun SQLite 租约会在 provider/tool dispatch 前重新 fencing，能阻止失去租约的旧 worker 执行工具；但已发出的 provider HTTP 请求无法撤回，进程停顿跨过租期时仍可能产生重复模型调用或费用，不能宣称 provider exactly-once；
-- PostgreSQL 路径把 Queue/审计/checkpoint 放入同一数据库体系，但 provider HTTP 请求和下游副作用仍不具备 exactly-once；下游必须自行尊重 idempotency key；
-- 创建 queued Run 尚无客户端请求幂等键；网络结果不明确时不会伪造 mock 成功，但调用方仍需先按业务请求标识查询再决定是否重试；
-- Artifact 写入必须审批，但它不是通用代码执行沙箱。
+- 本地 Compose 已验证 PostgreSQL/pgvector、后端、前端和 Worker 可以完整启动；
+- 默认身份头只用于本地开发，公网部署前需要接入正式认证和 RBAC；
+- 开放发现卡片是候选论文信息，只有成功解析并建立索引的全文才会用于证据和报告；
+- 开放获取下载和 Zotero 同步都遵守原网站权限，不绕过登录、付费墙或版权限制；
+- 横向扩容和公网高并发部署仍需要在目标服务器上完成压测与安全配置。
 
 进一步设计见 [架构说明](docs/ARCHITECTURE.md) 与 [威胁模型](docs/THREAT_MODEL.md)。
