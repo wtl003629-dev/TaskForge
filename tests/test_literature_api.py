@@ -19,6 +19,10 @@ class _Provider:
     request_count = 0
     cache = None
 
+    def __init__(self, *, language: str | None = None) -> None:
+        self.language = language
+        self.request_count = 0
+
     async def search(self, query: SearchQuery, limit: int) -> list[ProviderPaper]:
         self.request_count += 1
         return [
@@ -33,6 +37,9 @@ class _Provider:
                     "the papers selected by the user."
                 ),
                 year=2025,
+                language=self.language,
+                publication_type="journal-article",
+                publisher="Scholarly Press",
                 source_url="https://example.test/selected",
                 query_id=query.query_id,
                 provider_rank=1,
@@ -45,6 +52,9 @@ class _Provider:
                 authors=["Grace Reviewer"],
                 abstract="Expansion requires an explicit user decision.",
                 year=2026,
+                language=self.language,
+                publication_type="journal-article",
+                publisher="Scholarly Press",
                 source_url="https://example.test/expansion",
                 query_id=query.query_id,
                 provider_rank=2,
@@ -76,6 +86,7 @@ def _settings(tmp_path: Path) -> Settings:
     state = tmp_path / "state"
     return Settings(
         _env_file=None,
+        database_backend="sqlite",
         sqlite_path=state / "taskforge.sqlite3",
         context_sqlite_path=state / "context.sqlite3",
         operations_sqlite_path=state / "operations.sqlite3",
@@ -145,6 +156,42 @@ def test_direct_pdf_upload_creates_scope_without_discovery(tmp_path: Path) -> No
         assert evidence.json()["evidence"]
 
 
+def test_literature_api_accepts_language_preference_and_returns_language(
+    tmp_path: Path,
+) -> None:
+    app = create_app(_settings(tmp_path))
+    headers = {"X-TaskForge-Tenant": "tenant-a", "X-TaskForge-User": "alice"}
+    with TestClient(app) as client:
+        app.state.container.literature_discovery = LiteratureDiscoveryService(
+            app.state.container.literature_repository,
+            [_Provider(language="zh")],
+        )
+        response = client.post(
+            "/api/literature/search",
+            headers=headers,
+            json={
+                "conversation_id": "language-conversation",
+                "request": {
+                    "request_id": "language-request",
+                    "query": "检索增强生成方法",
+                    "language_preference": "chinese_first",
+                    "result_limit": 5,
+                },
+            },
+        )
+
+        assert response.status_code == 201, response.text
+        assert response.json()["papers"][0]["language"] == "zh"
+        assert response.json()["papers"][0]["publication_type"] == "journal-article"
+        assert response.json()["papers"][0]["publisher"] == "Scholarly Press"
+        stored = client.get(
+            "/api/literature/requests/language-request",
+            headers=headers,
+        )
+        assert stored.status_code == 200, stored.text
+        assert stored.json()["language_preference"] == "chinese_first"
+
+
 def test_literature_selection_ingestion_and_bounded_evidence_api(tmp_path: Path) -> None:
     app = create_app(_settings(tmp_path))
     intervals = {
@@ -186,6 +233,8 @@ def test_literature_selection_ingestion_and_bounded_evidence_api(tmp_path: Path)
         papers = search.json()["papers"]
         assert "abstract" not in papers[0]
         assert papers[0]["short_description"]
+        assert papers[0]["relevance_score"] > 0
+        assert papers[0]["relevance_reason"]
         selected = papers[0]["paper_id"]
         expansion = papers[1]["paper_id"]
         stored_request = client.get(
@@ -259,11 +308,15 @@ def test_literature_selection_ingestion_and_bounded_evidence_api(tmp_path: Path)
             headers={**headers, "Idempotency-Key": "bounded-research-run-1"},
             json={
                 "title": "Scope-bound evidence survey",
+                "question": "What is the bounded report question?",
                 "context": "Use only the papers already selected by the user.",
                 "survey_depth": "rigorous",
             },
         )
         assert agent_run.status_code == 201, agent_run.text
+        assert agent_run.json()["case"]["submission"]["request_summary"] == (
+            "What is the bounded report question?"
+        )
         case_id = agent_run.json()["case"]["case_id"]
         finished = client.post(
             f"/api/review-cases/{case_id}/run-until-review",
@@ -271,7 +324,13 @@ def test_literature_selection_ingestion_and_bounded_evidence_api(tmp_path: Path)
             json={"max_iterations": 4},
         )
         assert finished.status_code == 200, finished.text
-        assert finished.json()["case"]["status"] == "waiting_human_review", finished.text
+        finished_payload = finished.json()
+        assert finished_payload["case"]["status"] == "waiting_human_review", finished.text
+        assert finished_payload["research_answer"]["answer"] == (
+            "The draft is limited to evidence from the selected papers. [1]"
+        )
+        assert finished_payload["research_answer"]["critic_verdict"] == "accept"
+        assert finished_payload["research_answer"]["evidence_ids"]
         access = OrchestrationAccess(
             tenant_id="tenant-a",
             user_id="alice",

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${TASKFORGE_POSTGRES_TASKFORGE_PASSWORD:?TASKFORGE_POSTGRES_TASKFORGE_PASSWORD is required when the postgres profile is enabled}"
-: "${TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD:?TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD is required when the postgres profile is enabled}"
+: "${TASKFORGE_POSTGRES_TASKFORGE_PASSWORD:?TASKFORGE_POSTGRES_TASKFORGE_PASSWORD is required for the default postgres stack}"
+: "${TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD:?TASKFORGE_POSTGRES_PATCHPILOT_PASSWORD is required for the default postgres stack}"
 
 psql -v ON_ERROR_STOP=1 \
   --username "$POSTGRES_USER" \

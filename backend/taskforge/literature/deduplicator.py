@@ -55,6 +55,29 @@ def _best_text(values: Iterable[str | None]) -> str:
     return max(candidates, key=len, default="")
 
 
+def _best_publication_type(values: Iterable[str | None]) -> str | None:
+    priority = {
+        "journal-article": 7,
+        "proceedings-article": 6,
+        "article": 5,
+        "review": 5,
+        "preprint": 4,
+        "posted-content": 4,
+        "dissertation": 3,
+        "book-chapter": 2,
+    }
+    normalized = {
+        value.strip().casefold()
+        for value in values
+        if value and value.strip()
+    }
+    return max(
+        normalized,
+        key=lambda value: (priority.get(value, 0), value),
+        default=None,
+    )
+
+
 def _unique(values: Iterable[str | None]) -> list[str]:
     return list(dict.fromkeys(value.strip() for value in values if value and value.strip()))
 
@@ -111,7 +134,19 @@ def merge_provider_papers(papers: Iterable[ProviderPaper]) -> list[PaperCard]:
                 abstract=_best_text(item.abstract for item in group),
                 short_description="",
                 year=year,
+                language=next(
+                    (
+                        item.language.casefold()
+                        for item in group
+                        if item.language and item.language.strip()
+                    ),
+                    None,
+                ),
+                publication_type=_best_publication_type(
+                    item.publication_type for item in group
+                ),
                 venue=_best_text(item.venue for item in group) or None,
+                publisher=_best_text(item.publisher for item in group) or None,
                 doi=doi,
                 arxiv_id=arxiv_id,
                 semantic_scholar_id=semantic_scholar_id,
@@ -127,7 +162,16 @@ def merge_provider_papers(papers: Iterable[ProviderPaper]) -> list[PaperCard]:
                 matched_queries=_unique(item.query_id for item in group),
                 provider_ranks=provider_ranks,
                 verification_status=(
-                    "cross_source_verified" if provider_count > 1 else "provider_verified"
+                    "cross_source_verified"
+                    if provider_count > 1
+                    else "provider_verified"
+                    if any(item.provider == "arxiv" for item in group)
+                    or (
+                        any(item.publication_type for item in group)
+                        and bool(authors)
+                        and bool(doi or _best_text(item.venue for item in group))
+                    )
+                    else "metadata_partial"
                 ),
                 full_text_status=(
                     "available"

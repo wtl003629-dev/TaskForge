@@ -39,13 +39,15 @@ class Settings(BaseSettings):
     workspace_root: Path = _PROJECT_ROOT
     artifact_root: Path = _PROJECT_ROOT / ".taskforge" / "artifacts"
     # Durable backend selection is deliberately independent from the legacy
-    # context_backend switch. SQLite remains the default until every
-    # PostgreSQL acceptance gate has passed.
-    database_backend: Literal["sqlite", "postgres"] = "sqlite"
+    # context_backend switch. PostgreSQL is the production default; SQLite is
+    # retained only as an explicit compatibility/test backend.
+    database_backend: Literal["sqlite", "postgres"] = "postgres"
     database_url: str | None = None
     postgres_pool_min_size: int = Field(default=1, ge=1, le=32)
     postgres_pool_max_size: int = Field(default=8, ge=1, le=64)
     postgres_connect_timeout_seconds: float = Field(default=5.0, gt=0, le=60)
+    # Legacy SQLite-branch selector; ignored when database_backend=postgres,
+    # which always uses the PostgreSQL context stores.
     context_backend: Literal["memory", "sqlite"] = "sqlite"
     # The live application stays on the original chain until an offline gate
     # explicitly promotes optimized.  The experiment selector is consumed by

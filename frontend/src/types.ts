@@ -311,6 +311,16 @@ export interface ReviewHandoff {
   createdAt: string
 }
 
+export interface ResearchFinalAnswer {
+  answer: string
+  directAnswer?: string
+  evidenceIds: string[]
+  includedClaimIds: string[]
+  removedClaimIds: string[]
+  unresolvedClaimIds: string[]
+  criticVerdict: 'accept' | 'needs_revision' | 'more_evidence' | string
+}
+
 export interface ReviewCaseDetail {
   case: ReviewCase
   plan?: ReviewPlan
@@ -319,6 +329,7 @@ export interface ReviewCaseDetail {
   handoffs: ReviewHandoff[]
   auditEvents: ReviewCaseAuditEvent[]
   execution: ReviewExecutionDisclosure
+  researchAnswer?: ResearchFinalAnswer
 }
 
 export interface ReviewCaseList {
@@ -349,6 +360,11 @@ export type PaperVerification =
   | 'metadata_partial'
   | 'unverified'
 
+export type LiteratureLanguagePreference =
+  | 'balanced'
+  | 'chinese_first'
+  | 'english_first'
+
 export interface PaperCard {
   paperId: string
   title: string
@@ -356,7 +372,10 @@ export interface PaperCard {
   abstract: string
   shortDescription: string
   year?: number
+  language?: string
+  publicationType?: string
   venue?: string
+  publisher?: string
   doi?: string
   arxivId?: string
   sourceUrls: string[]
@@ -394,6 +413,7 @@ export interface LiteratureSearchInput {
   yearTo?: number
   requiredTerms: string[]
   excludedTerms: string[]
+  languagePreference: LiteratureLanguagePreference
   resultLimit: number
 }
 

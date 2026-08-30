@@ -63,6 +63,7 @@ from .literature import (
     PaperIngestionService,
     PostgresLiteratureRepository,
     RuleEvidenceQueryExpander,
+    SafePDFDownloader,
     ScopeBoundEvidenceService,
     SQLiteLiteratureRepository,
 )
@@ -73,6 +74,7 @@ from .literature.providers import (
     OpenAlexProvider,
     PostgresProviderCache,
     SemanticScholarProvider,
+    UnpaywallResolver,
 )
 from .literature.providers.base import SQLiteProviderCache
 from .literature.repository import (
@@ -129,14 +131,18 @@ from .providers import ModelProvider
 from .rag_experiment_profile import resolve_rag_experiment_profile
 from .research_protocol import (
     ClaimRecord,
+    CriticHandoff,
     EvidenceCard,
     EvidenceSearchRequest,
+    FinalResearchAnswer,
     IngestionStatus,
     LiteratureRequest,
     PaperCard,
     ResearchScope,
     ScopeEvidenceResult,
     ScopeExpansionRequest,
+    WriterHandoff,
+    project_final_research_answer,
 )
 from .research_reranking import build_research_reranker
 from .research_retrieval import (
@@ -315,7 +321,12 @@ class ReviewRunCreate(StrictModel):
 
 class ResearchAgentRunCreate(StrictModel):
     title: str = Field(min_length=1, max_length=500)
-    context: str = Field(default="User-confirmed bounded literature research.", min_length=1, max_length=16_000)
+    question: str | None = Field(default=None, min_length=1, max_length=4_000)
+    context: str = Field(
+        default="User-confirmed bounded literature research.",
+        min_length=1,
+        max_length=16_000,
+    )
     survey_depth: ResearchSurveyDepth = ResearchSurveyDepth.RIGOROUS
 
 
@@ -330,7 +341,10 @@ class ReviewDecisionCreate(StrictModel):
     def human_fields_are_unambiguous(self) -> ReviewDecisionCreate:
         if self.rationale != self.rationale.strip():
             raise ValueError("rationale must be a non-empty trimmed string")
-        if self.display_name is not None and self.display_name != self.display_name.strip():
+        if (
+            self.display_name is not None
+            and self.display_name != self.display_name.strip()
+        ):
             raise ValueError("display_name must be a non-empty trimmed string")
         if len(self.evidence_ref_ids) != len(set(self.evidence_ref_ids)):
             raise ValueError("evidence_ref_ids must be unique")
@@ -341,7 +355,9 @@ class ReviewDecisionCreate(StrictModel):
                 or evidence_id != evidence_id.strip()
                 or len(evidence_id) > 240
             ):
-                raise ValueError("evidence_ref_ids must contain trimmed bounded strings")
+                raise ValueError(
+                    "evidence_ref_ids must contain trimmed bounded strings"
+                )
         return self
 
 
@@ -369,9 +385,7 @@ class ReviewExecutionDisclosure(StrictModel):
     @model_validator(mode="after")
     def mode_matches_configuration(self) -> ReviewExecutionDisclosure:
         if self.provider_configured != (self.mode == "configured-provider"):
-            raise ValueError(
-                "provider_configured must match configured-provider mode"
-            )
+            raise ValueError("provider_configured must match configured-provider mode")
         return self
 
 
@@ -475,6 +489,7 @@ class ReviewCaseDetail(StrictModel):
     handoffs: list[ReviewHandoffSummary]
     audit_events: list[ReviewAuditSummary]
     execution: ReviewExecutionDisclosure
+    research_answer: FinalResearchAnswer | None = None
 
 
 class ReviewCaseList(StrictModel):
@@ -500,6 +515,28 @@ class LiteratureRecommendation(StrictModel):
     short_description: str = Field(default="", max_length=500)
     authors: list[str] = Field(default_factory=list, max_length=16)
     year: int | None = Field(default=None, ge=1000, le=3000)
+    language: str | None = Field(default=None, min_length=2, max_length=32)
+    publication_type: str | None = Field(default=None, max_length=128)
+    venue: str | None = Field(default=None, max_length=1_000)
+    publisher: str | None = Field(default=None, max_length=1_000)
+    doi: str | None = Field(default=None, max_length=512)
+    arxiv_id: str | None = Field(default=None, max_length=128)
+    citation_count: int | None = Field(default=None, ge=0)
+    relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    relevance_reason: str = Field(default="", max_length=2_000)
+    verification_status: Literal[
+        "provider_verified",
+        "cross_source_verified",
+        "metadata_partial",
+        "unverified",
+    ] = "unverified"
+    full_text_status: Literal[
+        "not_requested",
+        "available",
+        "abstract_only",
+        "ingested",
+        "failed",
+    ] = "not_requested"
 
 
 class LiteratureDiscoveryResponse(StrictModel):
@@ -537,7 +574,9 @@ class ResearchScopeCreate(StrictModel):
 
 
 class ResearchScopeUpdate(StrictModel):
-    selected_paper_ids: list[str] | None = Field(default=None, min_length=1, max_length=128)
+    selected_paper_ids: list[str] | None = Field(
+        default=None, min_length=1, max_length=128
+    )
     excluded_paper_ids: list[str] | None = Field(default=None, max_length=256)
     user_intent: str | None = Field(default=None, min_length=1, max_length=4_000)
     allowed_expansion: bool | None = None
@@ -619,9 +658,13 @@ def _principal(
     tenant = tenant_id.strip()
     user = user_id.strip()
     if not tenant or not user:
-        raise HTTPException(status_code=400, detail="tenant and user headers must be non-empty")
+        raise HTTPException(
+            status_code=400, detail="tenant and user headers must be non-empty"
+        )
     if len(tenant) > 256 or len(user) > 256:
-        raise HTTPException(status_code=400, detail="tenant and user headers are too long")
+        raise HTTPException(
+            status_code=400, detail="tenant and user headers are too long"
+        )
     set_request_tenant(tenant)
     return Principal(tenant_id=tenant, user_id=user)
 
@@ -715,12 +758,8 @@ def _apply_verification(
     if verification_store is None:
         return disclosure
     try:
-        live = verification_store.latest(
-            "live_smoke", provider=provider, model=model
-        )
-        e2e = verification_store.latest(
-            "business_e2e", provider=provider, model=model
-        )
+        live = verification_store.latest("live_smoke", provider=provider, model=model)
+        e2e = verification_store.latest("business_e2e", provider=provider, model=model)
     except VerificationSignatureError:
         # A tampered record cannot support a claim; disclose as unverified
         # rather than 500 on every review request.
@@ -818,6 +857,44 @@ def _review_role_run_summary(role_run: RoleRun) -> ReviewRoleRunSummary:
     )
 
 
+def _project_review_research_answer(
+    role_runs: list[RoleRun],
+) -> FinalResearchAnswer | None:
+    """Project Writer claims and Critic patches into the user-facing report.
+
+    Role summaries are useful audit receipts, but the Critic summary is not the
+    research answer.  The durable structured handoffs are the authoritative
+    source for the final report projection.
+    """
+
+    payloads: dict[str, Mapping[str, Any]] = {}
+    for role_run in role_runs:
+        if role_run.status.value != "succeeded":
+            continue
+        output = role_run.output or {}
+        role_result = output.get("role_result")
+        research_payload = (
+            role_result.get("research_payload")
+            if isinstance(role_result, Mapping)
+            else None
+        )
+        if isinstance(research_payload, Mapping):
+            payloads[role_run.role_id] = research_payload
+    writer_payload = payloads.get("synthesis_writer")
+    critic_payload = payloads.get("critical_reviewer")
+    if writer_payload is None or critic_payload is None:
+        return None
+    try:
+        return project_final_research_answer(
+            WriterHandoff.model_validate(writer_payload),
+            CriticHandoff.model_validate(critic_payload),
+        )
+    except ValueError:
+        # Older persisted runs can predate the structured handoff contract.
+        # Keep their audit trail readable without presenting an invented report.
+        return None
+
+
 def _review_fact_summary(fact: SharedFact) -> ReviewFactSummary:
     return ReviewFactSummary(
         fact_id=fact.fact_id,
@@ -899,10 +976,17 @@ def _make_provider(settings: Settings) -> ModelProvider:
     if settings.provider == "demo":
         return DemoProvider()
     if settings.provider == "deepseek":
-        if settings.deepseek_api_key is None or not settings.deepseek_api_key.get_secret_value().strip():
-            raise ValueError("TASKFORGE_DEEPSEEK_API_KEY is required when provider=deepseek")
+        if (
+            settings.deepseek_api_key is None
+            or not settings.deepseek_api_key.get_secret_value().strip()
+        ):
+            raise ValueError(
+                "TASKFORGE_DEEPSEEK_API_KEY is required when provider=deepseek"
+            )
         if settings.deepseek_model is None or not settings.deepseek_model.strip():
-            raise ValueError("TASKFORGE_DEEPSEEK_MODEL is required when provider=deepseek")
+            raise ValueError(
+                "TASKFORGE_DEEPSEEK_MODEL is required when provider=deepseek"
+            )
         from .openai_provider import OpenAIChatCompletionsProvider
 
         return OpenAIChatCompletionsProvider(
@@ -914,10 +998,17 @@ def _make_provider(settings: Settings) -> ModelProvider:
             trust_env=settings.deepseek_trust_env,
         )
     if settings.provider == "bailian":
-        if settings.bailian_api_key is None or not settings.bailian_api_key.get_secret_value().strip():
-            raise ValueError("TASKFORGE_BAILIAN_API_KEY is required when provider=bailian")
+        if (
+            settings.bailian_api_key is None
+            or not settings.bailian_api_key.get_secret_value().strip()
+        ):
+            raise ValueError(
+                "TASKFORGE_BAILIAN_API_KEY is required when provider=bailian"
+            )
         if not settings.bailian_chat_model.strip():
-            raise ValueError("TASKFORGE_BAILIAN_CHAT_MODEL is required when provider=bailian")
+            raise ValueError(
+                "TASKFORGE_BAILIAN_CHAT_MODEL is required when provider=bailian"
+            )
         from .openai_provider import OpenAIChatCompletionsProvider
 
         return OpenAIChatCompletionsProvider(
@@ -928,7 +1019,10 @@ def _make_provider(settings: Settings) -> ModelProvider:
             timeout_seconds=settings.bailian_chat_timeout_seconds,
             trust_env=settings.bailian_chat_trust_env,
         )
-    if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value().strip():
+    if (
+        settings.openai_api_key is None
+        or not settings.openai_api_key.get_secret_value().strip()
+    ):
         raise ValueError("TASKFORGE_OPENAI_API_KEY is required when provider=openai")
     if settings.openai_model is None or not settings.openai_model.strip():
         raise ValueError("TASKFORGE_OPENAI_MODEL is required when provider=openai")
@@ -1081,7 +1175,9 @@ def _job_summary(job: OperationJob) -> JobSummary:
     )
 
 
-def _load_mcp_config(path: Path | None, profiles: Mapping[str, AgentProfile]) -> MCPHostConfig:
+def _load_mcp_config(
+    path: Path | None, profiles: Mapping[str, AgentProfile]
+) -> MCPHostConfig:
     if path is None:
         return MCPHostConfig()
     resolved = path.resolve(strict=True)
@@ -1124,7 +1220,9 @@ def _append_transition_audit(
     for step in state.steps:
         if step.model_turn is None:
             continue
-        requests = {request.call_id: request for request in step.model_turn.tool_requests}
+        requests = {
+            request.call_id: request for request in step.model_turn.tool_requests
+        }
         for result in step.tool_results:
             if result.call_id in previous:
                 continue
@@ -1140,7 +1238,9 @@ def _append_transition_audit(
                     tenant_id=task.tenant_id,
                     run_id=state.run_id,
                     action="tool.receipt_reused" if reused else "tool.execute",
-                    outcome="reused" if reused else ("success" if result.ok else "failed"),
+                    outcome="reused"
+                    if reused
+                    else ("success" if result.ok else "failed"),
                     tool=None if reused else request.name,
                     provider=profile.model,
                     safety_violation=(
@@ -1447,7 +1547,9 @@ def create_app(
         dual_route_min_confidence=config.research_dual_route_min_confidence,
         feature_ranker=(
             SupervisedResearchRanker.from_model_dump(
-                json.loads(config.research_feature_ranker_path.read_text(encoding="utf-8"))["model"]
+                json.loads(
+                    config.research_feature_ranker_path.read_text(encoding="utf-8")
+                )["model"]
             )
             if config.research_feature_ranker_path is not None
             else None
@@ -1469,7 +1571,9 @@ def create_app(
             tenant_resolver=current_request_tenant,
         )
     else:
-        literature_repository = SQLiteLiteratureRepository(config.literature_sqlite_path)
+        literature_repository = SQLiteLiteratureRepository(
+            config.literature_sqlite_path
+        )
         literature_cache = SQLiteProviderCache(
             config.literature_cache_path,
             ttl_seconds=config.literature_cache_ttl_seconds,
@@ -1495,11 +1599,7 @@ def create_app(
     openalex_headers = {
         **contact_headers,
         **(
-            {
-                "Authorization": (
-                    f"Bearer {config.openalex_api_key.get_secret_value()}"
-                )
-            }
+            {"Authorization": (f"Bearer {config.openalex_api_key.get_secret_value()}")}
             if config.openalex_api_key is not None
             else {}
         ),
@@ -1552,8 +1652,7 @@ def create_app(
                 timeout_seconds=config.bailian_chat_timeout_seconds,
                 trust_env=config.bailian_chat_trust_env,
             )
-            if config.provider == "bailian"
-            and config.bailian_api_key is not None
+            if config.provider == "bailian" and config.bailian_api_key is not None
             else OpenAICompatibleQueryRewriter(
                 api_key=config.openai_api_key.get_secret_value(),
                 model=config.openai_model,
@@ -1570,8 +1669,7 @@ def create_app(
     mineru_pdf_parser = (
         MinerUClient(
             config.mineru_base_url,
-            config.mineru_cache_root
-            or artifacts / "pdf-parsing" / "mineru-cache",
+            config.mineru_cache_root or artifacts / "pdf-parsing" / "mineru-cache",
             backend=config.mineru_backend,
             parse_method=config.mineru_parse_method,
             effort=config.mineru_effort,
@@ -1608,6 +1706,18 @@ def create_app(
         literature_repository,
         knowledge,
         artifacts,
+        downloader=SafePDFDownloader(),
+        oa_resolver=(
+            UnpaywallResolver(
+                email=config.literature_contact_email,
+                headers=contact_headers,
+                concurrency=1,
+                min_interval_seconds=0.2,
+                **provider_options,
+            )
+            if config.literature_contact_email
+            else None
+        ),
         parser_router=pdf_parser_router,
         parent_target_tokens=config.pdf_parent_target_tokens,
         parent_max_tokens=config.pdf_parent_max_tokens,
@@ -1616,9 +1726,7 @@ def create_app(
         child_overlap_tokens=config.pdf_child_overlap_tokens,
         visual_evidence_extractor=visual_evidence_extractor,
         embedding_prewarmer=(
-            research_embedder
-            if config.general_text_backend == "bailian"
-            else None
+            research_embedder if config.general_text_backend == "bailian" else None
         ),
         chunking_mode=config.pdf_chunking_mode,
         flat_chunk_chars=config.pdf_flat_chunk_chars,
@@ -1649,8 +1757,7 @@ def create_app(
                 timeout_seconds=config.bailian_chat_timeout_seconds,
                 trust_env=config.bailian_chat_trust_env,
             )
-            if config.provider == "bailian"
-            and config.bailian_api_key is not None
+            if config.provider == "bailian" and config.bailian_api_key is not None
             else OpenAICompatibleEvidenceQueryExpander(
                 api_key=config.openai_api_key.get_secret_value(),
                 model=config.openai_model,
@@ -1733,7 +1840,9 @@ def create_app(
                 for profile_id in binding.profile_ids:
                     profile = profile_catalog[profile_id]
                     profile.allowed_tools.extend(
-                        name for name in mounted_names if name not in profile.allowed_tools
+                        name
+                        for name in mounted_names
+                        if name not in profile.allowed_tools
                     )
                     if profile_id in profiles:
                         if config.database_backend == "postgres":
@@ -1792,10 +1901,28 @@ def create_app(
                 LiteratureRecommendation(
                     paper_id=paper.paper_id,
                     title=paper.canonical_title,
-                    source_urls=list(paper.source_urls[:8]),
+                    source_urls=list(
+                        dict.fromkeys(
+                            [
+                                *paper.source_urls,
+                                *([paper.pdf_url] if paper.pdf_url else []),
+                            ]
+                        )
+                    )[:8],
                     short_description=paper.short_description,
                     authors=list(paper.authors[:16]),
                     year=paper.year,
+                    language=paper.language,
+                    publication_type=paper.publication_type,
+                    venue=paper.venue,
+                    publisher=paper.publisher,
+                    doi=paper.doi,
+                    arxiv_id=paper.arxiv_id,
+                    citation_count=paper.citation_count,
+                    relevance_score=paper.relevance_score,
+                    relevance_reason=paper.relevance_reason,
+                    verification_status=paper.verification_status,
+                    full_text_status=paper.full_text_status,
                 )
                 for paper in result.papers
             ],
@@ -1807,14 +1934,18 @@ def create_app(
     async def read_pdf_upload(request: Request) -> tuple[bytes, str]:
         content_type = request.headers.get("content-type", "").split(";", 1)[0].strip()
         if content_type != "application/pdf":
-            raise HTTPException(status_code=415, detail="Upload must use application/pdf")
+            raise HTTPException(
+                status_code=415, detail="Upload must use application/pdf"
+            )
         declared = request.headers.get("content-length")
         if (
             declared
             and declared.isdigit()
             and int(declared) > container.paper_ingestion.max_upload_bytes
         ):
-            raise HTTPException(status_code=413, detail="Uploaded PDF exceeds the size limit")
+            raise HTTPException(
+                status_code=413, detail="Uploaded PDF exceeds the size limit"
+            )
         payload = bytearray()
         async for chunk in request.stream():
             payload.extend(chunk)
@@ -1909,6 +2040,11 @@ def create_app(
             handoffs=[_review_handoff_summary(item) for item in handoffs],
             audit_events=[_review_audit_summary(item) for item in audit_events],
             execution=container.review_execution.model_copy(deep=True),
+            research_answer=(
+                _project_review_research_answer(role_runs)
+                if state.review_case.kind == CaseKind.RESEARCH_SURVEY
+                else None
+            ),
         )
 
     @api.exception_handler(ReviewCaseNotFoundError)
@@ -1917,14 +2053,18 @@ def create_app(
         __: ReviewCaseNotFoundError,
     ) -> JSONResponse:
         # Do not reveal whether a case exists in another ownership scope.
-        return JSONResponse(status_code=404, content={"detail": "Review case not found"})
+        return JSONResponse(
+            status_code=404, content={"detail": "Review case not found"}
+        )
 
     @api.exception_handler(CaseAccessDeniedError)
     async def review_case_access_denied(
         _: Request,
         __: CaseAccessDeniedError,
     ) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"detail": "Review case not found"})
+        return JSONResponse(
+            status_code=404, content={"detail": "Review case not found"}
+        )
 
     @api.exception_handler(ReviewCaseError)
     async def review_case_conflict(_: Request, exc: ReviewCaseError) -> JSONResponse:
@@ -1956,14 +2096,18 @@ def create_app(
         _: Request,
         __: LiteratureNotFoundError,
     ) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"detail": "Research resource not found"})
+        return JSONResponse(
+            status_code=404, content={"detail": "Research resource not found"}
+        )
 
     @api.exception_handler(LiteratureAccessError)
     async def literature_access_denied(
         _: Request,
         __: LiteratureAccessError,
     ) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"detail": "Research resource not found"})
+        return JSONResponse(
+            status_code=404, content={"detail": "Research resource not found"}
+        )
 
     @api.exception_handler(LiteratureConflictError)
     async def literature_conflict(
@@ -1984,7 +2128,9 @@ def create_app(
         return Health(
             status="ok",
             provider=config.provider,
-            execution="offline-deterministic-demo" if config.provider == "demo" else config.provider,
+            execution="offline-deterministic-demo"
+            if config.provider == "demo"
+            else config.provider,
         )
 
     @api.get("/api/agents", response_model=list[AgentSummary])
@@ -2097,7 +2243,9 @@ def create_app(
         safe_filename = filename.replace("\\", "/").rsplit("/", 1)[-1].strip()
         display_title = " ".join((title or Path(safe_filename).stem).split())
         if not display_title:
-            raise HTTPException(status_code=422, detail="Uploaded paper title is required")
+            raise HTTPException(
+                status_code=422, detail="Uploaded paper title is required"
+            )
         access = literature_access(principal, conversation_id)
         literature_request = LiteratureRequest(
             request_id=f"literature-upload-{uuid4()}",
@@ -2373,7 +2521,9 @@ def create_app(
                     evidence_ids=body.evidence_ids,
                     risk_level=body.risk_level,
                     citation_status="verified" if result.verified else "unsupported",
-                    verification_status="verified" if result.verified else "needs_review",
+                    verification_status="verified"
+                    if result.verified
+                    else "needs_review",
                 )
             ],
         )
@@ -2425,7 +2575,9 @@ def create_app(
         access = literature_access(principal)
         scope = container.literature_repository.get_scope(access, scope_id)
         if scope.status != "expansion_requested":
-            raise HTTPException(status_code=409, detail="Scope has no pending expansion")
+            raise HTTPException(
+                status_code=409, detail="Scope has no pending expansion"
+            )
         decision = container.literature_repository.decide_expansion(
             access,
             expansion_id,
@@ -2464,7 +2616,9 @@ def create_app(
             limit=limit,
         )
 
-    @api.post("/api/memory", response_model=MemorySummary, status_code=status.HTTP_201_CREATED)
+    @api.post(
+        "/api/memory", response_model=MemorySummary, status_code=status.HTTP_201_CREATED
+    )
     async def create_memory(
         body: MemoryCreate,
         principal: Annotated[Principal, Depends(_principal)],
@@ -2574,7 +2728,11 @@ def create_app(
             kind=CaseKind.RESEARCH_SURVEY,
             title=body.title,
             submission=CaseSubmission(
-                request_summary=scope.user_intent,
+                # The immutable scope records why the papers were selected, but
+                # a later report may ask a more specific question of that same
+                # bounded corpus. Keep the question explicit instead of trying
+                # to recover it from the display title.
+                request_summary=(body.question or scope.user_intent).strip(),
                 business_justification=body.context,
                 attributes={
                     "research_scope_id": scope.scope_id,
@@ -2860,9 +3018,13 @@ def create_app(
         async with lock:
             run, task = load_owned(run_id, principal)
             if run.status != RunStatus.WAITING_APPROVAL or run.pending_approval is None:
-                raise HTTPException(status_code=409, detail="Run has no pending approval")
+                raise HTTPException(
+                    status_code=409, detail="Run has no pending approval"
+                )
             if body.call_id != run.pending_approval.request.call_id:
-                raise HTTPException(status_code=409, detail="Approval call_id does not match")
+                raise HTTPException(
+                    status_code=409, detail="Approval call_id does not match"
+                )
             try:
                 if config.database_backend == "postgres":
                     profile = store.load_profile(
@@ -2872,7 +3034,9 @@ def create_app(
                 else:
                     profile = store.load_profile(run.agent_profile_id)
             except CheckpointNotFoundError as exc:
-                raise HTTPException(status_code=409, detail="Persisted Agent profile not found") from exc
+                raise HTTPException(
+                    status_code=409, detail="Persisted Agent profile not found"
+                ) from exc
             try:
                 started = time.monotonic()
                 resumed = await runtime.run(

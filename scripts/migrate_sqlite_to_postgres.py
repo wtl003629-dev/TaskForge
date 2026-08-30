@@ -556,7 +556,7 @@ def import_psycopg() -> tuple[Any, Any]:
         from psycopg.types.json import Json
     except ImportError as exc:
         raise RuntimeError(
-            "PostgreSQL execution requires `pip install taskforge-agent[postgres]`"
+            "PostgreSQL execution requires `pip install taskforge-agent`"
         ) from exc
     return psycopg, Json
 

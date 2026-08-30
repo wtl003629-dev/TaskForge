@@ -28,6 +28,7 @@ from taskforge.literature.repository import (
 from taskforge.research_protocol import (
     EvidenceCard,
     LiteratureRequest,
+    PaperCard,
     ResearchScope,
     ScopeExpansionRequest,
     SearchQuery,
@@ -47,7 +48,9 @@ def _provider_paper(
         "authors": ["Patrick Lewis"],
         "abstract": "Retrieval augmented generation combines parametric and non-parametric memory.",
         "year": 2020,
+        "publication_type": "journal-article",
         "venue": "NeurIPS",
+        "publisher": "ACM",
         "doi": "10.5555/rag.2020",
         "source_url": f"https://example.test/{provider_id}",
         "query_id": query_id,
@@ -87,7 +90,9 @@ def test_query_planner_and_deduplication_are_bounded_and_explainable() -> None:
 
 
 def test_provider_rank_signal_keeps_a_first_party_top_hit_above_noise() -> None:
-    request = LiteratureRequest(request_id="rank-signal", query="target retrieval method")
+    request = LiteratureRequest(
+        request_id="rank-signal", query="target retrieval method"
+    )
     target = merge_provider_papers(
         [
             _provider_paper(
@@ -129,7 +134,6 @@ def test_query_planner_adds_bounded_english_bridge_for_chinese_academic_need() -
         )
     )
 
-
     assert 3 <= len(queries) <= 6
     assert any(
         "open-domain question answering" in query.text
@@ -138,12 +142,155 @@ def test_query_planner_adds_bounded_english_bridge_for_chinese_academic_need() -
     )
 
 
+def test_chinese_request_keeps_relevant_chinese_papers_in_top_results() -> None:
+    request = LiteratureRequest(
+        request_id="request-bilingual",
+        query="检索增强生成方法",
+        result_limit=5,
+    )
+    english = [
+        PaperCard(
+            paper_id=f"paper-en-{index}",
+            canonical_title=f"Retrieval Augmented Generation Method {index}",
+            abstract="retrieval augmented generation method",
+            provider_ranks={"openalex": 1},
+        )
+        for index in range(6)
+    ]
+    chinese = [
+        PaperCard(
+            paper_id=f"paper-zh-{index}",
+            canonical_title=f"检索增强生成方法研究 {index}",
+            abstract="面向中文论文的检索增强生成方法研究。",
+            provider_ranks={"openalex": 1},
+        )
+        for index in range(2)
+    ]
+    dense_scores = {
+        **{paper.paper_id: 0.9 for paper in english},
+        **{paper.paper_id: 1.0 for paper in chinese},
+    }
+
+    ranked = rank_papers(request, [*english, *chinese], dense_scores=dense_scores)
+
+    assert len(ranked) == 5
+    assert sum("检索增强" in paper.canonical_title for paper in ranked) >= 2
+
+
+def test_chinese_bigrams_rank_topic_matches_above_unrelated_chinese_titles() -> None:
+    request = LiteratureRequest(
+        request_id="request-chinese-lexical-ranking",
+        query="中文文献召回与重排序",
+        result_limit=2,
+    )
+    relevant = PaperCard(
+        paper_id="paper-zh-relevant",
+        canonical_title="多语言检索中的中文文献召回与重排序研究",
+        abstract="研究跨语言检索和中文论文排序。",
+        language="zh",
+        provider_ranks={"openalex": 3},
+    )
+    unrelated = PaperCard(
+        paper_id="paper-zh-unrelated",
+        canonical_title="小学古诗课堂教学策略研究",
+        abstract="分析语文课堂中的教学活动。",
+        language="zh",
+        provider_ranks={"openalex": 3},
+    )
+
+    ranked = rank_papers(request, [unrelated, relevant])
+
+    assert ranked[0].paper_id == relevant.paper_id
+    assert ranked[0].relevance_score > ranked[1].relevance_score
+
+
+def test_chinese_provider_rank_is_discounted_without_native_topic_overlap() -> None:
+    request = LiteratureRequest(
+        request_id="request-chinese-provider-noise",
+        query="多语言检索增强生成中的中文文献召回与重排序",
+        result_limit=2,
+    )
+    provider_noise = PaperCard(
+        paper_id="paper-zh-provider-noise",
+        canonical_title="小学古诗课堂教学策略研究",
+        abstract="分析语文课堂中的教学活动。",
+        language="zh",
+        year=2025,
+        provider_ranks={"crossref": 1},
+    )
+    topic_match = PaperCard(
+        paper_id="paper-en-topic-match",
+        canonical_title="Cross-lingual Retrieval Augmented Generation and Re-ranking",
+        abstract="Academic literature retrieval with citation provenance.",
+        language="en",
+        year=2025,
+        provider_ranks={"crossref": 1},
+    )
+
+    ranked = rank_papers(request, [provider_noise, topic_match])
+
+    assert ranked[0].paper_id == topic_match.paper_id
+
+
+def test_chinese_first_selects_more_relevant_chinese_papers_without_low_score_fill() -> None:
+    request = LiteratureRequest(
+        request_id="request-language-ranking",
+        query="检索增强生成方法",
+        result_limit=6,
+    )
+    english = [
+        PaperCard(
+            paper_id=f"ranking-en-{index}",
+            canonical_title=f"Retrieval Augmented Generation Method {index}",
+            abstract="retrieval augmented generation method",
+            year=2024,
+            provider_ranks={"openalex": 1},
+        )
+        for index in range(8)
+    ]
+    chinese = [
+        PaperCard(
+            paper_id=f"ranking-zh-{index}",
+            canonical_title=f"检索增强生成方法 中文研究 {index}",
+            abstract="面向中文论文的方法研究。",
+            language="zh",
+            year=2024,
+            provider_ranks={"openalex": 1},
+        )
+        for index in range(4)
+    ]
+    low_score_chinese = PaperCard(
+        paper_id="ranking-zh-low",
+        canonical_title="低相关中文候选",
+        abstract="无关内容",
+        language="zh",
+        year=2000,
+        provider_ranks={"openalex": 1},
+    )
+    papers = [*english, *chinese, low_score_chinese]
+
+    balanced = rank_papers(
+        request.model_copy(update={"language_preference": "balanced"}), papers
+    )
+    chinese_first = rank_papers(
+        request.model_copy(update={"language_preference": "chinese_first"}), papers
+    )
+    def chinese_count(result: list[PaperCard]) -> int:
+        return sum(paper.language == "zh" for paper in result)
+
+    assert chinese_count(chinese_first) >= 3
+    assert chinese_count(chinese_first) >= chinese_count(balanced)
+    assert "ranking-zh-low" not in {paper.paper_id for paper in chinese_first}
+
+
 def test_openalex_oversized_reference_list_is_bounded() -> None:
     paper = openalex_paper(
         {
             "id": "https://openalex.org/W1",
             "title": "Large Review",
-            "referenced_works": [f"https://openalex.org/W{index}" for index in range(700)],
+            "referenced_works": [
+                f"https://openalex.org/W{index}" for index in range(700)
+            ],
         },
         query_id="query-1",
         rank=1,
@@ -176,7 +323,9 @@ async def test_crossref_adapter_maps_doi_metadata_and_query_filters() -> None:
                             "author": [{"given": "Ada", "family": "Researcher"}],
                             "abstract": "<jats:p>Bounded evidence retrieval.</jats:p>",
                             "published-online": {"date-parts": [[2025, 1, 2]]},
+                            "type": "journal-article",
                             "container-title": ["Journal of Retrieval"],
+                            "publisher": "Scholarly Press",
                             "URL": "https://doi.org/10.1000/example",
                             "is-referenced-by-count": 17,
                             "reference": [{"DOI": "10.1000/prior"}],
@@ -201,8 +350,44 @@ async def test_crossref_adapter_maps_doi_metadata_and_query_filters() -> None:
     assert papers[0].year == 2025
     assert papers[0].authors == ["Ada Researcher"]
     assert papers[0].abstract == "Bounded evidence retrieval."
+    assert papers[0].publication_type == "journal-article"
+    assert papers[0].publisher == "Scholarly Press"
     assert papers[0].references == ["10.1000/prior"]
     assert "from-pub-date" in captured["query"]
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_crossref_adapter_excludes_reports_and_other_non_paper_records() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "message": {
+                    "items": [
+                        {
+                            "DOI": "10.1000/company-report",
+                            "title": ["Vendor Product Outlook"],
+                            "type": "report",
+                            "publisher": "Small Company Ltd",
+                        },
+                        {
+                            "DOI": "10.1000/research-paper",
+                            "title": ["A Scholarly Retrieval Study"],
+                            "type": "journal-article",
+                            "publisher": "Scholarly Press",
+                        },
+                    ]
+                }
+            },
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = CrossrefProvider(client=client, max_retries=0)
+
+    papers = await provider.search(SearchQuery(text="retrieval"), 10)
+
+    assert [paper.doi for paper in papers] == ["10.1000/research-paper"]
     await client.aclose()
 
 
@@ -235,6 +420,140 @@ async def test_openalex_routes_semantic_and_lexical_search_modes() -> None:
 
 
 @pytest.mark.asyncio
+async def test_openalex_language_filter_is_sent_and_metadata_is_parsed() -> None:
+    captured: dict[str, str] = {}
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        captured.update(dict(request.url.params))
+        return httpx.Response(
+            200,
+            json={
+                "results": [
+                    {
+                        "id": "https://openalex.org/WZH",
+                        "title": "中文检索增强生成研究",
+                        "language": "zh",
+                        "publication_year": 2025,
+                        "authorships": [],
+                        "primary_location": {},
+                        "best_oa_location": {},
+                        "referenced_works": [],
+                    }
+                ]
+            },
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = OpenAlexProvider(client=client, max_retries=0)
+    papers = await provider.search(
+        SearchQuery(
+            text="检索增强生成",
+            provider_filters={"_language": "zh", "_search_mode": "lexical"},
+        ),
+        10,
+    )
+
+    assert captured["filter"] == "language:zh"
+    assert papers[0].language == "zh"
+    await client.aclose()
+
+
+def test_merge_provider_papers_preserves_openalex_language() -> None:
+    card = merge_provider_papers(
+        [
+            _provider_paper("openalex", "WZH").model_copy(
+                update={"language": "zh"}
+            )
+        ]
+    )[0]
+
+    assert card.language == "zh"
+
+
+def test_openalex_excludes_reports_and_retracted_works() -> None:
+    base = {
+        "id": "https://openalex.org/W1",
+        "title": "Candidate work",
+        "authorships": [],
+        "primary_location": {},
+        "best_oa_location": {},
+        "referenced_works": [],
+    }
+
+    assert openalex_paper({**base, "type": "report"}, query_id=None, rank=1) is None
+    assert (
+        openalex_paper(
+            {**base, "type": "article", "is_retracted": True},
+            query_id=None,
+            rank=1,
+        )
+        is None
+    )
+
+
+def test_ranker_defensively_excludes_explicit_non_paper_types() -> None:
+    request = LiteratureRequest(request_id="quality-gate", query="retrieval")
+    paper = PaperCard(
+        paper_id="paper",
+        canonical_title="Retrieval research",
+        publication_type="journal-article",
+        provider_ranks={"crossref": 1},
+    )
+    company_report = paper.model_copy(
+        update={
+            "paper_id": "company-report",
+            "canonical_title": "Company retrieval outlook",
+            "publication_type": "report",
+        }
+    )
+
+    ranked = rank_papers(request, [company_report, paper])
+
+    assert [item.paper_id for item in ranked] == ["paper"]
+
+
+def test_ranker_excludes_sparse_crossref_only_metadata() -> None:
+    request = LiteratureRequest(request_id="sparse-quality-gate", query="retrieval")
+    sparse = PaperCard(
+        paper_id="sparse-company-record",
+        canonical_title="Company retrieval outlook",
+        publication_type="journal-article",
+        publisher="Small Company Ltd",
+        provider_ranks={"crossref:query-1": 1},
+        verification_status="metadata_partial",
+    )
+
+    assert rank_papers(request, [sparse]) == []
+
+
+def test_ranker_requires_source_strength_for_crossref_only_journal_records() -> None:
+    request = LiteratureRequest(request_id="publisher-quality-gate", query="retrieval")
+    base = PaperCard(
+        paper_id="trusted-paper",
+        canonical_title="Scholarly retrieval study",
+        authors=["Ada Researcher"],
+        abstract="A retrieval study.",
+        publication_type="journal-article",
+        venue="Journal of Retrieval",
+        doi="10.1000/trusted",
+        publisher="Association for Computing Machinery (ACM)",
+        provider_ranks={"crossref:query-1": 1},
+        verification_status="provider_verified",
+    )
+    company_record = base.model_copy(
+        update={
+            "paper_id": "company-record",
+            "doi": "10.1000/company",
+            "publisher": "Unknown Small Company Ltd",
+        }
+    )
+
+    ranked = rank_papers(request, [company_record, base])
+
+    assert [item.paper_id for item in ranked] == ["trusted-paper"]
+
+
+@pytest.mark.asyncio
 async def test_arxiv_adapter_builds_explicit_boolean_query() -> None:
     captured: dict[str, str] = {}
 
@@ -255,9 +574,7 @@ async def test_arxiv_adapter_builds_explicit_boolean_query() -> None:
         50,
     )
 
-    assert captured["search_query"] == (
-        "all:dense AND all:passage AND all:retrieval"
-    )
+    assert captured["search_query"] == ("all:dense AND all:passage AND all:retrieval")
     await client.aclose()
 
 
@@ -292,9 +609,7 @@ async def test_unpaywall_resolver_returns_only_https_pdf_locations() -> None:
             200,
             json={
                 "best_oa_location": {"url_for_pdf": "http://unsafe.test/paper.pdf"},
-                "oa_locations": [
-                    {"url_for_pdf": "https://open.example.org/paper.pdf"}
-                ],
+                "oa_locations": [{"url_for_pdf": "https://open.example.org/paper.pdf"}],
             },
         )
 
@@ -325,7 +640,9 @@ def _seed_request_and_paper(
     return card.paper_id
 
 
-def test_repository_enforces_tenant_owner_and_immutable_scope_versions(tmp_path: Path) -> None:
+def test_repository_enforces_tenant_owner_and_immutable_scope_versions(
+    tmp_path: Path,
+) -> None:
     repository = _repository(tmp_path)
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
     paper_id = _seed_request_and_paper(repository, access)
@@ -470,8 +787,100 @@ class _FakeProvider:
         return []
 
 
+def test_chinese_request_routes_native_and_english_queries_to_openalex(
+    tmp_path: Path,
+) -> None:
+    provider = _FakeProvider("openalex")
+    service = LiteratureDiscoveryService(_repository(tmp_path), [provider])
+    queries = plan_literature_queries(
+        LiteratureRequest(
+            request_id="request-routed-bilingual",
+            query="开放域问答中的稠密段落检索",
+            language_preference="balanced",
+        )
+    )
+
+    routed = service._queries_for_provider(provider, queries)
+
+    assert len(routed) == 2
+    assert routed[0].provider_filters["_language"] == "zh"
+    assert routed[0].provider_filters["_search_mode"] == "lexical"
+    assert not service._contains_cjk(routed[1].text)
+    assert routed[1].provider_filters["_search_mode"] == "semantic"
+    assert "_language" not in routed[1].provider_filters
+
+
+def test_chinese_first_openalex_keeps_two_chinese_legs_and_english_semantic_leg(
+    tmp_path: Path,
+) -> None:
+    provider = _FakeProvider("openalex")
+    service = LiteratureDiscoveryService(
+        _repository(tmp_path),
+        [provider],
+        provider_query_limits={"openalex": 3},
+    )
+    queries = plan_literature_queries(
+        LiteratureRequest(
+            request_id="request-routed-chinese-first",
+            query="开放域问答中的稠密段落检索",
+            language_preference="chinese_first",
+        )
+    )
+
+    routed = service._queries_for_provider(
+        provider,
+        queries,
+        language_preference="chinese_first",
+    )
+
+    zh_routes = [
+        query
+        for query in routed
+        if query.provider_filters.get("_language") == "zh"
+    ]
+    assert len(zh_routes) >= 2
+    assert any(
+        query.provider_filters.get("_search_mode") == "semantic"
+        and "_language" not in query.provider_filters
+        for query in routed
+    )
+
+
+def test_english_first_openalex_does_not_send_chinese_language_filter(
+    tmp_path: Path,
+) -> None:
+    provider = _FakeProvider("openalex")
+    service = LiteratureDiscoveryService(
+        _repository(tmp_path),
+        [provider],
+        provider_query_limits={"openalex": 3},
+    )
+    queries = plan_literature_queries(
+        LiteratureRequest(
+            request_id="request-routed-english-first",
+            query="开放域问答中的稠密段落检索",
+            language_preference="english_first",
+        )
+    )
+
+    routed = service._queries_for_provider(
+        provider,
+        queries,
+        language_preference="english_first",
+    )
+
+    assert routed
+    assert all("_language" not in query.provider_filters for query in routed)
+    assert any(
+        query.provider_filters.get("_search_mode") == "semantic"
+        for query in routed
+    )
+
+
 @pytest.mark.asyncio
-async def test_discovery_isolates_provider_failure_and_persists_results(tmp_path: Path) -> None:
+async def test_discovery_isolates_provider_failure_and_persists_results(
+    tmp_path: Path,
+) -> None:
     repository = _repository(tmp_path)
     service = LiteratureDiscoveryService(
         repository,
@@ -484,11 +893,15 @@ async def test_discovery_isolates_provider_failure_and_persists_results(tmp_path
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
     result = await service.discover(
         access,
-        LiteratureRequest(request_id="request-1", query="retrieval augmented generation"),
+        LiteratureRequest(
+            request_id="request-1", query="retrieval augmented generation"
+        ),
     )
     assert len(result.papers) == 1
     assert result.papers[0].verification_status == "cross_source_verified"
-    failed = next(report for report in result.provider_reports if report.provider == "arxiv")
+    failed = next(
+        report for report in result.provider_reports if report.provider == "arxiv"
+    )
     assert failed.failure is not None
     reports = {report.provider: report for report in result.provider_reports}
     assert reports["semantic_scholar"].query_count == 2
@@ -497,4 +910,7 @@ async def test_discovery_isolates_provider_failure_and_persists_results(tmp_path
     assert reports["semantic_scholar"].request_count == 2
     assert reports["openalex"].request_count == 2
     assert reports["arxiv"].request_count == 2
-    assert repository.list_papers(access, "request-1")[0].paper_id == result.papers[0].paper_id
+    assert (
+        repository.list_papers(access, "request-1")[0].paper_id
+        == result.papers[0].paper_id
+    )

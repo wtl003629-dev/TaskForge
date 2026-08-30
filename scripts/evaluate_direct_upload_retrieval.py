@@ -42,6 +42,7 @@ def _percentile(values: list[float], fraction: float) -> float:
 def _settings(state: Path) -> Settings:
     return Settings(
         _env_file=None,
+        database_backend="sqlite",
         sqlite_path=state / "taskforge.sqlite3",
         context_sqlite_path=state / "context.sqlite3",
         operations_sqlite_path=state / "operations.sqlite3",

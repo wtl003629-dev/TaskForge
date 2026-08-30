@@ -420,7 +420,7 @@ def test_connection_ownership_closed_state_and_missing_dependency(monkeypatch) -
         raise ModuleNotFoundError(name)
 
     monkeypatch.setattr(postgres_context.importlib, "import_module", unavailable)
-    with pytest.raises(PostgresDependencyError, match="postgres.*extra"):
+    with pytest.raises(PostgresDependencyError, match="PostgreSQL dependencies"):
         PostgresContextRepository.connect("postgresql://db.invalid/taskforge")
 
 

@@ -16,8 +16,9 @@ The invariant is simple: a `ToolRequest` is a proposal, never authority.
 
 “Implemented control” below means host code plus the stated automated/local
 tests exist. It does not by itself mean the control is deployed behind
-production identity or verified against a real external service. SQLite remains
-the compatibility path; PostgreSQL is selectable and has fake DB-API coverage
+production identity or verified against a real external service. PostgreSQL is
+the default durable path; SQLite remains an explicit compatibility path and
+PostgreSQL has fake DB-API coverage
 plus an opt-in live test, while the local PostgreSQL service/RLS gate is still
 pending. Neo4j has fake-driver coverage only, semantic adapters use
 injected/mock tests, and remote MCP and real-model planning have no live

@@ -8,9 +8,8 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY backend ./backend
-# Keep the default runtime SQLite-compatible, while shipping the optional
-# PostgreSQL client/pool so the opt-in postgres Compose profile can execute
-# without rebuilding a different image.
+# PostgreSQL is the default durable runtime. Keep SQLite support in the image
+# for explicit compatibility/test configurations without a second image.
 RUN python -m pip install --upgrade pip && python -m pip install '.[postgres]'
 
 COPY AGENTS.md ./AGENTS.md

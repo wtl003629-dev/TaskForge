@@ -13,7 +13,7 @@ def _principal() -> AccessContext:
 
 
 def test_current_is_the_default_and_resolves_to_original_ablation() -> None:
-    settings = Settings(_env_file=None)
+    settings = Settings(_env_file=None, database_backend="sqlite")
     profile = resolve_rag_experiment_profile(
         settings.rag_active_profile,
         settings.rag_optimized_ablation,
@@ -32,12 +32,17 @@ def test_current_is_the_default_and_resolves_to_original_ablation() -> None:
 
 def test_live_optimized_profile_requires_a_passed_promotion_manifest() -> None:
     with pytest.raises(ValueError, match="promotion manifest"):
-        Settings(_env_file=None, rag_active_profile="optimized")
+        Settings(
+            _env_file=None,
+            database_backend="sqlite",
+            rag_active_profile="optimized",
+        )
 
 
 def test_offline_evaluation_can_run_optimized_without_promotion() -> None:
     settings = Settings(
         _env_file=None,
+        database_backend="sqlite",
         rag_active_profile="optimized",
         rag_experiment_profile="optimized",
         rag_evaluation_mode=True,
@@ -50,6 +55,7 @@ def test_offline_evaluation_can_run_optimized_without_promotion() -> None:
 def test_hybrid_chunking_is_explicit_and_keeps_dual_route_opt_in() -> None:
     settings = Settings(
         _env_file=None,
+        database_backend="sqlite",
         pdf_chunking_mode="hybrid",
         research_dual_route_enabled=True,
     )
@@ -58,7 +64,11 @@ def test_hybrid_chunking_is_explicit_and_keeps_dual_route_opt_in() -> None:
     assert settings.research_dual_route_enabled is True
 
     with pytest.raises(ValueError, match="requires pdf_chunking_mode=hybrid"):
-        Settings(_env_file=None, research_dual_route_enabled=True)
+        Settings(
+            _env_file=None,
+            database_backend="sqlite",
+            research_dual_route_enabled=True,
+        )
 
 
 def test_optimized_ablation_features_are_incremental() -> None:

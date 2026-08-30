@@ -26,6 +26,7 @@ def make_settings(tmp_path: Path, **overrides: object) -> Settings:
     )
     state = tmp_path / "state"
     values: dict[str, object] = {
+        "database_backend": "sqlite",
         "sqlite_path": state / "taskforge.sqlite3",
         "context_sqlite_path": state / "context.sqlite3",
         "operations_sqlite_path": state / "operations.sqlite3",

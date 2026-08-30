@@ -124,7 +124,7 @@ intake -> compliance --\
 
 ## Phase-two persistence and execution
 
-- Checkpoints, Knowledge/Memory, and Operations share a backend-neutral contract. SQLite remains the compatibility path; PostgreSQL uses composite tenant identity, forced RLS, JSONB and transaction-local tenant settings. Retrieval performs tenant/validity prefiltering before ACL/scope and deterministic ranking.
+- Checkpoints, Knowledge/Memory, and Operations share a backend-neutral contract. PostgreSQL is the default durable path and uses composite tenant identity, forced RLS, JSONB and transaction-local tenant settings; SQLite remains an explicit compatibility path. Retrieval performs tenant/validity prefiltering before ACL/scope and deterministic ranking.
 - Safe ingestion turns one operator-selected UTF-8 workspace document into bounded, provenance-carrying chunks and atomically replaces the selected document version.
 - A queued run starts from a durable `PENDING` checkpoint. Workers use `BEGIN IMMEDIATE` claim and subsequent owner + opaque token + lease version + expiry CAS. Only failures explicitly classified as retryable (network/timeout and selected HTTP 408/409/425/429/5xx responses) reset the durable cursor to `PENDING`; configuration, authentication, and response-shape failures terminate without replay. Retryable failures use backoff and dead-letter after a bounded attempt count. An expired final-attempt lease receives one reconciliation claim: a terminal checkpoint is completed without another provider call, while a non-terminal checkpoint is dead-lettered.
 - Provider calls are at-least-once across an ambiguous timeout or connection loss. A retry can incur another provider request and charge; TaskForge does not claim provider-call exactly-once semantics.
@@ -143,10 +143,10 @@ real external service was exercised.
 |---|---|---|---|---|
 | Generic runtime and tools | implemented | Demo Provider regression suite | FastAPI inline/queued runs | OpenAI not yet run successfully here |
 | Fixed enterprise review DAG | implemented | Demo Provider API/recovery tests | Review case API and host state machine | No real-model review run |
-| SQLite Knowledge/Memory + profile router | implemented | local integration and four-profile routing tests | default application path; BM25 is the default general-text backend | no external service required |
+| SQLite Knowledge/Memory + profile router | implemented | local integration and four-profile routing tests | explicit compatibility path; BM25 is the default general-text backend | no external service required |
 | Qdrant hybrid retrieval | implemented | local in-memory Qdrant experiment; generic path remains an evaluation adapter | not selected by default online routing | no remote Qdrant verification |
 | FastEmbed/OpenAI semantic adapters | implemented | local BGE semantic QASPER evaluation plus injected provider tests | FastEmbed is explicit host opt-in; OpenAI embedding is not selected | no paid/live model verification |
-| PostgreSQL durable runtime and pgvector | implemented with migrations and backend wiring | fake DB-API tests plus opt-in live test | selected by `TASKFORGE_DATABASE_BACKEND=postgres`; no SQLite fallback | Docker/PostgreSQL/RLS/pgvector run pending on this machine |
+| PostgreSQL durable runtime and pgvector | implemented with migrations and backend wiring | fake DB-API tests plus opt-in live test | default via `TASKFORGE_DATABASE_BACKEND=postgres`; no SQLite fallback | Docker/PostgreSQL/RLS/pgvector run pending on this machine |
 | Neo4j graph retriever | implemented | fake-driver tests only | not wired; quality gate is disabled | no Neo4j service or graph-quality result |
 | Remote MCP | governed client implemented | simulated HTTP tests | only when an operator explicitly configures and mounts it | no live remote server test |
 

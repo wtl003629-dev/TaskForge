@@ -14,6 +14,14 @@ from .base import ResilientHTTPProvider
 
 _BASE_URL = "https://api.crossref.org"
 _TAG = re.compile(r"<[^>]+>")
+_SCHOLARLY_TYPES = {
+    "book-chapter",
+    "dissertation",
+    "journal-article",
+    "peer-review",
+    "posted-content",
+    "proceedings-article",
+}
 
 
 def _first(value: object) -> str | None:
@@ -46,7 +54,10 @@ def _paper(
 ) -> ProviderPaper | None:
     doi = str(value.get("DOI") or "").strip().lower()
     title = _first(value.get("title"))
-    if not doi or not title:
+    publication_type = str(value.get("type") or "").strip().casefold() or None
+    if not doi or not title or (
+        publication_type is not None and publication_type not in _SCHOLARLY_TYPES
+    ):
         return None
     authors: list[str] = []
     raw_authors = value.get("author")
@@ -98,7 +109,9 @@ def _paper(
             or _year(value.get("published-online"))
             or _year(value.get("issued"))
         ),
+        publication_type=publication_type,
         venue=_first(value.get("container-title")),
+        publisher=str(value.get("publisher") or "").strip() or None,
         doi=doi,
         arxiv_id=arxiv_id_from_doi(doi),
         source_url=str(value.get("URL") or f"https://doi.org/{doi}").strip(),
@@ -123,7 +136,7 @@ class CrossrefProvider(ResilientHTTPProvider):
             "rows": min(max(1, int(limit)), 100),
             "select": (
                 "DOI,title,author,abstract,published-print,published-online,issued,"
-                "container-title,URL,link,is-referenced-by-count,reference"
+                "container-title,publisher,type,URL,link,is-referenced-by-count,reference"
             ),
         }
         filters: list[str] = []

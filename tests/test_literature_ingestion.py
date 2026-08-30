@@ -28,6 +28,23 @@ class _FailingDownloader:
         return None
 
 
+class _SuccessfulDownloader:
+    max_bytes = 1_000_000
+
+    def __init__(self) -> None:
+        self.urls: list[str] = []
+
+    async def download(self, url: str, target: Path) -> int:
+        self.urls.append(url)
+        payload = _pdf_bytes("Automatically downloaded open-access evidence.")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        return len(payload)
+
+    async def aclose(self) -> None:
+        return None
+
+
 class _Resolver:
     def __init__(self) -> None:
         self.calls: list[str] = []
@@ -97,7 +114,9 @@ def _seed_scope(
 
 
 @pytest.mark.asyncio
-async def test_user_uploaded_pdf_is_required_and_preserves_user_acl(tmp_path: Path) -> None:
+async def test_user_uploaded_pdf_is_required_and_preserves_user_acl(
+    tmp_path: Path,
+) -> None:
     repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
     knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
@@ -183,18 +202,24 @@ async def test_hybrid_pdf_ingestion_stores_flat_primary_and_child_auxiliary_lane
         if chunk.metadata.get("hybrid_route")
     }
     assert lanes == {"flat_primary", "child_aux"}
-    assert sum(
-        chunk.metadata.get("hybrid_route") == "flat_primary" for chunk in chunks
-    ) == 1
-    assert sum(
-        chunk.metadata.get("hybrid_route") == "child_aux"
-        and chunk.metadata.get("retrieval_role") == "child"
-        for chunk in chunks
-    ) == 1
+    assert (
+        sum(chunk.metadata.get("hybrid_route") == "flat_primary" for chunk in chunks)
+        == 1
+    )
+    assert (
+        sum(
+            chunk.metadata.get("hybrid_route") == "child_aux"
+            and chunk.metadata.get("retrieval_role") == "child"
+            for chunk in chunks
+        )
+        == 1
+    )
 
 
 @pytest.mark.asyncio
-async def test_bailian_embedding_is_prewarmed_before_pdf_is_indexed(tmp_path: Path) -> None:
+async def test_bailian_embedding_is_prewarmed_before_pdf_is_indexed(
+    tmp_path: Path,
+) -> None:
     repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
     knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
@@ -223,7 +248,9 @@ async def test_bailian_embedding_is_prewarmed_before_pdf_is_indexed(tmp_path: Pa
 
 
 @pytest.mark.asyncio
-async def test_embedding_prewarmer_failure_keeps_document_unindexed(tmp_path: Path) -> None:
+async def test_embedding_prewarmer_failure_keeps_document_unindexed(
+    tmp_path: Path,
+) -> None:
     repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
     knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
@@ -247,13 +274,16 @@ async def test_embedding_prewarmer_failure_keeps_document_unindexed(tmp_path: Pa
 
     assert statuses[0].status == "failed"
     assert statuses[0].error == "embedding prewarm failed (RuntimeError)"
-    assert knowledge.visible_chunks(
-        AccessContext(tenant_id="tenant-a", user_id="user-a")
-    ) == ()
+    assert (
+        knowledge.visible_chunks(AccessContext(tenant_id="tenant-a", user_id="user-a"))
+        == ()
+    )
 
 
 @pytest.mark.asyncio
-async def test_safe_downloader_rejects_private_targets_before_request(tmp_path: Path) -> None:
+async def test_safe_downloader_rejects_private_targets_before_request(
+    tmp_path: Path,
+) -> None:
     requests = 0
 
     async def handler(request: httpx.Request) -> httpx.Response:
@@ -320,7 +350,9 @@ async def test_safe_downloader_rejects_non_pdf_payload(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
-async def test_ingestion_does_not_auto_download_or_fall_back_to_abstract(tmp_path: Path) -> None:
+async def test_selected_open_access_paper_is_resolved_downloaded_and_indexed(
+    tmp_path: Path,
+) -> None:
     repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
     knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
     access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
@@ -352,7 +384,7 @@ async def test_ingestion_does_not_auto_download_or_fall_back_to_abstract(tmp_pat
     )
     repository.transition_scope_status(access, scope.scope_id, "confirmed")
     resolver = _Resolver()
-    downloader = _FailingDownloader()
+    downloader = _SuccessfulDownloader()
     service = PaperIngestionService(
         repository,
         knowledge,
@@ -363,8 +395,62 @@ async def test_ingestion_does_not_auto_download_or_fall_back_to_abstract(tmp_pat
 
     statuses = await service.ingest_scope(access, scope.scope_id)
 
-    assert resolver.calls == []
+    assert resolver.calls == ["10.1000/open"]
+    assert downloader.urls == ["https://8.8.8.8/open.pdf"]
+    assert statuses[0].status == "indexed"
+    paper = repository.get_paper(access, "paper-oa")
+    assert paper.pdf_url == "https://8.8.8.8/open.pdf"
+    assert paper.full_text_status == "ingested"
+    assert repository.get_scope(access, scope.scope_id).status == "ready"
+
+
+@pytest.mark.asyncio
+async def test_auto_download_failure_requests_manual_upload_without_abstract_fallback(
+    tmp_path: Path,
+) -> None:
+    repository = SQLiteLiteratureRepository(tmp_path / "literature.sqlite3")
+    knowledge = SQLiteKnowledgeStore(tmp_path / "knowledge.sqlite3")
+    access = LiteratureAccess("tenant-a", "user-a", "conversation-a")
+    repository.save_request(
+        access,
+        LiteratureRequest(request_id="request-restricted", query="restricted paper"),
+    )
+    repository.upsert_paper(
+        access,
+        PaperCard(
+            paper_id="paper-restricted",
+            canonical_title="A Restricted Paper",
+            abstract="Metadata is not a substitute for the selected full text.",
+            doi="10.1000/restricted",
+            verification_status="provider_verified",
+        ),
+    )
+    scope = repository.create_scope(
+        access,
+        ResearchScope(
+            scope_id="scope-restricted",
+            tenant_id=access.tenant_id,
+            owner_user_id=access.user_id,
+            conversation_id=access.conversation_id or "",
+            request_id="request-restricted",
+            selected_paper_ids=["paper-restricted"],
+            user_intent="Read the restricted paper.",
+        ),
+    )
+    repository.transition_scope_status(access, scope.scope_id, "confirmed")
+    resolver = _Resolver()
+    service = PaperIngestionService(
+        repository,
+        knowledge,
+        tmp_path / "artifacts",
+        downloader=_FailingDownloader(),  # type: ignore[arg-type]
+        oa_resolver=resolver,
+    )
+
+    statuses = await service.ingest_scope(access, scope.scope_id)
+
+    assert resolver.calls == ["10.1000/restricted"]
     assert statuses[0].status == "failed"
-    assert "user-uploaded PDF" in (statuses[0].error or "")
-    assert repository.get_paper(access, "paper-oa").pdf_url is None
+    assert "自行下载后上传" in (statuses[0].error or "")
+    assert repository.get_paper(access, "paper-restricted").pdf_url is None
     assert repository.get_scope(access, scope.scope_id).status == "ingesting"

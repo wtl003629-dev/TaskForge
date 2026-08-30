@@ -7,6 +7,7 @@ the host keeps the original evidence and trajectory in durable storage.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import uuid4
@@ -24,6 +25,12 @@ LiteratureIntent = Literal[
     "foundational",
     "recent",
     "citation",
+]
+
+LiteratureLanguagePreference = Literal[
+    "balanced",
+    "chinese_first",
+    "english_first",
 ]
 
 EvidenceIntent = Literal[
@@ -61,6 +68,7 @@ class LiteratureRequest(StrictModel):
     required_terms: list[str] = Field(default_factory=list, max_length=64)
     excluded_terms: list[str] = Field(default_factory=list, max_length=64)
     paper_types: list[str] = Field(default_factory=list, max_length=16)
+    language_preference: LiteratureLanguagePreference = "balanced"
     result_limit: int = Field(default=20, ge=1, le=100)
     created_at: datetime = Field(default_factory=utc_now)
 
@@ -128,7 +136,10 @@ class PaperCard(StrictModel):
     abstract: str = Field(default="", max_length=50_000)
     short_description: str = Field(default="", max_length=500)
     year: int | None = Field(default=None, ge=1000, le=3000)
+    language: str | None = Field(default=None, min_length=2, max_length=32)
+    publication_type: str | None = Field(default=None, max_length=128)
     venue: str | None = Field(default=None, max_length=1_000)
+    publisher: str | None = Field(default=None, max_length=1_000)
     doi: str | None = Field(default=None, max_length=512)
     arxiv_id: str | None = Field(default=None, max_length=128)
     semantic_scholar_id: str | None = Field(default=None, max_length=128)
@@ -488,6 +499,37 @@ class FinalResearchAnswer(StrictModel):
     critic_verdict: Literal["accept", "needs_revision", "more_evidence"]
 
 
+_INTERNAL_EVIDENCE_PAREN = re.compile(
+    r"\s*[（(][^()（）]*(?:evidence[_ ]?id|evidence:scope-|paper://)"
+    r"[^()（）]*[）)]",
+    flags=re.IGNORECASE,
+)
+_INTERNAL_EVIDENCE_TOKEN = re.compile(
+    r"(?:evidence[_ ]?id\s*:\s*)?evidence:scope-[^\s,，;；)）\]]+",
+    flags=re.IGNORECASE,
+)
+_INTERNAL_PAPER_TOKEN = re.compile(r"\bpaper-[0-9a-f]{16,}\b", flags=re.IGNORECASE)
+
+
+def _reader_facing_claim_text(value: str) -> str:
+    """Remove model-leaked storage identifiers from report prose.
+
+    Citation identity is carried by ``ClaimRecord.evidence_ids`` and projected
+    below as numbered references. It should never depend on a model copying an
+    implementation identifier into reader-facing text.
+    """
+
+    text = _INTERNAL_EVIDENCE_PAREN.sub("", value.strip())
+    text = _INTERNAL_EVIDENCE_TOKEN.sub("", text)
+    paper_label = "该论文" if re.search(r"[\u3400-\u9fff]", text) else "The selected paper"
+    text = _INTERNAL_PAPER_TOKEN.sub(paper_label, text)
+    text = text.replace("该论文 ", "该论文")
+    text = re.sub(r"[（(]\s*[）)]", "", text)
+    text = re.sub(r"\s+([,.;:!?，。；：！？])", r"\1", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    return text.strip(" \t,，;；")
+
+
 def project_final_research_answer(
     writer: WriterHandoff,
     critic: CriticHandoff,
@@ -533,17 +575,27 @@ def project_final_research_answer(
         )
         if not text:
             continue
-        answer_parts.append(text)
-        included.append(claim.claim_id)
+        text = _reader_facing_claim_text(text)
+        if not text:
+            continue
+        citation_numbers: list[int] = []
         for evidence_id in claim.evidence_ids:
             if evidence_id not in evidence_ids:
                 evidence_ids.append(evidence_id)
+            citation_numbers.append(evidence_ids.index(evidence_id) + 1)
+        citation_suffix = (
+            " " + "".join(f"[{number}]" for number in citation_numbers)
+            if citation_numbers
+            else ""
+        )
+        answer_parts.append(f"{text}{citation_suffix}")
+        included.append(claim.claim_id)
 
     if not answer_parts:
         raise ValueError("critic projection removed every answer claim")
     return FinalResearchAnswer(
         answer="\n\n".join(answer_parts),
-        direct_answer=writer.direct_answer.strip(),
+        direct_answer=_reader_facing_claim_text(writer.direct_answer),
         evidence_ids=evidence_ids,
         included_claim_ids=included,
         removed_claim_ids=removed,
@@ -568,6 +620,7 @@ __all__ = [
     "EvidenceSearchRequest",
     "IngestionStatus",
     "LiteratureIntent",
+    "LiteratureLanguagePreference",
     "LiteraturePlan",
     "LiteratureRequest",
     "PaperCandidateLedger",

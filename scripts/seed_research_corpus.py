@@ -84,6 +84,7 @@ def main() -> int:
         "--store",
         type=Path,
         default=REPOSITORY_ROOT / ".taskforge" / "context.sqlite3",
+        help="SQLite path used only when TASKFORGE_DATABASE_BACKEND=sqlite",
     )
     parser.add_argument("--tenant", default="local")
     parser.add_argument("--user", default="demo")

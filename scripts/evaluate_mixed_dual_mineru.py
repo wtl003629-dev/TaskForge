@@ -35,6 +35,7 @@ from taskforge.knowledge import (  # noqa: E402
 from taskforge.pdf_parsing.hierarchy import (  # noqa: E402
     build_boundary_aware_flat_units,
     build_flat_units,
+    build_structure_region_units,
 )
 from taskforge.pdf_parsing.structure_policy import (
     build_structure_aware_units,  # noqa: E402
@@ -50,7 +51,7 @@ from taskforge.research_retrieval import (  # noqa: E402
 )
 from taskforge.semantic_providers import BailianDenseEmbedder  # noqa: E402
 
-Mode = Literal["flat", "dual", "boundary"]
+Mode = Literal["flat", "dual", "dual_v2", "boundary"]
 RetrievalScope = Literal["global", "paper"]
 RECALL_KS = source_eval.RECALL_KS
 TENANT_ID = "mixed-mineru-flat-dual-30x30"
@@ -78,6 +79,7 @@ def _materialize_lanes(
     chunks: list[KnowledgeChunk],
     source_to_chunks: dict[tuple[str, str], set[str]],
 ) -> dict[str, Any]:
+    dual_enabled = mode in {"dual", "dual_v2"}
     flat_units = (
         build_boundary_aware_flat_units(
             parsed,
@@ -91,14 +93,16 @@ def _materialize_lanes(
     )
     batches: list[tuple[str, str, tuple[Any, ...], dict[str, Any] | None, str | None]] = [
         (
-            "flat_primary" if mode == "dual" else "single",
+            "flat_primary" if dual_enabled else "single",
             "flat",
             flat_units,
             None,
             None,
         )
     ]
-    structured_result = None
+    structured_units: tuple[Any, ...] = ()
+    structured_policy = None
+    structured_profile = None
     if mode == "dual":
         structured_result = build_structure_aware_units(
             parsed,
@@ -110,13 +114,33 @@ def _materialize_lanes(
             fallback_target_chars=2_000,
             fallback_overlap_chars=0,
         )
+        structured_units = structured_result.units
+        structured_profile = structured_result.profile.as_metadata()
+        structured_policy = structured_result.policy.name
+    elif mode == "dual_v2":
+        structured_units = build_structure_region_units(
+            parsed,
+            target_chars=1_800,
+            min_chars=900,
+            max_chars=2_400,
+            search_chars=300,
+        )
+        structured_profile = {
+            "sparse_auxiliary": True,
+            "target_chars": 1_800,
+            "min_chars": 900,
+            "max_chars": 2_400,
+            "search_chars": 300,
+        }
+        structured_policy = "structure_region_aux_v2"
+    if structured_units:
         batches.append(
             (
                 "child_aux",
-                "structure_aware",
-                structured_result.units,
-                structured_result.profile.as_metadata(),
-                structured_result.policy.name,
+                "structure_region_v2" if mode == "dual_v2" else "structure_aware",
+                structured_units,
+                structured_profile,
+                structured_policy,
             )
         )
 
@@ -163,7 +187,7 @@ def _materialize_lanes(
                     if mode == "boundary"
                     else chunking_mode
                 ),
-                "hybrid_route": lane if mode == "dual" else None,
+                "hybrid_route": lane if dual_enabled else None,
                 "chunk_policy": chunk_policy,
                 "structure_profile": structure_profile,
                 "flat_chunk_chars": 2_000,
@@ -220,14 +244,8 @@ def _materialize_lanes(
         "title": title,
         "mode": mode,
         "flat_units": len(flat_units),
-        "structured_policy": (
-            structured_result.policy.name if structured_result is not None else None
-        ),
-        "structured_profile": (
-            structured_result.profile.as_metadata()
-            if structured_result is not None
-            else None
-        ),
+        "structured_policy": structured_policy,
+        "structured_profile": structured_profile,
         "parents": parent_count,
         "evidence_chunks": evidence_count,
         "lane_counts": dict(lane_counts),
@@ -250,6 +268,7 @@ def run(
 ) -> dict[str, Any]:
     if retrieval_scope not in {"global", "paper"}:
         raise ValueError("retrieval_scope must be global or paper")
+    dual_enabled = mode in {"dual", "dual_v2"}
     chinese_queries_path = chinese_dataset_dir / "queries.jsonl"
     chinese_qrels_path = chinese_dataset_dir / "qrels.jsonl"
     chinese_chunks_path = chinese_dataset_dir / "chunks.jsonl.gz"
@@ -422,7 +441,10 @@ def run(
         bailian_timeout_seconds=settings.bailian_rerank_timeout_seconds,
         bailian_max_retries=settings.bailian_rerank_max_retries,
     )
-    request_candidate_k = 100 if mode == "dual" else 50
+    request_candidate_k = 100 if dual_enabled else 50
+    flat_candidate_k = 75 if mode == "dual_v2" else 60
+    child_candidate_k = 25 if mode == "dual_v2" else 40
+    flat_head_k = 4 if mode == "dual_v2" else 2
     service = ResearchRetrievalService(
         InMemoryKnowledgeStore(chunks),
         dense_embedder=embedder,
@@ -437,10 +459,10 @@ def run(
         # per-Parent cap.  Running the generic O(K^2) token-overlap diversity
         # pass again adds seconds of CPU work for the same constraint.
         lineage_diversity_enabled=False,
-        dual_route_enabled=mode == "dual",
-        dual_route_flat_candidate_k=60,
-        dual_route_child_candidate_k=40,
-        dual_route_flat_head_k=2,
+        dual_route_enabled=dual_enabled,
+        dual_route_flat_candidate_k=flat_candidate_k,
+        dual_route_child_candidate_k=child_candidate_k,
+        dual_route_flat_head_k=flat_head_k,
         dual_route_rerank_candidate_k=50,
         dual_route_tail_rerank_candidate_k=0,
         experiment_profile=resolve_rag_experiment_profile("optimized", "e"),
@@ -612,8 +634,12 @@ def run(
             "real PDFs",
             f"MinerU {settings.mineru_expected_version}",
             (
-                "Flat 2000 primary + structure-aware Child auxiliary"
-                if mode == "dual"
+                (
+                    "Flat 2000 primary + sparse 1800-char structure-region auxiliary"
+                    if mode == "dual_v2"
+                    else "Flat 2000 primary + structure-aware Child auxiliary"
+                )
+                if dual_enabled
                 else (
                     "Flat 2000 with structure-safe boundary correction"
                     if mode == "boundary"
@@ -641,14 +667,21 @@ def run(
             "reranker_model": settings.bailian_rerank_model,
             "top_k": 50,
             "candidate_k": request_candidate_k,
-            "dual_route_enabled": mode == "dual",
-            "dual_route_flat_candidate_k": 60 if mode == "dual" else None,
-            "dual_route_child_candidate_k": 40 if mode == "dual" else None,
-            "dual_route_rerank_candidate_k": 50 if mode == "dual" else None,
-            "dual_route_flat_head_k": 2 if mode == "dual" else None,
+            "dual_route_enabled": dual_enabled,
+            "dual_route_version": "v2"
+            if mode == "dual_v2"
+            else ("v1" if mode == "dual" else None),
+            "dual_route_flat_candidate_k": flat_candidate_k if dual_enabled else None,
+            "dual_route_child_candidate_k": child_candidate_k if dual_enabled else None,
+            "dual_route_rerank_candidate_k": 50 if dual_enabled else None,
+            "dual_route_flat_head_k": flat_head_k if dual_enabled else None,
             "parent_aware_rerank_enabled": False,
             "lineage_diversity_enabled": False,
-            "dual_route_cross_lane_dedupe_enabled": mode == "dual",
+            "dual_route_cross_lane_dedupe_enabled": dual_enabled,
+            "structure_region_target_chars": 1_800 if mode == "dual_v2" else None,
+            "structure_region_min_chars": 900 if mode == "dual_v2" else None,
+            "structure_region_max_chars": 2_400 if mode == "dual_v2" else None,
+            "structure_region_search_chars": 300 if mode == "dual_v2" else None,
             "retrieval_text_enabled": False,
             "boundary_aware_enabled": mode == "boundary",
             "boundary_target_chars": 2_000 if mode == "boundary" else None,
@@ -725,9 +758,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=("flat", "dual", "boundary"),
+        choices=("flat", "dual", "dual_v2", "boundary"),
         required=True,
-        help="flat is the control; boundary is the isolated boundary-aware candidate",
+        help=(
+            "flat is the control; dual is the legacy short-Child candidate; "
+            "dual_v2 uses sparse near-Flat structure regions; boundary is isolated"
+        ),
     )
     parser.add_argument(
         "--scope",

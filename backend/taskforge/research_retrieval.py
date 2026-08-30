@@ -347,6 +347,35 @@ _PAPER_RESULT_TERMS = frozenset(
         "准确率",
     }
 )
+_BIBLIOGRAPHY_MARKER_RE = re.compile(r"\[\s*\d{1,3}\s*\]")
+_EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b")
+_FRONT_MATTER_TERMS = (
+    "corresponding author",
+    "copyright for this paper",
+    "creative commons",
+    "orcid",
+    "作者简介",
+    "通讯作者",
+    "基金项目",
+)
+_REFERENCE_QUERY_TERMS = (
+    "reference",
+    "references",
+    "bibliography",
+    "citation list",
+    "参考文献",
+    "文献目录",
+)
+_AUTHOR_QUERY_TERMS = (
+    "author",
+    "authors",
+    "affiliation",
+    "email",
+    "orcid",
+    "作者",
+    "单位",
+    "邮箱",
+)
 
 
 def _contains_cjk(value: str, *, minimum: int = 1) -> bool:
@@ -2000,6 +2029,197 @@ class ResearchRetrievalService:
             )
         return selected
 
+    @staticmethod
+    def _low_information_table(chunk: KnowledgeChunk) -> bool:
+        """Reject parser-produced table shells that contain no usable fact."""
+
+        if _evidence_type(chunk) != "table":
+            return False
+        if "|" not in chunk.text:
+            return False
+        cells: list[str] = []
+        for line in chunk.text.splitlines():
+            values = [value.strip() for value in line.strip().strip("|").split("|")]
+            cells.extend(
+                value
+                for value in values
+                if value and not re.fullmatch(r":?-{3,}:?", value)
+            )
+        content = " ".join(cells).casefold()
+        if not content:
+            return True
+        # A compact numeric result table remains useful even when it has only
+        # a handful of cells. Bare row labels such as "relevant doc 1" do not.
+        if re.search(
+            r"\d+(?:\.\d+)?\s*(?:%|ms\b|s\b|sec\b|kg\b|gb\b|mb\b|kb\b)",
+            content,
+        ):
+            return False
+        words = re.findall(r"[a-z\u3400-\u9fff]+", content)
+        placeholders = {
+            "context",
+            "doc",
+            "document",
+            "item",
+            "prompt",
+            "relevant",
+            "row",
+            "column",
+            "value",
+            "文档",
+            "相关",
+        }
+        informative = [word for word in words if word not in placeholders]
+        return len(cells) <= 8 and len(set(informative)) <= 2
+
+    @staticmethod
+    def _paper_noise_factor(query: str, chunk: KnowledgeChunk) -> tuple[float, str | None]:
+        """Identify PDF boilerplate that is searchable but weak as evidence."""
+
+        if ResearchRetrievalService._low_information_table(chunk):
+            return 0.0, "empty_table_noise"
+        query_lower = query.casefold()
+        text = chunk.text.strip()
+        lowered = text.casefold()
+        section = " ".join(
+            str(chunk.metadata.get(key) or "")
+            for key in ("heading", "section", "section_title", "subsection_title")
+        ).casefold()
+        reference_requested = any(term in query_lower for term in _REFERENCE_QUERY_TERMS)
+        if not reference_requested:
+            searchable_head = f"{section} {lowered[:320]}"
+            markers = list(_BIBLIOGRAPHY_MARKER_RE.finditer(text))
+            bibliography_like = any(
+                term in searchable_head for term in _PAPER_REFERENCE_TERMS
+            ) or (
+                len(markers) >= 3
+                and markers[0].start() <= 180
+            )
+            if bibliography_like:
+                return 0.08, "bibliography_noise"
+
+        author_requested = any(term in query_lower for term in _AUTHOR_QUERY_TERMS)
+        if not author_requested:
+            prefix = lowered[:420]
+            front_matter_signals = len(_EMAIL_RE.findall(text[:600])) + sum(
+                term in prefix for term in _FRONT_MATTER_TERMS
+            )
+            if front_matter_signals >= 2:
+                return 0.30, "front_matter_noise"
+        return 1.0, None
+
+    @classmethod
+    def _paper_quality_rerank(
+        cls,
+        query: str,
+        candidates: Sequence[_Candidate],
+    ) -> list[_Candidate]:
+        """Demote bibliography/contact blocks after semantic reranking."""
+
+        updated: list[_Candidate] = []
+        for item in candidates:
+            factor, reason = cls._paper_noise_factor(query, item.hit.chunk)
+            if reason is None:
+                updated.append(item)
+                continue
+            diagnostics = dict(item.diagnostics)
+            diagnostics["paper_noise_factor"] = factor
+            diagnostics["paper_noise_reason"] = reason
+            updated.append(
+                _Candidate(
+                    hit=replace(
+                        item.hit,
+                        score=max(0.0, float(item.hit.score) * factor),
+                        retrieval_backend="paper_quality_rerank",
+                    ),
+                    sources=tuple(dict.fromkeys((*item.sources, reason))),
+                    diagnostics=diagnostics,
+                )
+            )
+        updated.sort(key=lambda item: (-item.hit.score, item.hit.chunk.chunk_id))
+        return updated
+
+    @staticmethod
+    def _duplicate_shingles(text: str, size: int = 5) -> set[tuple[str, ...]]:
+        tokens = [value.casefold() for value in tokenise(text)]
+        if len(tokens) < size:
+            return set()
+        return {
+            tuple(tokens[index : index + size])
+            for index in range(len(tokens) - size + 1)
+        }
+
+    @classmethod
+    def _near_duplicate_evidence(
+        cls,
+        left: KnowledgeChunk,
+        right: KnowledgeChunk,
+    ) -> bool:
+        """Detect title/keyword-prefixed variants of the same paper passage."""
+
+        if left.source_uri != right.source_uri:
+            return False
+        left_normalized = "".join(tokenise(left.text.casefold()))
+        right_normalized = "".join(tokenise(right.text.casefold()))
+        shorter, longer = sorted(
+            (left_normalized, right_normalized),
+            key=len,
+        )
+        if len(shorter) >= 160 and shorter in longer:
+            return True
+        left_shingles = cls._duplicate_shingles(left.text)
+        right_shingles = cls._duplicate_shingles(right.text)
+        if min(len(left_shingles), len(right_shingles)) < 20:
+            return False
+        intersection = len(left_shingles & right_shingles)
+        containment = intersection / min(len(left_shingles), len(right_shingles))
+        union = len(left_shingles | right_shingles)
+        return containment >= 0.88 and intersection / max(1, union) >= 0.50
+
+    @classmethod
+    def _dedupe_final_evidence(
+        cls,
+        candidates: Sequence[_Candidate],
+        top_k: int,
+    ) -> list[_Candidate]:
+        selected: list[_Candidate] = []
+        for item in candidates:
+            if "empty_table_noise" in item.sources:
+                continue
+            duplicate_index = next(
+                (
+                    index
+                    for index, existing in enumerate(selected)
+                    if cls._near_duplicate_evidence(
+                        item.hit.chunk,
+                        existing.hit.chunk,
+                    )
+                ),
+                None,
+            )
+            if duplicate_index is not None:
+                existing = selected[duplicate_index]
+                item_length = len("".join(tokenise(item.hit.chunk.text)))
+                existing_length = len("".join(tokenise(existing.hit.chunk.text)))
+                # Prefer the tighter passage when it retains most of the
+                # reranker score; this drops title/author/keyword-prefixed
+                # wrappers around an otherwise identical abstract.
+                if (
+                    item_length < existing_length * 0.98
+                    and item.hit.score >= existing.hit.score * 0.75
+                ):
+                    selected[duplicate_index] = replace(
+                        item,
+                        sources=tuple(
+                            dict.fromkeys((*item.sources, "near_duplicate_dedupe"))
+                        ),
+                    )
+                continue
+            if len(selected) < top_k:
+                selected.append(item)
+        selected.sort(key=lambda item: (-item.hit.score, item.hit.chunk.chunk_id))
+        return selected[:top_k]
+
     def _preserve_dual_route_flat_head(
         self,
         candidates: Sequence[_Candidate],
@@ -2404,7 +2624,18 @@ class ResearchRetrievalService:
         for start in starts:
             window = text[start : start + limit]
             match = lexical_match(query, window)
-            scored.append((float(match.score) + len(match.matched_terms), start))
+            prefix = window[:320].casefold()
+            reference_markers = list(_BIBLIOGRAPHY_MARKER_RE.finditer(window))
+            noise_penalty = min(4.0, 0.6 * len(_EMAIL_RE.findall(window[:600])))
+            noise_penalty += 0.8 * sum(term in prefix for term in _FRONT_MATTER_TERMS)
+            if len(reference_markers) >= 3 and reference_markers[0].start() <= 180:
+                noise_penalty += 6.0
+            scored.append(
+                (
+                    float(match.score) + len(match.matched_terms) - noise_penalty,
+                    start,
+                )
+            )
         _, start = max(scored, key=lambda item: (item[0], -item[1]))
         if start:
             boundary = text.find(" ", start, min(len(text), start + 40))
@@ -2852,7 +3083,8 @@ class ResearchRetrievalService:
         ]
         if dual_route_flat_fallback:
             final_pool = self._preserve_dual_route_flat_head(final_pool)
-        final = final_pool[: request.top_k]
+        final_pool = self._paper_quality_rerank(request.query, final_pool)
+        final = self._dedupe_final_evidence(final_pool, request.top_k)
         final_coverage = self._coverage(requirements, final, request.query)
         evidence_values: list[ResearchEvidence] = []
         for item in final:

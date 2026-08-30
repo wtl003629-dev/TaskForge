@@ -29,7 +29,6 @@ from taskforge.literature.models import ProviderPaper  # noqa: E402
 from taskforge.literature.service import LiteratureDiscoveryService  # noqa: E402
 from taskforge.research_protocol import SearchQuery  # noqa: E402
 
-
 PROTOCOLS = [
     "research.planner_handoff.v1",
     "research.evaluator_handoff.v1",
@@ -85,6 +84,7 @@ def _settings(root: Path) -> Settings:
     workspace.mkdir(parents=True)
     return Settings(
         _env_file=None,
+        database_backend="sqlite",
         provider="demo",
         sqlite_path=state / "taskforge.sqlite3",
         context_sqlite_path=state / "context.sqlite3",

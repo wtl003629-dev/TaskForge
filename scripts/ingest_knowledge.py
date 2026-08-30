@@ -31,7 +31,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("path", help="Relative file path below --workspace")
     parser.add_argument("--workspace", type=Path, default=REPOSITORY_ROOT)
-    parser.add_argument("--database", type=Path, default=REPOSITORY_ROOT / ".taskforge" / "context.sqlite3")
+    parser.add_argument(
+        "--database",
+        type=Path,
+        default=REPOSITORY_ROOT / ".taskforge" / "context.sqlite3",
+        help="SQLite path used only when TASKFORGE_DATABASE_BACKEND=sqlite",
+    )
     parser.add_argument("--tenant", default="local")
     parser.add_argument("--knowledge-base", required=True)
     parser.add_argument("--version", required=True)

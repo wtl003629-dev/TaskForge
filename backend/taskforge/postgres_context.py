@@ -1,4 +1,4 @@
-"""Optional PostgreSQL persistence primitives for tenant-scoped context.
+"""PostgreSQL persistence primitives for tenant-scoped context.
 
 This module deliberately does not present PostgreSQL as a search engine.  It
 stores knowledge and memory durably and returns bounded, already-authorised
@@ -7,8 +7,9 @@ sets the transaction-local tenant used by PostgreSQL RLS *and* repeats the
 tenant, user, conversation, ACL, time, and memory-scope predicates in SQL.
 
 ``psycopg`` is imported only by :meth:`PostgresContextRepository.connect`, so
-the default SQLite installation remains dependency-free.  Tests may inject a
-strict DB-API/psycopg-shaped connection without weakening the production path.
+the explicit SQLite compatibility installation remains dependency-free. Tests
+may inject a strict DB-API/psycopg-shaped connection without weakening the
+production path.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ MAX_CANDIDATES = 10_000
 
 
 class PostgresContextError(RuntimeError):
-    """Base error for the optional PostgreSQL context backend."""
+    """Base error for the PostgreSQL context backend."""
 
 
 class PostgresDependencyError(PostgresContextError):
@@ -617,8 +618,8 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
             rows = importlib.import_module("psycopg.rows")
         except (ImportError, ModuleNotFoundError) as exc:
             raise PostgresDependencyError(
-                "PostgreSQL support requires the optional 'postgres' extra "
-                "(pip install taskforge-agent[postgres])"
+                "PostgreSQL support requires the PostgreSQL dependencies "
+                "(pip install taskforge-agent)"
             ) from exc
         connection = psycopg.connect(
             cleaned_dsn,
@@ -652,8 +653,8 @@ class PostgresContextRepository(AbstractContextManager["PostgresContextRepositor
             rows = importlib.import_module("psycopg.rows")
         except (ImportError, ModuleNotFoundError) as exc:
             raise PostgresDependencyError(
-                "PostgreSQL pool support requires the optional 'postgres' extra "
-                "(pip install taskforge-agent[postgres])"
+                "PostgreSQL pool support requires the PostgreSQL dependencies "
+                "(pip install taskforge-agent)"
             ) from exc
         pool = pool_module.ConnectionPool(
             conninfo=cleaned_dsn,

@@ -92,23 +92,28 @@ def _child_retrieval_text(
     if heading:
         pieces.append(f"Section: {heading}")
     content_types = [
-        value
-        for value in dict.fromkeys(unit.block_types)
-        if value != "title"
+        value for value in dict.fromkeys(unit.block_types) if value != "title"
     ]
     if content_types:
         pieces.append(f"Content type: {', '.join(content_types)}")
-    captions = [block.text.strip() for block in blocks if block.block_type == "caption" and block.text.strip()]
+    captions = [
+        block.text.strip()
+        for block in blocks
+        if block.block_type == "caption" and block.text.strip()
+    ]
     if captions:
         pieces.append("Caption: " + " ".join(captions)[:1_000])
     table_headers: list[str] = []
     for block in blocks:
         if block.block_type != "table":
             continue
-        rendered = block.text.strip() or str(
-            block.structured_content.get("textual_rendering") or ""
-        ).strip()
-        first_line = next((line.strip() for line in rendered.splitlines() if line.strip()), "")
+        rendered = (
+            block.text.strip()
+            or str(block.structured_content.get("textual_rendering") or "").strip()
+        )
+        first_line = next(
+            (line.strip() for line in rendered.splitlines() if line.strip()), ""
+        )
         if first_line:
             table_headers.append(first_line)
     if table_headers:
@@ -155,7 +160,12 @@ class SafePDFDownloader:
     @staticmethod
     async def _validate_url(url: str) -> None:
         parsed = urlparse(url)
-        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        if (
+            parsed.scheme != "https"
+            or not parsed.hostname
+            or parsed.username
+            or parsed.password
+        ):
             raise PaperDownloadError("paper URLs must be unauthenticated HTTPS URLs")
         if parsed.port not in (None, 443):
             raise PaperDownloadError("paper URL uses a disallowed port")
@@ -167,7 +177,9 @@ class SafePDFDownloader:
             try:
                 values = await loop.run_in_executor(
                     None,
-                    lambda: socket.getaddrinfo(parsed.hostname, 443, type=socket.SOCK_STREAM),
+                    lambda: socket.getaddrinfo(
+                        parsed.hostname, 443, type=socket.SOCK_STREAM
+                    ),
                 )
             except OSError as exc:
                 raise PaperDownloadError("paper host could not be resolved") from exc
@@ -191,7 +203,9 @@ class SafePDFDownloader:
                 if response.status_code in {301, 302, 303, 307, 308}:
                     location = response.headers.get("Location")
                     if not location or redirect >= self.max_redirects:
-                        raise PaperDownloadError("paper download exceeded redirect policy")
+                        raise PaperDownloadError(
+                            "paper download exceeded redirect policy"
+                        )
                     current = urljoin(current, location)
                     continue
                 try:
@@ -199,7 +213,11 @@ class SafePDFDownloader:
                 except httpx.HTTPError as exc:
                     raise PaperDownloadError("paper download failed") from exc
                 content_length = response.headers.get("Content-Length")
-                if content_length and content_length.isdigit() and int(content_length) > self.max_bytes:
+                if (
+                    content_length
+                    and content_length.isdigit()
+                    and int(content_length) > self.max_bytes
+                ):
                     raise PaperDownloadError("paper PDF exceeds the download limit")
                 raw = bytearray()
                 async for part in response.aiter_bytes():
@@ -287,10 +305,19 @@ class PaperIngestionService:
             "current"
         )
 
-    def _target(self, access: LiteratureAccess, scope_id: str, version: int, paper_id: str) -> Path:
+    def _target(
+        self, access: LiteratureAccess, scope_id: str, version: int, paper_id: str
+    ) -> Path:
         tenant = hashlib.sha256(access.tenant_id.encode()).hexdigest()[:16]
         paper = hashlib.sha256(paper_id.encode()).hexdigest()[:24]
-        return self.artifact_root / "literature" / tenant / scope_id / f"v{version}" / f"{paper}.pdf"
+        return (
+            self.artifact_root
+            / "literature"
+            / tenant
+            / scope_id
+            / f"v{version}"
+            / f"{paper}.pdf"
+        )
 
     @staticmethod
     def _evidence_cards(
@@ -310,7 +337,11 @@ class PaperIngestionService:
                 rag_ablation=str(chunk.metadata.get("rag_ablation") or "a"),
                 source=chunk.source_uri,
                 title=paper.canonical_title,
-                section=(str(chunk.metadata.get("heading")) if chunk.metadata.get("heading") else None),
+                section=(
+                    str(chunk.metadata.get("heading"))
+                    if chunk.metadata.get("heading")
+                    else None
+                ),
                 page=(
                     ",".join(str(item) for item in chunk.metadata.get("pages", []))
                     if chunk.metadata.get("pages")
@@ -402,7 +433,15 @@ class PaperIngestionService:
         # Flat lane is deliberately built from the same parser output and
         # parameters as the legacy control; the Child lane may add structure
         # context, but never replaces the Flat evidence or citation text.
-        unit_batches: list[tuple[str, str, tuple[HierarchicalUnit, ...], dict[str, int | bool] | None, str | None]] = []
+        unit_batches: list[
+            tuple[
+                str,
+                str,
+                tuple[HierarchicalUnit, ...],
+                dict[str, int | bool] | None,
+                str | None,
+            ]
+        ] = []
         if self.chunking_mode in {"parent_child", "hybrid"}:
             structure_profile: dict[str, int | bool] | None = None
             chunk_policy: str | None = None
@@ -482,7 +521,13 @@ class PaperIngestionService:
         blocks_by_id = {block.block_id: block for block in parsed.blocks}
         units_by_id = {unit.unit_id: unit for unit in units}
         chunks: list[KnowledgeChunk] = []
-        for lane, effective_chunking_mode, batch, structure_profile, chunk_policy in unit_batches:
+        for (
+            lane,
+            effective_chunking_mode,
+            batch,
+            structure_profile,
+            chunk_policy,
+        ) in unit_batches:
             for unit in batch:
                 chunk_id = stored_ids[unit.unit_id]
                 selected_blocks = [
@@ -527,106 +572,110 @@ class PaperIngestionService:
                 )
                 chunks.append(
                     KnowledgeChunk(
-                    chunk_id=chunk_id,
-                    tenant_id=access.tenant_id,
-                    text=unit.text,
-                    source_uri=source_uri,
-                    document_id=stable_document_id,
-                    version=str(scope_version),
-                    version_order=scope_version,
-                    acl=frozenset({f"user:{access.user_id}"}),
-                    metadata={
-                        "knowledge_base_id": knowledge_base_id,
-                        **self.experiment_profile.metadata(),
-                        "scope_id": scope_id,
-                        "scope_version": scope_version,
-                        "paper_id": paper.paper_id,
-                        "title": paper.canonical_title,
-                        "authors": paper.authors,
-                        "doi": paper.doi,
-                        "retrieval_role": unit.role,
-                        "retrieval_text": retrieval_text,
-                        "retrieval_text_version": (
-                            "parent-child-title-context-v1"
-                            if retrieval_text is not None
-                            else None
-                        ),
-                        "chunking_mode": effective_chunking_mode,
-                        "hybrid_route": lane if self.chunking_mode == "hybrid" else None,
-                        "chunk_policy": chunk_policy,
-                        "structure_profile": structure_profile,
-                        "flat_chunk_chars": self.flat_chunk_chars,
-                        "flat_overlap_chars": self.flat_overlap_chars,
-                        "parent_chunk_id": stored_ids[unit.parent_id],
-                        "hierarchy_order": unit.order,
-                        "chunk_index": unit.order,
-                        "heading": " > ".join(unit.heading_path) or None,
-                        "heading_path": list(unit.heading_path),
-                        "pages": list(unit.pages),
-                        "block_ids": list(unit.block_ids),
-                        "block_types": list(unit.block_types),
-                        "visual_artifact_ids": [
-                            block.image_artifact_id
-                            for block in selected_blocks
-                            if block.image_artifact_id is not None
-                        ],
-                        "visual_evidence": [
-                            block.structured_content["visual_evidence"]
-                            for block in selected_blocks
-                            if isinstance(
-                                block.structured_content.get("visual_evidence"),
-                                dict,
-                            )
-                        ],
-                        "visual_text_ready": all(
-                            block.block_type not in {"image", "chart"}
-                            or block.structured_content.get("visual_analysis_status")
-                            != "pending"
-                            for block in selected_blocks
-                        ),
-                        "visual_pending": any(
-                            block.block_type in {"image", "chart"}
-                            and (
-                                block.structured_content.get(
+                        chunk_id=chunk_id,
+                        tenant_id=access.tenant_id,
+                        text=unit.text,
+                        source_uri=source_uri,
+                        document_id=stable_document_id,
+                        version=str(scope_version),
+                        version_order=scope_version,
+                        acl=frozenset({f"user:{access.user_id}"}),
+                        metadata={
+                            "knowledge_base_id": knowledge_base_id,
+                            **self.experiment_profile.metadata(),
+                            "scope_id": scope_id,
+                            "scope_version": scope_version,
+                            "paper_id": paper.paper_id,
+                            "title": paper.canonical_title,
+                            "authors": paper.authors,
+                            "doi": paper.doi,
+                            "retrieval_role": unit.role,
+                            "retrieval_text": retrieval_text,
+                            "retrieval_text_version": (
+                                "parent-child-title-context-v1"
+                                if retrieval_text is not None
+                                else None
+                            ),
+                            "chunking_mode": effective_chunking_mode,
+                            "hybrid_route": lane
+                            if self.chunking_mode == "hybrid"
+                            else None,
+                            "chunk_policy": chunk_policy,
+                            "structure_profile": structure_profile,
+                            "flat_chunk_chars": self.flat_chunk_chars,
+                            "flat_overlap_chars": self.flat_overlap_chars,
+                            "parent_chunk_id": stored_ids[unit.parent_id],
+                            "hierarchy_order": unit.order,
+                            "chunk_index": unit.order,
+                            "heading": " > ".join(unit.heading_path) or None,
+                            "heading_path": list(unit.heading_path),
+                            "pages": list(unit.pages),
+                            "block_ids": list(unit.block_ids),
+                            "block_types": list(unit.block_types),
+                            "visual_artifact_ids": [
+                                block.image_artifact_id
+                                for block in selected_blocks
+                                if block.image_artifact_id is not None
+                            ],
+                            "visual_evidence": [
+                                block.structured_content["visual_evidence"]
+                                for block in selected_blocks
+                                if isinstance(
+                                    block.structured_content.get("visual_evidence"),
+                                    dict,
+                                )
+                            ],
+                            "visual_text_ready": all(
+                                block.block_type not in {"image", "chart"}
+                                or block.structured_content.get(
                                     "visual_analysis_status"
                                 )
-                                == "pending"
-                                or (
-                                    not block.text.strip()
-                                    and not block.structured_content.get(
-                                        "textual_rendering"
+                                != "pending"
+                                for block in selected_blocks
+                            ),
+                            "visual_pending": any(
+                                block.block_type in {"image", "chart"}
+                                and (
+                                    block.structured_content.get(
+                                        "visual_analysis_status"
+                                    )
+                                    == "pending"
+                                    or (
+                                        not block.text.strip()
+                                        and not block.structured_content.get(
+                                            "textual_rendering"
+                                        )
                                     )
                                 )
-                            )
-                            for block in selected_blocks
-                        ),
-                        "kind": kind,
-                        "provenance": provenance,
-                        "previous_chunk_id": (
-                            stored_ids[unit.previous_unit_id]
-                            if unit.previous_unit_id is not None
-                            else None
-                        ),
-                        "next_chunk_id": (
-                            stored_ids[unit.next_unit_id]
-                            if unit.next_unit_id is not None
-                            else None
-                        ),
-                        "oversized_atomic": unit.oversized_atomic,
-                        "parser": parsed.parser,
-                        "parser_version": parsed.parser_version,
-                        "parser_backend": parsed.parser_backend,
-                        "parse_quality": parsed.quality.model_dump(mode="json"),
-                        "parser_attempts": [
-                            attempt.model_dump(mode="json")
-                            for attempt in parsed.attempts
-                        ],
-                        "raw_parse_artifact": parsed.raw_output_artifact,
-                        "document_sha256": parsed.sha256,
-                        "evidence_id": f"evidence:{scope_id}:v{scope_version}:{chunk_id}",
-                        "full_text_available": True,
-                    },
-                )
+                                for block in selected_blocks
+                            ),
+                            "kind": kind,
+                            "provenance": provenance,
+                            "previous_chunk_id": (
+                                stored_ids[unit.previous_unit_id]
+                                if unit.previous_unit_id is not None
+                                else None
+                            ),
+                            "next_chunk_id": (
+                                stored_ids[unit.next_unit_id]
+                                if unit.next_unit_id is not None
+                                else None
+                            ),
+                            "oversized_atomic": unit.oversized_atomic,
+                            "parser": parsed.parser,
+                            "parser_version": parsed.parser_version,
+                            "parser_backend": parsed.parser_backend,
+                            "parse_quality": parsed.quality.model_dump(mode="json"),
+                            "parser_attempts": [
+                                attempt.model_dump(mode="json")
+                                for attempt in parsed.attempts
+                            ],
+                            "raw_parse_artifact": parsed.raw_output_artifact,
+                            "document_sha256": parsed.sha256,
+                            "evidence_id": f"evidence:{scope_id}:v{scope_version}:{chunk_id}",
+                            "full_text_available": True,
+                        },
+                    )
                 )
         return chunks
 
@@ -696,7 +745,9 @@ class PaperIngestionService:
         paper = self.repository.get_paper(access, paper_id)
         job_id = f"paper-ingestion-{uuid4()}"
 
-        def publish(status: str, *, count: int = 0, error: str | None = None) -> IngestionStatus:
+        def publish(
+            status: str, *, count: int = 0, error: str | None = None
+        ) -> IngestionStatus:
             value = IngestionStatus(
                 job_id=job_id,
                 scope_id=scope.scope_id,
@@ -723,8 +774,45 @@ class PaperIngestionService:
                 paper.paper_id,
             )
             if not target.is_file():
-                failure = "user-uploaded PDF is required before ingestion"
-            else:
+                candidate_urls: list[str] = []
+                if paper.pdf_url:
+                    candidate_urls.append(paper.pdf_url)
+                if paper.doi and self.oa_resolver is not None:
+                    try:
+                        resolved = await self.oa_resolver.resolve_pdf(paper.doi)
+                    except Exception:
+                        resolved = None
+                    if resolved and resolved not in candidate_urls:
+                        candidate_urls.append(resolved)
+                if self.downloader is not None and candidate_urls:
+                    publish("fetching")
+                    downloaded_from: str | None = None
+                    for candidate_url in candidate_urls:
+                        try:
+                            await self.downloader.download(candidate_url, target)
+                        except (PaperDownloadError, OSError):
+                            continue
+                        downloaded_from = candidate_url
+                        break
+                    if downloaded_from is not None:
+                        paper = paper.model_copy(
+                            update={
+                                "pdf_url": downloaded_from,
+                                "full_text_status": "available",
+                            }
+                        )
+                        self.repository.upsert_paper(access, paper)
+                    else:
+                        failure = (
+                            "开放 PDF 自动下载失败或访问受限；"
+                            "请通过论文来源链接自行下载后上传。"
+                        )
+                else:
+                    failure = (
+                        "未发现可合法自动下载的开放 PDF；"
+                        "请通过论文来源链接自行下载后上传。"
+                    )
+            if target.is_file():
                 publish("parsing")
                 try:
                     chunks = await self._pdf_chunks(
@@ -775,12 +863,16 @@ class PaperIngestionService:
         self.knowledge_store.replace_document_version(chunks)
         cards = self._evidence_cards(scope.scope_id, scope.scope_version, paper, chunks)
         self.repository.save_evidence(access, cards)
-        full_text = any(bool(chunk.metadata.get("full_text_available")) for chunk in chunks)
+        full_text = any(
+            bool(chunk.metadata.get("full_text_available")) for chunk in chunks
+        )
         final_status = "indexed"
         self.repository.upsert_paper(
             access,
             paper.model_copy(
-                update={"full_text_status": "ingested" if full_text else "abstract_only"}
+                update={
+                    "full_text_status": "ingested" if full_text else "abstract_only"
+                }
             ),
         )
         return publish(final_status, count=len(cards), error=failure)

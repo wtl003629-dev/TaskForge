@@ -228,6 +228,7 @@ def _settings(
     )
     return Settings(
         _env_file=None,
+        database_backend="sqlite",
         sqlite_path=state / "taskforge.sqlite3",
         context_sqlite_path=state / "context.sqlite3",
         rag_active_profile=rag_profile,

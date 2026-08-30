@@ -42,6 +42,7 @@ def make_settings(tmp_path: Path, **changes) -> Settings:
         "class AgentRuntime:\n    pass\n", encoding="utf-8"
     )
     values = {
+        "database_backend": "sqlite",
         "sqlite_path": tmp_path / "state" / "taskforge.sqlite3",
         "context_sqlite_path": tmp_path / "state" / "context.sqlite3",
         "operations_sqlite_path": tmp_path / "state" / "operations.sqlite3",
@@ -568,7 +569,11 @@ def test_inline_audit_records_usage_and_safety_consistently(tmp_path: Path) -> N
 
 
 def test_mcp_config_is_host_owned_and_status_is_sanitised(tmp_path: Path) -> None:
-    assert Settings(_env_file=None, mcp_config_path="").mcp_config_path is None
+    assert (
+        Settings(_env_file=None, database_backend="sqlite", mcp_config_path="")
+        .mcp_config_path
+        is None
+    )
     config_path = tmp_path / "mcp.json"
     config_path.write_text(
         json.dumps(

@@ -13,14 +13,38 @@ from .base import ResilientHTTPProvider
 _BASE_URL = "https://api.semanticscholar.org/graph/v1"
 _FIELDS = (
     "paperId,title,abstract,year,venue,authors,externalIds,url,openAccessPdf,"
-    "citationCount,referenceCount"
+    "citationCount,referenceCount,publicationTypes"
 )
+_NON_PAPER_TYPES = {"book", "editorial", "lettersandcomments", "news"}
+
+
+def _publication_type(value: object) -> tuple[str | None, bool]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return None, True
+    types = [str(item).strip() for item in value if str(item).strip()]
+    if not types:
+        return None, True
+    normalized = {item.casefold().replace("_", "") for item in types}
+    if normalized <= _NON_PAPER_TYPES:
+        return None, False
+    if "conference" in normalized:
+        return "proceedings-article", True
+    if "journalarticle" in normalized:
+        return "journal-article", True
+    if "review" in normalized:
+        return "review", True
+    if "booksection" in normalized:
+        return "book-chapter", True
+    if normalized & {"casereport", "clinicaltrial", "metaanalysis", "study"}:
+        return "article", True
+    return sorted(normalized)[0], True
 
 
 def _paper(value: Mapping[str, Any], *, query_id: str | None, rank: int) -> ProviderPaper | None:
     title = str(value.get("title") or "").strip()
     paper_id = str(value.get("paperId") or "").strip()
-    if not title or not paper_id:
+    publication_type, is_paper = _publication_type(value.get("publicationTypes"))
+    if not title or not paper_id or not is_paper:
         return None
     external = value.get("externalIds")
     external_ids = external if isinstance(external, Mapping) else {}
@@ -39,6 +63,7 @@ def _paper(value: Mapping[str, Any], *, query_id: str | None, rank: int) -> Prov
         authors=authors,
         abstract=str(value.get("abstract") or "").strip(),
         year=value.get("year") if isinstance(value.get("year"), int) else None,
+        publication_type=publication_type,
         venue=str(value.get("venue") or "").strip() or None,
         doi=str(external_ids.get("DOI") or "").strip() or None,
         arxiv_id=str(external_ids.get("ArXiv") or "").strip() or None,

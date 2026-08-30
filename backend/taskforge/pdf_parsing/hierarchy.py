@@ -874,6 +874,99 @@ def build_boundary_aware_flat_units(
     return tuple(units)
 
 
+def build_structure_region_units(
+    document: ParsedDocument,
+    *,
+    target_chars: int = 1_800,
+    min_chars: int = 900,
+    max_chars: int = 2_400,
+    search_chars: int = 300,
+) -> tuple[HierarchicalUnit, ...]:
+    """Build sparse, context-rich auxiliary units around document structure.
+
+    Unlike the original 400/500-token Child lane, this experimental projection
+    does not index every short Child.  It emits only section-leading or
+    structured regions and keeps their surrounding prose near the Flat chunk
+    size.  Flat remains the primary lane, so papers without reliable titles,
+    lists, tables, equations, figures, code, or algorithms simply contribute no
+    auxiliary units.
+
+    Regions may cross a page boundary when the section remains continuous.
+    Tables, lists, figures, equations, code, and algorithms stay atomic, with
+    captions and footnotes attached by ``_boundary_groups``.
+    """
+
+    if not 256 <= min_chars <= target_chars <= max_chars <= 50_000:
+        raise ValueError("invalid structure-region chunk character budgets")
+    if not 0 <= search_chars <= max_chars:
+        raise ValueError("invalid structure-region boundary search window")
+    source = [
+        block
+        for block in document.blocks
+        if block.indexable and block.block_type in _TEXT_TYPES and _block_text(block)
+    ]
+    if not source:
+        return ()
+
+    groups = _boundary_groups(source, max_chars=max_chars)
+    sections: list[list[list[DocumentBlock]]] = []
+    current: list[list[DocumentBlock]] = []
+    for group in groups:
+        if current and _is_hard_heading(group[0]):
+            sections.append(current)
+            current = []
+        current.append(group)
+    if current:
+        sections.append(current)
+
+    signal_types = _ATOMIC_TYPES | {"title", "list", "caption"}
+    segments: list[list[DocumentBlock]] = []
+    for section in sections:
+        for segment in _boundary_section_segments(
+            section,
+            target_chars=target_chars,
+            min_chars=min_chars,
+            max_chars=max_chars,
+            search_chars=search_chars,
+        ):
+            if any(block.block_type in signal_types for block in segment):
+                segments.append(segment)
+
+    units: list[HierarchicalUnit] = []
+    heading_path: tuple[str, ...] = ()
+    for segment in segments:
+        heading_path = _heading_path(segment, heading_path)
+        unit_id = _unit_id(
+            document.document_id, "structure_region", len(units), segment
+        )
+        text = "\n\n".join(
+            _block_text(block) for block in segment if _block_text(block)
+        )
+        if not text:
+            continue
+        units.append(
+            HierarchicalUnit(
+                unit_id=unit_id,
+                role="child",
+                parent_id=unit_id,
+                text=text,
+                heading_path=heading_path,
+                block_ids=tuple(block.block_id for block in segment),
+                pages=tuple(dict.fromkeys(block.page for block in segment)),
+                block_types=tuple(dict.fromkeys(block.block_type for block in segment)),
+                order=len(units),
+                previous_unit_id=(units[-1].unit_id if units else None),
+                oversized_atomic=(
+                    len(text) > max_chars
+                    and any(block.block_type in _ATOMIC_TYPES for block in segment)
+                ),
+            )
+        )
+        if len(units) > 1:
+            units[-2] = replace(units[-2], next_unit_id=unit_id)
+    return tuple(units)
+
+
 def build_sliding_window_units(
     document: ParsedDocument,
     *,
@@ -973,4 +1066,5 @@ __all__ = [
     "build_flat_units",
     "build_parent_child_units",
     "build_sliding_window_units",
+    "build_structure_region_units",
 ]

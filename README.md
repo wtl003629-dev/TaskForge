@@ -46,7 +46,7 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 | 产品主链已接入 | FastAPI/Workbench 的默认或可配置运行路径会调用该能力 | 仍不等于外部依赖、生产认证或规模化部署已验证 |
 | live 已验证 | 使用真实凭据和真实外部服务显式执行并留存结果 | 只有这一层才能声明对应真实服务链路通过 |
 
-当前默认仍保留 SQLite 兼容路径，正式 PostgreSQL 路径已覆盖 Task/Profile/Run、操作队列、编排、ReviewCase、Verification、Knowledge/Memory、文献仓库、Provider cache 和 embedding cache；选择 `TASKFORGE_DATABASE_BACKEND=postgres` 后不会回退到 SQLite。RAG 仍在 tenant/ACL、Scope 版本、有效期和知识库过滤后执行，pgvector 提供 exact cosine 主路径和显式 opt-in 的 HNSW 路径。真实 PostgreSQL/pgvector 验收需按 `../migration/README.md` 完成后，才能把对应能力标为 live。
+当前默认使用 PostgreSQL，正式 PostgreSQL 路径已覆盖 Task/Profile/Run、操作队列、编排、ReviewCase、Verification、Knowledge/Memory、文献仓库、Provider cache 和 embedding cache；选择 `TASKFORGE_DATABASE_BACKEND=sqlite` 才会启用 SQLite 兼容/测试路径，PostgreSQL 连接失败时不会回退到 SQLite。RAG 仍在 tenant/ACL、Scope 版本、有效期和知识库过滤后执行，pgvector 提供 exact cosine 主路径和显式 opt-in 的 HNSW 路径。真实 PostgreSQL/pgvector 验收需按 `../migration/README.md` 完成后，才能把对应能力标为 live。
 
 ## 核心能力
 
@@ -65,7 +65,7 @@ Demo Provider 是确定性离线状态机，用来证明真实工具、审批、
 - Memory：tenant/org/user/agent/task 五级 scope、过期时间和 provenance；
 - 多角色编排：固定有向无环图、角色 capability、RoleRun 尝试/恢复、分层上下文、handoff、proposed/verified fact 与一次性 host verification receipt；引用有据的 claim（其 evidence refs 全部来自该角色本次运行真实检索到的 knowledge_search 回执）由宿主自动签发 `authority=tool` receipt 并置为 verified，随后向下游依赖角色创建 handoff；未检索到引用的 claim 保持 `model_untrusted`/`proposed`；
 - 业务决策边界：模型只能提交结构化建议，case 状态和最终批准由宿主状态机与人工身份控制；
-- 可选基础设施：PostgreSQL 由 `TASKFORGE_DATABASE_BACKEND` 显式选择，Neo4j 1/2-hop 图检索和图/向量 RRF 融合仍默认关闭；未连接真实 PostgreSQL 服务时不宣称 live；
+- 持久化基础设施：PostgreSQL 是默认 durable backend，SQLite 仅由 `TASKFORGE_DATABASE_BACKEND=sqlite` 显式选择；Neo4j 1/2-hop 图检索和图/向量 RRF 融合仍默认关闭；未连接真实 PostgreSQL 服务时不宣称 live；
 - Vue Workbench：Profile/Skill 选择、inline/queued Run、Job 轮询、轨迹、Tool Call、Evidence、批准/拒绝、Audit/Metrics 与脱敏 MCP 状态；
 - 离线评测：task success、工具使用、终态、步数和 safety hard-fail 指标。
 
@@ -233,7 +233,7 @@ Top-20 低置信度升级 Top-30 的两段式 Cross-Encoder 预算也已实现�
 
 ## 持久知识与 Memory
 
-默认 `TASKFORGE_DATABASE_BACKEND=sqlite`，切换 PostgreSQL 时应同时完成 `../migration/README.md` 中的 schema、数据、RLS、备份和回滚门禁。用户 Memory 可通过 `/api/memory` 创建、检索，并删除自己拥有的 user/agent/task scope 记录；tenant/org 共享记录的可见性不会自动授予删除权。Agent 只能经 `memory_remember` 能力写入，并受 profile、审批、幂等和宿主绑定的 tenant/scope 约束。
+默认 `TASKFORGE_DATABASE_BACKEND=postgres`，必须配置 `TASKFORGE_DATABASE_URL`；切换到 SQLite 仅用于显式兼容测试或迁移工具。首次使用 PostgreSQL 前应完成 `../migration/README.md` 中的 schema、数据、RLS、备份和回滚门禁。用户 Memory 可通过 `/api/memory` 创建、检索，并删除自己拥有的 user/agent/task scope 记录；tenant/org 共享记录的可见性不会自动授予删除权。Agent 只能经 `memory_remember` 能力写入，并受 profile、审批、幂等和宿主绑定的 tenant/scope 约束。
 
 将工作区内 UTF-8 文档安全摄取到知识库：
 
@@ -330,11 +330,11 @@ python scripts/verify_pgvector_retrieval.py `
 docker compose up --build
 ```
 
-前端映射到 `5173`，后端映射到 `8000`，独立 Worker 与 API 共享 artifact volume；默认 SQLite 兼容路径使用 `.taskforge`，PostgreSQL profile 将数据 bind 到 D 盘，并由两个独立数据库和应用角色承载运行状态。当前开发机的 Docker Desktop 引擎不可用，因此仓库内 Compose/Dockerfile 已完成配置校验但未在本机完成镜像构建和真实 PostgreSQL 启动验证。
+前端映射到 `5173`，后端映射到 `8000`，独立 Worker 与 API 共享 artifact volume；Compose 默认启动 PostgreSQL，数据 bind 到 D 盘，并由两个独立数据库和应用角色承载运行状态。需要 SQLite 时，显式设置 `TASKFORGE_DATABASE_BACKEND=sqlite` 并使用本地启动路径。当前开发机的 Docker Desktop 引擎不可用，因此仓库内 Compose/Dockerfile 已完成配置校验但未在本机完成镜像构建和真实 PostgreSQL 启动验证。
 
 ## 已知边界
 
-- 产品主链已把 SQLite 与 PostgreSQL durable store 都接入应用配置；PostgreSQL 选择后启动失败会 fail closed，不回退 SQLite。真实 PostgreSQL/RLS/pgvector、Neo4j 与远程 MCP 仍分别以各自 live 验收为准；
+- 产品主链已把 PostgreSQL（默认）与 SQLite（显式兼容）durable store 都接入应用配置；PostgreSQL 启动失败会 fail closed，不回退 SQLite。真实 PostgreSQL/RLS/pgvector、Neo4j 与远程 MCP 仍分别以各自 live 验收为准；
 - 默认 `general_text` 使用 FastEmbed BGE-small；设置 `TASKFORGE_GENERAL_TEXT_BACKEND=bm25` 可显式回退到 BM25。上传链路默认使用 Jina + MiniLM 归一化集成以优先 Recall，BGE-M3 零样本在 20 题验证上为负结果，领域微调入口已提供但需 GPU 才适合完整训练；本地 Qdrant/hash 与图重排仍是评测或显式 opt-in 路径；真实远程 Qdrant、PostgreSQL、Neo4j 与远程 MCP 均无 live 成功声明；
 - 演示知识只为 `local` tenant 加载显式 allowlist 文档，其他 tenant 会检索为空而不是跨租户回退；
 - API header 是演示 identity，需要在生产前替换为可信认证与 RBAC；

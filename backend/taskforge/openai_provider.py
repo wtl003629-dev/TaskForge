@@ -321,6 +321,26 @@ class OpenAIChatCompletionsProvider:
             messages=messages,
             tools=tools,
         )
+        # Research Writer/Critic roles have a single host-owned terminal
+        # action.  Bailian occasionally renders that action as prose when it
+        # is left to free-form tool selection, which makes an otherwise useful
+        # report fail the structured-result contract.  Force only these
+        # terminal research roles to call their bound submit tool; planner and
+        # evaluator still need free tool selection for planning/search.
+        terminal_tools = profile.metadata.get("terminal_tools")
+        role_id = profile.metadata.get("role_id")
+        if (
+            role_id in {"synthesis_writer", "critical_reviewer"}
+            and isinstance(terminal_tools, Sequence)
+            and not isinstance(terminal_tools, (str, bytes))
+            and len(terminal_tools) == 1
+            and isinstance(terminal_tools[0], str)
+            and terminal_tools[0]
+        ):
+            payload["tool_choice"] = {
+                "type": "function",
+                "function": {"name": terminal_tools[0]},
+            }
         thinking_mode = profile.metadata.get("thinking_mode", self._thinking_mode)
         if thinking_mode not in {None, "enabled", "disabled"}:
             raise OpenAIProviderConfigurationError(

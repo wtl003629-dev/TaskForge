@@ -79,7 +79,13 @@ async function request(path: string, init?: RequestInit): Promise<unknown> {
           .join('；')
       }
     } catch {
-      // Non-JSON error bodies remain useful as-is.
+      const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+      const looksLikeHtml = contentType.includes('text/html') || /^\s*<(?:!doctype|html)\b/i.test(detail)
+      if (looksLikeHtml) {
+        message = response.status >= 500
+          ? `服务暂时不可用（${response.status}），请稍后重试`
+          : `请求未能完成（${response.status}）`
+      }
     }
     throw new ApiError(message || `API 请求失败：${response.status}`, response.status)
   }
@@ -547,6 +553,20 @@ function normalizeReviewAudit(value: unknown): ReviewCaseAuditEvent {
   }
 }
 
+function normalizeResearchAnswer(value: unknown): ReviewCaseDetail['researchAnswer'] {
+  const item = objectValue(value)
+  if (!item || !text(item.answer).trim()) return undefined
+  return {
+    answer: text(item.answer),
+    directAnswer: text(item.direct_answer) || undefined,
+    evidenceIds: stringArray(item.evidence_ids),
+    includedClaimIds: stringArray(item.included_claim_ids),
+    removedClaimIds: stringArray(item.removed_claim_ids),
+    unresolvedClaimIds: stringArray(item.unresolved_claim_ids),
+    criticVerdict: text(item.critic_verdict),
+  }
+}
+
 function normalizeReviewDetail(value: unknown): ReviewCaseDetail {
   const item = asRecord(value)
   return {
@@ -557,6 +577,7 @@ function normalizeReviewDetail(value: unknown): ReviewCaseDetail {
     handoffs: asArray(item.handoffs).map(normalizeReviewHandoff),
     auditEvents: asArray(item.audit_events).map(normalizeReviewAudit),
     execution: normalizeReviewDisclosure(item.execution),
+    researchAnswer: normalizeResearchAnswer(item.research_answer),
   }
 }
 
@@ -1000,7 +1021,10 @@ export async function runReviewCaseUntilReview(caseId: string): Promise<ReviewCa
   return normalizeReviewDetail(
     await request(`/review-cases/${encodeURIComponent(caseId)}/run-until-review`, {
       method: 'POST',
-      body: JSON.stringify({ max_iterations: 4 }),
+      // A research survey has four dependent roles and each role may consume
+      // its bounded retry. Four iterations can therefore stop between roles
+      // (for example after evaluator retry) before a report is produced.
+      body: JSON.stringify({ max_iterations: 12 }),
     }),
   )
 }
@@ -1050,7 +1074,10 @@ function normalizePaperCard(value: unknown): PaperCard {
     abstract: text(item.abstract),
     shortDescription: text(item.short_description),
     year: numberValue(item.year),
+    language: text(item.language) || undefined,
+    publicationType: text(item.publication_type) || undefined,
     venue: text(item.venue) || undefined,
+    publisher: text(item.publisher) || undefined,
     doi: text(item.doi) || undefined,
     arxivId: text(item.arxiv_id) || undefined,
     sourceUrls: stringArray(item.source_urls),
@@ -1180,6 +1207,7 @@ export async function searchLiterature(
           year_to: input.yearTo,
           required_terms: input.requiredTerms,
           excluded_terms: input.excludedTerms,
+          language_preference: input.languagePreference,
           result_limit: input.resultLimit,
         },
       }),
@@ -1314,16 +1342,29 @@ export async function searchResearchEvidence(input: {
   )
 }
 
+export async function listResearchEvidence(
+  scopeId: string,
+  scopeVersion: number,
+): Promise<ResearchEvidenceCard[]> {
+  const query = new URLSearchParams({ version: String(scopeVersion) })
+  return asArray(
+    await request(
+      `/research/scopes/${encodeURIComponent(scopeId)}/evidence?${query.toString()}`,
+    ),
+  ).map(normalizeResearchEvidence)
+}
+
 export async function createResearchAgentRun(
   scopeId: string,
   title: string,
   context: string,
+  question: string,
 ): Promise<ReviewCaseDetail> {
   return normalizeReviewDetail(
     await request(`/research/scopes/${encodeURIComponent(scopeId)}/agent-run`, {
       method: 'POST',
       headers: { 'Idempotency-Key': createClientCommandKey('research-agent-run') },
-      body: JSON.stringify({ title, context, survey_depth: 'rigorous' }),
+      body: JSON.stringify({ title, context, question, survey_depth: 'rigorous' }),
     }),
   )
 }

@@ -1072,6 +1072,124 @@ def test_dual_route_tail_pass_only_triggers_for_an_unstable_visible_head() -> No
     assert not ResearchRetrievalService._dual_route_needs_tail_rerank(stable, 3)
 
 
+def test_final_evidence_demotes_bibliography_and_prefers_tighter_duplicate() -> None:
+    abstract = (
+        "Abstract This paper designs a retrieval augmented generation system "
+        "with vector search, reranking, and grounded response generation. "
+    ) * 5
+    chunks = [
+        KnowledgeChunk(
+            chunk_id="references",
+            tenant_id="tenant-a",
+            text=(
+                "[1] Retrieval augmented generation survey. "
+                "[2] Retrieval augmented generation methods. "
+                "[3] Retrieval augmented generation systems."
+            ),
+            source_uri="paper://quality",
+            document_id="quality",
+            metadata={"section": "References"},
+        ),
+        KnowledgeChunk(
+            chunk_id="wrapped-abstract",
+            tenant_id="tenant-a",
+            text=f"Paper title Authors Keywords RAG retrieval {abstract}",
+            source_uri="paper://quality",
+            document_id="quality",
+        ),
+        KnowledgeChunk(
+            chunk_id="clean-abstract",
+            tenant_id="tenant-a",
+            text=abstract,
+            source_uri="paper://quality",
+            document_id="quality",
+        ),
+        KnowledgeChunk(
+            chunk_id="method",
+            tenant_id="tenant-a",
+            text="The retriever uses a dense index and a cross-encoder reranker.",
+            source_uri="paper://quality",
+            document_id="quality",
+            metadata={"section": "Method"},
+        ),
+    ]
+    candidates = [
+        _Candidate(KnowledgeHit(chunk=chunks[0], score=0.99, lexical_score=0.99), sources=()),
+        _Candidate(KnowledgeHit(chunk=chunks[1], score=0.95, lexical_score=0.95), sources=()),
+        _Candidate(KnowledgeHit(chunk=chunks[2], score=0.90, lexical_score=0.90), sources=()),
+        _Candidate(KnowledgeHit(chunk=chunks[3], score=0.80, lexical_score=0.80), sources=()),
+    ]
+
+    reranked = ResearchRetrievalService._paper_quality_rerank(
+        "How is the RAG system designed?",
+        candidates,
+    )
+    final = ResearchRetrievalService._dedupe_final_evidence(reranked, top_k=3)
+
+    assert [item.hit.chunk.chunk_id for item in final] == [
+        "clean-abstract",
+        "method",
+        "references",
+    ]
+    assert final[-1].hit.score < 0.1
+    assert "near_duplicate_dedupe" in final[0].sources
+
+
+def test_query_excerpt_avoids_reference_list_when_answer_text_follows() -> None:
+    text = (
+        "References [1] RAG survey. [2] RAG overview. [3] RAG benchmark. "
+        * 12
+        + "Method The RAG design uses vector retrieval followed by evidence reranking. "
+        * 8
+    )
+
+    excerpt, _, _, _ = ResearchRetrievalService._query_excerpt(
+        "How is the RAG design implemented?",
+        text,
+    )
+
+    assert "vector retrieval followed by evidence reranking" in excerpt
+
+
+def test_empty_table_shell_is_never_returned_as_citation_ready_evidence() -> None:
+    shell = KnowledgeChunk(
+        chunk_id="empty-table-shell",
+        tenant_id="tenant-a",
+        text="| relevant doc 1 |\n| --- |\n| relevant doc 2 |\n| relevant doc 3 |",
+        source_uri="paper://table-quality",
+        document_id="table-quality",
+        metadata={"kind": "table", "section": "LLM"},
+    )
+    metric = KnowledgeChunk(
+        chunk_id="metric-table",
+        tenant_id="tenant-a",
+        text="| Model | Accuracy |\n| --- | --- |\n| RAG | 91% |",
+        source_uri="paper://table-quality",
+        document_id="table-quality",
+        metadata={"kind": "table", "section": "Results"},
+    )
+    candidates = [
+        _Candidate(
+            KnowledgeHit(chunk=shell, score=0.95, lexical_score=0.95),
+            sources=(),
+        ),
+        _Candidate(
+            KnowledgeHit(chunk=metric, score=0.80, lexical_score=0.80),
+            sources=(),
+        ),
+    ]
+
+    reranked = ResearchRetrievalService._paper_quality_rerank(
+        "Which relevant documents and accuracy are reported?",
+        candidates,
+    )
+    final = ResearchRetrievalService._dedupe_final_evidence(reranked, top_k=2)
+
+    assert [item.hit.chunk.chunk_id for item in final] == ["metric-table"]
+    assert ResearchRetrievalService._low_information_table(shell)
+    assert not ResearchRetrievalService._low_information_table(metric)
+
+
 def test_dual_route_reranker_failure_rolls_back_to_flat() -> None:
     class ExplodingReranker:
         def score(self, query, documents):  # type: ignore[no-untyped-def]

@@ -7,13 +7,26 @@ from taskforge.config import Settings
 from taskforge.postgres_runtime import PostgresBackendNotReadyError
 
 
-def test_database_backend_defaults_to_sqlite() -> None:
-    settings = Settings(_env_file=None)
-    assert settings.database_backend == "sqlite"
-    assert settings.database_url is None
+def test_database_backend_defaults_to_postgres(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TASKFORGE_DATABASE_BACKEND", raising=False)
+    monkeypatch.delenv("TASKFORGE_DATABASE_URL", raising=False)
+    assert Settings.model_fields["database_backend"].default == "postgres"
+    settings = Settings(
+        _env_file=None,
+        database_url="postgresql://taskforge_app:secret@localhost/taskforge",
+    )
+    assert settings.database_backend == "postgres"
 
 
-def test_postgres_backend_requires_dsn() -> None:
+def test_default_postgres_backend_requires_dsn(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TASKFORGE_DATABASE_BACKEND", raising=False)
+    monkeypatch.delenv("TASKFORGE_DATABASE_URL", raising=False)
+    with pytest.raises(ValueError, match="TASKFORGE_DATABASE_URL"):
+        Settings(_env_file=None)
+
+
+def test_postgres_backend_requires_dsn(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TASKFORGE_DATABASE_URL", raising=False)
     with pytest.raises(ValueError, match="TASKFORGE_DATABASE_URL"):
         Settings(_env_file=None, database_backend="postgres")
 

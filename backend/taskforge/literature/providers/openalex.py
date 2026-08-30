@@ -11,6 +11,14 @@ from ..models import ProviderPaper
 from .base import ResilientHTTPProvider
 
 _BASE_URL = "https://api.openalex.org"
+_SCHOLARLY_TYPES = {
+    "article",
+    "book-chapter",
+    "dissertation",
+    "peer-review",
+    "preprint",
+    "review",
+}
 
 
 def _abstract(index: object) -> str:
@@ -34,7 +42,13 @@ def _identifier(value: object) -> str | None:
 def _paper(value: Mapping[str, Any], *, query_id: str | None, rank: int) -> ProviderPaper | None:
     title = str(value.get("title") or value.get("display_name") or "").strip()
     raw_id = str(value.get("id") or "").strip()
-    if not title or not raw_id:
+    publication_type = str(value.get("type") or "").strip().casefold() or None
+    if (
+        not title
+        or not raw_id
+        or value.get("is_retracted") is True
+        or (publication_type is not None and publication_type not in _SCHOLARLY_TYPES)
+    ):
         return None
     ids = value.get("ids") if isinstance(value.get("ids"), Mapping) else {}
     primary = (
@@ -70,7 +84,10 @@ def _paper(value: Mapping[str, Any], *, query_id: str | None, rank: int) -> Prov
             if isinstance(value.get("publication_year"), int)
             else None
         ),
+        language=str(value.get("language") or "").strip().casefold() or None,
+        publication_type=publication_type,
         venue=str(source.get("display_name") or "").strip() or None,
+        publisher=str(source.get("host_organization_name") or "").strip() or None,
         doi=doi,
         arxiv_id=arxiv_id,
         openalex_id=raw_id,
@@ -108,7 +125,7 @@ class OpenAlexProvider(ResilientHTTPProvider):
             "select": (
                 "id,doi,title,display_name,authorships,abstract_inverted_index,"
                 "publication_year,primary_location,best_oa_location,ids,"
-                "cited_by_count,referenced_works,relevance_score"
+                "cited_by_count,referenced_works,relevance_score,language,type,is_retracted"
             ),
         }
         filters: list[str] = []
@@ -116,6 +133,9 @@ class OpenAlexProvider(ResilientHTTPProvider):
             filters.append(f"from_publication_date:{query.provider_filters['year_from']}-01-01")
         if query.provider_filters.get("year_to"):
             filters.append(f"to_publication_date:{query.provider_filters['year_to']}-12-31")
+        language = str(query.provider_filters.get("_language") or "").strip().casefold()
+        if language:
+            filters.append(f"language:{language}")
         if filters:
             params["filter"] = ",".join(filters)
         payload = await self._get_json(f"{_BASE_URL}/works", params=params)

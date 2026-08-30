@@ -63,7 +63,7 @@ class PostgresRuntime:
                 row_factory = importlib.import_module("psycopg.rows").dict_row
             except (ImportError, ModuleNotFoundError) as exc:
                 raise PostgresDependencyError(
-                    "PostgreSQL support requires `pip install taskforge-agent[postgres]`"
+                    "PostgreSQL support requires `pip install taskforge-agent`"
                 ) from exc
             pool = pool_type(
                 conninfo=dsn,

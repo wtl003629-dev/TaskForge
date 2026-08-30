@@ -17,6 +17,7 @@ from taskforge.pdf_parsing.hierarchy import (
     build_flat_units,
     build_parent_child_units,
     build_sliding_window_units,
+    build_structure_region_units,
 )
 from taskforge.pdf_parsing.mineru_client import MinerUClient, MinerUError
 from taskforge.pdf_parsing.mineru_normalizer import normalize_mineru_response
@@ -257,6 +258,54 @@ def test_boundary_aware_flat_splits_oversized_prose_without_losing_text() -> Non
     assert len(units) >= 3
     assert normalized_chunks == normalized_original
     assert all(len(unit.text) <= 2_600 for unit in units)
+
+
+def test_structure_region_units_skip_unstructured_paragraph_only_documents() -> None:
+    document = _parsed(
+        (
+            _block("p1", text="plain paragraph one"),
+            _block("p2", text="plain paragraph two"),
+        )
+    )
+
+    assert build_structure_region_units(document) == ()
+
+
+def test_structure_region_units_keep_table_with_heading_and_context() -> None:
+    results = _block("results", block_type="title", text="3 Results").model_copy(
+        update={"heading_level": 1}
+    )
+    document = _parsed(
+        (
+            results,
+            _block(
+                "intro", text="The comparison is summarized below. " + "context " * 40
+            ),
+            _block("caption", block_type="caption", text="Table 1. Main results"),
+            _block(
+                "table", block_type="table", text="Model | Recall\nA | 0.91\nB | 0.88"
+            ),
+            _block(
+                "after",
+                text="The result is statistically significant. " + "detail " * 40,
+            ),
+        )
+    )
+
+    units = build_structure_region_units(
+        document,
+        target_chars=900,
+        min_chars=400,
+        max_chars=1_200,
+        search_chars=200,
+    )
+
+    assert len(units) == 1
+    assert units[0].role == "child"
+    assert units[0].parent_id == units[0].unit_id
+    assert units[0].block_ids.index("caption") + 1 == units[0].block_ids.index("table")
+    assert "3 Results" in units[0].text
+    assert "statistically significant" in units[0].text
 
 
 @pytest.mark.asyncio

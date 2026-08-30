@@ -54,6 +54,8 @@ def test_research_survey_rigorous_keeps_full_chain() -> None:
     # The critic owns the verdict only at rigorous depth.
     assert "survey.verdict" in by_id["critic"].instruction
     assert "survey.verdict" not in by_id["writer"].instruction
+    assert "protocol 只能放在 research_payload 内部" in by_id["writer"].instruction
+    assert "exactly one strongest Evidence ID" in by_id["critic"].instruction
 
 
 def test_research_survey_standard_drops_critic_writer_owns_verdict() -> None:

@@ -586,10 +586,22 @@ def create_tool_registry(
                 )
                 for card in result.evidence[:8]
             ]
-            return result.model_copy(
-                update={"evidence": compact_cards},
+            # Retrieval traces are valuable for the HTTP evidence-search
+            # response, but they can be much larger than the model-facing
+            # evidence cards.  Keeping them here makes the generic tool
+            # output bound replace the complete result with a `preview`
+            # string, which hides every Evidence ID from downstream research
+            # roles.  Return the compact cards plus the small confidence
+            # summary; the full traces remain available from the bounded
+            # research endpoint and durable audit records.
+            projected = result.model_copy(
+                update={
+                    "evidence": compact_cards,
+                    "retrieval_traces": [],
+                },
                 deep=True,
             ).model_dump(mode="json")
+            return projected
 
         def paper_read(
             arguments: dict[str, Any],

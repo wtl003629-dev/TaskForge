@@ -84,7 +84,9 @@ def freeze(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     if report.get("status") != "complete" or report.get("cases") != 100:
         raise ValueError("current baseline must be a complete locked 100-case report")
-    settings = Settings(_env_file=None)
+    # This manifest intentionally inspects the local SQLite control fixtures;
+    # make the compatibility backend explicit now that PostgreSQL is default.
+    settings = Settings(_env_file=None, database_backend="sqlite")
     profile = resolve_rag_experiment_profile("current")
     reproduction = json.loads(
         reproduction_report_path.read_text(encoding="utf-8")

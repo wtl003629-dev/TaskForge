@@ -26,6 +26,7 @@ from taskforge.research_protocol import (  # noqa: E402
 def _settings(tmp_path: Path) -> Settings:
     return Settings(
         _env_file=None,
+        database_backend="sqlite",
         rag_active_profile="current",
         rag_experiment_profile="current",
         general_text_backend="fastembed",

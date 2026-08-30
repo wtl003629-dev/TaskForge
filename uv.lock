@@ -2342,6 +2342,18 @@ wheels = [
 ]
 
 [[package]]
+name = "psycopg-pool"
+version = "3.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/90/82/7a23d26039827ecd4ebe93905651029ddd307c5182ad59296dfb6f67b528/psycopg_pool-3.3.1.tar.gz", hash = "sha256:b10b10b7a175d5cc1592147dc5b7eec8a9e0834eb3ed2c4a92c858e2f51eb63c", size = 31661, upload-time = "2026-05-01T23:31:59.809Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/ed/89c2c620af0e1660354cd8aabf9f5b21f911597ce22acb37c805d6c86bc8/psycopg_pool-3.3.1-py3-none-any.whl", hash = "sha256:2af5b432941c4c9ad5c87b3fa410aec910ec8f7c122855897983a06c45f2e4b5", size = 40023, upload-time = "2026-05-01T23:31:53.136Z" },
+]
+
+[[package]]
 name = "py-rust-stemmers"
 version = "0.1.8"
 source = { registry = "https://pypi.org/simple" }
@@ -3414,6 +3426,8 @@ dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pdfplumber" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "psycopg-pool" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pypdf" },
@@ -3438,6 +3452,7 @@ graph = [
 ]
 postgres = [
     { name = "psycopg", extra = ["binary"] },
+    { name = "psycopg-pool" },
 ]
 rag = [
     { name = "qdrant-client" },
@@ -3447,6 +3462,7 @@ reranker = [
     { name = "transformers" },
 ]
 semantic = [
+    { name = "flagembedding" },
     { name = "qdrant-client" },
 ]
 
@@ -3455,12 +3471,16 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "fastembed", specifier = ">=0.8,<1" },
     { name = "flagembedding", marker = "extra == 'reranker'", specifier = ">=1.3,<2" },
+    { name = "flagembedding", marker = "extra == 'semantic'", specifier = ">=1.3,<2" },
     { name = "httpx", specifier = ">=0.27,<1" },
     { name = "jsonschema", specifier = ">=4.23,<5" },
     { name = "neo4j", marker = "extra == 'graph'", specifier = ">=5.20,<7" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "pdfplumber", specifier = ">=0.11.10,<1" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2,<4" },
+    { name = "psycopg-pool", specifier = ">=3.2,<4" },
+    { name = "psycopg-pool", marker = "extra == 'postgres'", specifier = ">=3.2,<4" },
     { name = "pyarrow", marker = "extra == 'dev'", specifier = ">=18,<24" },
     { name = "pyarrow", marker = "extra == 'evaluation'", specifier = ">=18,<24" },
     { name = "pydantic", specifier = ">=2.8,<3" },

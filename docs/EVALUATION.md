@@ -682,7 +682,7 @@ improved and one regressed. The comparison, inference and temporal slices all
 improved. These results justify making source coverage the MultiHop-RAG
 answer-eval default, but they are retrieval-only evidence and do not prove an
 answer-quality gain until a live cited-answer run passes the answer gate.
-They also do not change the FastAPI application's default SQLite/in-memory
+They also do not prove PostgreSQL is available live, or change the FastAPI application's default PostgreSQL
 lexical context store; the promoted scope here is the retrieval experiment and
 answer-evaluation path, not an unmeasured production-backend replacement.
 

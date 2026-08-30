@@ -168,12 +168,14 @@ def test_bailian_settings_require_key_and_fixed_dimension(tmp_path) -> None:
     with pytest.raises(ValueError, match="requires bailian_api_key"):
         Settings(
             _env_file=None,
+            database_backend="sqlite",
             general_text_backend="bailian",
             bailian_api_key=None,
         )
 
     settings = Settings(
         _env_file=None,
+        database_backend="sqlite",
         general_text_backend="bailian",
         bailian_api_key="configured-secret",
         bailian_cache_path=tmp_path / "bailian.sqlite3",

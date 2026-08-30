@@ -66,13 +66,45 @@ def test_final_answer_applies_critic_patches_and_preserves_writer_evidence() -> 
     answer = project_final_research_answer(_writer(), critic)
 
     assert answer.answer == (
-        "The model uses dataset A.\n\nIt reports 89 percent accuracy."
+        "The model uses dataset A. [1]\n\nIt reports 89 percent accuracy. [2]"
     )
     assert answer.direct_answer == "dataset A with 90 percent accuracy"
     assert answer.evidence_ids == ["evidence-1", "evidence-2"]
     assert answer.included_claim_ids == ["claim-1", "claim-2"]
     assert answer.removed_claim_ids == ["claim-3"]
     assert answer.unresolved_claim_ids == ["claim-3"]
+
+
+def test_final_answer_hides_internal_ids_and_projects_numbered_citations() -> None:
+    writer = WriterHandoff(
+        direct_answer="从已选论文看，规范约束是其中一个方向。",
+        draft=DraftArtifact(
+            draft_id="draft-public",
+            claim_ids=["claim-public"],
+            section_count=1,
+        ),
+        claim_manifest=[
+            {
+                "claim_id": "claim-public",
+                "claim_text": (
+                    "Paper-d1fce1cccb6949ed95693f3a933b9fe2 提出规范约束型 RAG"
+                    "（evidence_id: evidence:scope-demo:v1:chunk-1）。"
+                ),
+                "paper_ids": ["paper-d1fce1cccb6949ed95693f3a933b9fe2"],
+                "evidence_ids": ["evidence:scope-demo:v1:chunk-1"],
+            }
+        ],
+    )
+
+    answer = project_final_research_answer(
+        writer,
+        CriticHandoff(patches=[], verdict="accept"),
+    )
+
+    assert answer.answer == "该论文提出规范约束型 RAG。 [1]"
+    assert "paper-" not in answer.answer.casefold()
+    assert "evidence:" not in answer.answer.casefold()
+    assert answer.evidence_ids == ["evidence:scope-demo:v1:chunk-1"]
 
 
 @pytest.mark.parametrize(
