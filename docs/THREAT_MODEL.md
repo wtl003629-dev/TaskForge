@@ -1,78 +1,120 @@
-# TaskForge threat model
+# TaskForge 安全设计
 
-## Trust boundary
+本文说明 TaskForge 当前信任哪些组件、主要防范什么风险，以及公网部署前还需要补充什么。技术标识保留英文，说明文字使用中文。
 
-The model, retrieved text, user task text, provider responses, and remote tool
-results are untrusted. Python handlers, identity supplied by the host API
-layer, configured workspace roots, policy decisions, and durable receipts
-belong to the host boundary.
+## 信任边界
 
-The current demo accepts tenant/user identity from headers; those headers are
-not authenticated and are not a production identity boundary.
+以下内容都视为不可信输入：
 
-The invariant is simple: a `ToolRequest` is a proposal, never authority.
+- 用户问题和上传文件；
+- 模型输出；
+- RAG 检索到的论文文本；
+- 外部文献 Provider 返回的数据；
+- Zotero 条目和 Markdown；
+- 远程 MCP 工具结果。
 
-## Verification labels
+以下能力属于 Host 边界：
 
-“Implemented control” below means host code plus the stated automated/local
-tests exist. It does not by itself mean the control is deployed behind
-production identity or verified against a real external service. PostgreSQL is
-the default durable path; SQLite remains an explicit compatibility path and
-PostgreSQL has fake DB-API coverage
-plus an opt-in live test, while the local PostgreSQL service/RLS gate is still
-pending. Neo4j has fake-driver coverage only, semantic adapters use
-injected/mock tests, and remote MCP and real-model planning have no live
-success claim. These boundaries matter because a unit test can validate
-fail-closed logic but cannot validate network, service configuration,
-production RLS, model behavior or operational isolation.
+- 身份和 tenant；
+- ResearchScope；
+- 工具白名单和风险策略；
+- 文件路径与工作区根目录；
+- 数据库角色与 RLS；
+- checkpoint、receipt 和 Evidence ID；
+- 最终人工批准。
 
-## Implemented controls
+核心原则是：`ToolRequest` 只是模型提出的请求，不代表它已经获得执行权限。
 
-| Threat | Implemented control | Remaining boundary |
-|---|---|---|
-| Prompt injection in RAG | Retrieved context is labelled as untrusted evidence; capabilities are not derived from retrieved text. | Content-level answer quality still needs adversarial evaluation. |
-| Model-generated shell injection | No generic shell tool exists. Grep, read, and arithmetic use structured Python implementations. | A future code-execution tool needs a container/VM sandbox and separate policy. |
-| Path traversal and secret reads | Server binds the root; absolute paths, `..`, symlinks/reparse points, credential filenames, binaries, VCS and build directories are rejected. | File classification is a denylist plus size/type checks, not DLP. |
-| Cross-tenant RAG or memory leakage | Persistent stores prefilter by tenant/validity, then enforce ACL or scope. API ownership is checked before run/job/audit reads and approval. | A production deployment still needs real authentication and per-tenant encryption policy. |
-| Cross-role or cross-case capability escape | Orchestration access binds tenant, owner, conversation and optional role allowlist; RoleRun, handoff, fact and private-memory APIs re-check the bound role. Review case conversation IDs are host-derived from case IDs. | Header identity is still a local demonstration boundary, not authentication. |
-| Model promotes itself to verifier or decision maker | Structured role receipts create only `proposed` facts. Verification consumes a one-use host receipt, and final case decisions accept only a human actor derived from the request principal plus revision CAS. | A production reviewer workflow needs RBAC, separation of duties and re-authentication. |
-| Upstream role prompt injection | Dependency summaries, proposed facts, handoffs and private memory are labelled `model_untrusted`; only receipt-backed facts are `host_verified`, and the entire layered context has a hard budget. | Answer-level susceptibility still requires live-model adversarial evaluation. |
-| Side-effect replay | Side-effect tools require idempotency keys; side-effecting MCP schemas without a required string key are rejected before mounting. Call IDs and canonical request fingerprints are checkpointed, and reuse with changed arguments fails closed. | Cross-service idempotency also requires the downstream service to honor the key. |
-| Confused-deputy approval | Approval is bound to the exact pending run and `call_id`; arguments remain durable, and current profile/policy are re-evaluated before execution so revocation wins. | Production UI should show diffs and require re-authentication for high-risk actions. |
-| Unbounded loops or output | Model steps, per-turn tool fanout, tool time, arguments, file size, match count, and outputs are bounded. | Provider token and monetary budgets should be enforced by a deployment adapter. |
-| Checkpoint tampering | SQLite payloads and persistent context JSON are revalidated; corrupt context rows fail closed individually. | SQLite has no application-level signature or encryption. |
-| Worker double execution | Atomic claim plus owner/token/version/expiry CAS, heartbeat, explicit retryable provider taxonomy, bounded retry, final-lease checkpoint reconciliation and receipt idempotency. | Checkpoint/queue/downstream writes are not one transaction; downstream systems must honor idempotency. Provider calls are at-least-once across ambiguous transport failures and may be charged twice. |
-| Duplicate multi-role execution | RoleRun uses an atomic database execution claim, heartbeat and token fence before provider/schema/tool dispatch; only the active token can write durable state. Missing/waiting/terminal checkpoints are reconciled before new scheduling. | A provider request already in flight when a process stalls cannot be cancelled reliably and may be billed twice; downstream side effects still require business idempotency. |
-| Audit leakage or mutation | Credential-like keys/values are rejected, failures are bounded/redacted, tenant/run filters are mandatory, and DB triggers reject UPDATE/DELETE. | Central log access, retention and encrypted backups remain deployment responsibilities. |
-| Arbitrary MCP/SSRF | MCP is off by default; endpoint and allowlist are host config, DNS/IP receives a preflight check, redirects/private ranges are denied by default, schemas/results are bounded, and local policy remains authoritative. | Preflight resolution and httpx connection resolution are not IP-pinned, leaving DNS-rebinding TOCTOU; production needs egress enforcement. No live conformance suite; JSON-only revision 2025-11-25, not current 2026-07-28. |
+## 主要风险与控制
 
-## Deterministic safety properties
+| 风险 | 当前控制 |
+|---|---|
+| RAG Prompt Injection | 检索文本标记为不可信证据，不能修改工具、Scope 或身份 |
+| 伪造引用 | Host 只接受真实检索回执中出现过的 Evidence ID |
+| 跨论文取证 | 检索前强制检查 ResearchScope、论文 ID 和版本 |
+| 跨租户数据泄漏 | PostgreSQL 查询先绑定 tenant，再执行 ACL 和 Scope 过滤 |
+| 路径穿越和敏感文件读取 | 拒绝绝对路径、`..`、symlink/reparse point、凭据型文件和超限输入 |
+| 模型生成任意 Shell | 论文研究工具不提供通用 Shell；工具参数使用结构化 Schema |
+| 重复副作用 | side-effecting 工具要求 idempotency key，调用指纹和回执持久化 |
+| Worker 重复执行 | 原子 claim、owner、lease token、version 和 expiry 共同 fencing |
+| MCP SSRF | MCP 默认关闭，Host 配置 endpoint 和 allowlist，并限制重定向、私网地址和响应大小 |
+| Zotero 内容污染 | 条目必须匹配论文身份，正文会过滤元数据包装、参考目录和占位内容 |
+| 模型自行批准结果 | Agent 只能生成草稿和 verdict，最终状态由 Host 和用户决定 |
 
-1. A tool absent from `AgentProfile.allowed_tools` cannot execute.
-2. A side-effecting call without an idempotency key cannot reach its handler.
-3. Write, external and destructive risks pause for approval.
-4. A repeated call ID or idempotency key with different arguments terminates as
-   a receipt-integrity error.
-5. Tenant and scope checks are performed by host code, never inferred by the
-   model.
-6. Ordinary tool errors become observations so the model may recover within the
-   step budget; policy and receipt-integrity errors fail closed.
-7. Human approval cannot resurrect a capability removed while the request was
-   pending; current profile and host policy are checked again before execution.
-8. A model-produced role result cannot become a verified fact or a final case
-   decision without a separately authenticated host action.
-9. A stale RoleRun worker cannot dispatch another tool or persist an outcome
-   after its lease token is replaced.
+## ResearchScope
 
-## Production gates not claimed by phase two
+`ResearchScope` 是论文研究最重要的权限边界：
 
-- authenticated identity and role administration;
-- live PostgreSQL/psycopg execution, ordered migration execution, RLS verification and encrypted backups (the app wiring, migrations, maintenance commands and opt-in live tests are supplied, but the local Docker engine is unavailable and the gate is not yet passed);
-- container or VM isolation for code execution;
-- certificate-pinned MCP and infrastructure-level egress controls;
-- production semantic embedding/reranking services and durable remote Qdrant indexing (local Qdrant and hash-vector degradation tests exist);
-- live Neo4j connectivity and graph-quality gate results (the optional adapter is fake-driver tested only);
-- exactly-once downstream effects; PostgreSQL-backed queue lease/CAS is implemented but still needs the live concurrency/recovery gate;
-- verified Docker image builds and container-runtime security controls (files are supplied, but Docker is unavailable on the current development machine);
-- red-team suites for prompt injection, data exfiltration and denial of service.
-- live-provider planning, tool-use, citation and adversarial quality evaluation after credentials are supplied.
+- 由用户选择论文后通过 Host 创建；
+- Agent 只有读取权；
+- 每次修改产生新版本；
+- Evidence ID 绑定 Scope 及其版本；
+- Scope 关闭后不能继续读取正文；
+- 扩展请求必须由用户批准。
+
+发现阶段的标题和摘要不能直接进入 Scope 证据库。只有成功获取、解析和索引的全文可以用于报告。
+
+## 文件与 PDF
+
+上传和下载路径会检查：
+
+- 文件大小；
+- PDF 魔数和解析结果；
+- 工作区边界；
+- symlink 和 reparse point；
+- 二进制及凭据型文件；
+- 文档身份匹配。
+
+扫描 PDF 或解析失败不会产生空的“成功索引”。如果需要 OCR 但 MinerU 不可用，论文会保持失败状态。
+
+## 证据与报告
+
+Writer 的结论必须引用 Evidence ID。Host 会核对：
+
+- Evidence ID 是否真实存在；
+- 是否来自本次运行的检索回执；
+- 是否属于当前 Scope 和版本；
+- 是否绑定正确论文；
+- 引用原文是否仍可读取。
+
+Critic 可以要求修改、删除或补充证据，但不能用范围外知识替换缺失证据。
+
+## 数据库与 Worker
+
+PostgreSQL 是默认持久化后端。数据库角色分离迁移权限与应用权限，应用角色不拥有 DDL 权限。
+
+Worker 使用租约执行 queued Run。失去租约的 Worker 不能继续写入完成状态，但已经发出的 Provider HTTP 请求无法可靠撤回，因此外部副作用仍需要业务幂等。
+
+## MCP
+
+远程 MCP 工具只有在 Host 配置中显式启用并加入 allowlist 后才会挂载。模型不能自行添加 MCP Server。
+
+MCP Schema 和结果会限制大小并去除不可信描述。具有副作用的工具必须声明 `idempotency_key`，否则在挂载阶段就会被拒绝。
+
+## 身份与审批
+
+本地开发使用请求头模拟 tenant 和 user，适合本机调试，不是公网认证方案。
+
+公网部署前需要：
+
+- 正式登录和 token 校验；
+- RBAC 与管理员角色；
+- 高风险操作二次认证；
+- tenant 隔离和密钥轮换；
+- 审批记录与审计保留策略。
+
+## 部署安全
+
+本地 Compose 已验证前端、后端、PostgreSQL/pgvector 和 Worker 可以健康启动。公网部署还需要：
+
+- HTTPS 和反向代理；
+- API 限流；
+- egress proxy 或防火墙；
+- 加密备份和恢复演练；
+- 集中日志与告警；
+- 容器资源限制；
+- Provider 费用和 Token 预算；
+- 并发和故障恢复压测；
+- Prompt Injection、数据泄露和拒绝服务红队测试。
+
+系统架构见 [架构说明](ARCHITECTURE.md)，论文工作流见 [论文研究流程](PAPER_RESEARCH_AGENT.md)。

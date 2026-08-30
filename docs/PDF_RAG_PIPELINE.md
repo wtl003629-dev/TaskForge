@@ -1,45 +1,39 @@
-# PDF RAG pipeline
+# TaskForge PDF RAG 流程
 
-TaskForge treats a PDF as a document container, not as a text file. The
-production ingestion boundary is:
+本文说明 PDF 从进入 TaskForge 到成为可引用证据的完整过程。技术标识保留英文，说明文字使用中文。
+
+## 总体链路
 
 ```text
-PDF bytes
-  -> Native Parser (born-digital fast path)
-  -> Parse Quality Gate
-  -> MinerU sidecar when OCR/layout/table/visual recovery is required
-  -> parser-neutral DocumentBlock[]
-  -> Parent -> Child projection
-  -> title/section-enriched Child BM25 + Dense -> multi-query RRF
-  -> Child reranker -> bounded Parent-aware reranker -> lineage diversity
-  -> query-centred Child evidence window
-  -> Parent read, Child citation identity
+PDF 或 Zotero 全文
+  → 文件与权限校验
+  → 原生解析器 / MinerU
+  → 统一 DocumentBlock
+  → 分块与证据身份生成
+  → BM25 与向量索引
+  → 查询召回与 RRF 融合
+  → qwen3-rerank 重排
+  → 去重与质量过滤
+  → Evidence Card
 ```
 
-## Direct text and OCR
+RAG 只处理已经进入当前 `ResearchScope`、成功解析并建立索引的论文。论文标题或摘要不能在全文缺失时冒充正文证据。
 
-Born-digital PDFs are first parsed locally with `pypdf` and `pdfplumber`.
-Scanned/image-only PDFs do not silently produce an empty index: the Native
-Parser reports `ocr_required`, and `auto` routing sends them to MinerU when the
-sidecar is configured. A native parse also records embedded image XObjects. If
-an image has no trusted textual representation, quality remains
-`visual_pending` instead of claiming that the figure was understood.
+## PDF 获取方式
 
-The quality report records page coverage, garbled characters, repeated
-headers/footers, reading-order warnings, orphan captions, empty tables,
-unparsed visuals, OCR use, parser name and parser version. Quality thresholds
-are development routing thresholds and must be frozen independently for a
-locked evaluation.
+全文可以来自：
 
-## MinerU boundary
+- 合法开放获取 PDF 自动下载；
+- 用户手动上传；
+- 本机 Zotero 只读同步。
 
-MinerU runs as a separate service. TaskForge talks to `/health` and
-`/file_parse`; raw JSON is cached by PDF SHA-256 plus parser configuration.
-The configured runtime version must equal `TASKFORGE_MINERU_EXPECTED_VERSION`.
-MinerU schemas never enter retrieval directly: both legacy `content_list` and
-`content_list_v2` are normalized into the same `DocumentBlock` contract.
+TaskForge 会检查文件大小、PDF 魔数、解析结果和论文身份。Zotero 条目必须通过 DOI 或标题、年份匹配，避免把错误附件绑定到所选论文。
 
-Recommended locked settings for the default D-drive pipeline deployment:
+## 解析器选择
+
+可直接提取文本的 PDF 先使用 `pypdf` 和 `pdfplumber`。如果页面是扫描图像、阅读顺序异常、表格或布局恢复不足，`auto` 路由会调用 MinerU。
+
+推荐配置：
 
 ```dotenv
 TASKFORGE_PDF_PARSER_BACKEND=auto
@@ -48,234 +42,136 @@ TASKFORGE_MINERU_EXPECTED_VERSION=3.4.4
 TASKFORGE_MINERU_BACKEND=pipeline
 TASKFORGE_MINERU_PARSE_METHOD=auto
 TASKFORGE_MINERU_EFFORT=high
-TASKFORGE_MINERU_CONCURRENCY=2
 ```
 
-`hybrid-engine` is an optional higher-cost ablation and requires downloading
-MinerU's separate VLM model bundle. It is not needed for the baseline parser,
-and it is not the default on an 8 GiB GPU. Figure/chart semantics remain a
-separate visual-evidence stage so the text-only DeepSeek writer never receives
-pixels directly.
+MinerU 作为独立服务运行。原始解析结果按 PDF 哈希和解析配置缓存，再统一转换为 `DocumentBlock`，不会把 MinerU 私有 Schema 直接传入检索层。
 
-Use loopback HTTP or HTTPS. TaskForge rejects non-loopback plain HTTP and
-enforces PDF size, page, response, retry and concurrency bounds. The repository
-includes a GPU sidecar under `deploy/mineru/`, derived from the official
-release recipe but pinned to `mineru[core]==3.4.4`. Do not use the official
-example's moving `latest` image for locked results. Both its container
-healthcheck and TaskForge verify `/health.version == 3.4.4`.
+## 解析质量检查
 
-MinerU's current license is a custom MinerU Open Source License based on Apache
-2.0 with additional commercial thresholds and an attribution obligation for
-third-party online services. Review the exact version's license and show the
-required attribution before offering this as an online service.
+质量报告会记录：
 
-## Hierarchy and evidence identity
+- 页面覆盖率；
+- 乱码比例；
+- 重复页眉和页脚；
+- 阅读顺序异常；
+- 空表格和孤立图注；
+- 未解析图片；
+- 是否使用 OCR；
+- 解析器名称和版本。
 
-- `Block` is the parser-neutral unit with page, bbox, reading order, type,
-  text/structured content, content hash and optional visual artifact locator.
-- `Parent` is the section-scale reading context (target 2,000 tokens,
-  maximum 3,000 tokens).
-- Flat mode uses a 2,000-character target and zero overlap by default; optional
-  same-page whole-Block overlap and raw sliding windows are experimental only.
-- `Child` is the retrieval and citation unit (target 400 tokens, maximum 500,
-  60-token whole-block overlap). Its authoritative body remains separate from
-  the deterministic title/section-enriched text used for indexing.
-- Tables, charts, formulas, images, code and algorithms are atomic. Captions
-  bind to their adjacent atomic block.
-- Only retrieval units enter BM25/Dense retrieval. In Parent–Child mode,
-  `paper_read` expands a Child to its same-document, same-version Parent;
-  citation verification deliberately checks the Child, not the wider Parent.
+解析失败时论文保持失败状态，不会建立空索引，也不会静默改用摘要。
 
-### Optional Flat-primary + Child-auxiliary route
+## 统一文档结构
 
-The production control remains unchanged. For an isolated experiment, set
-`TASKFORGE_PDF_CHUNKING_MODE=hybrid` and
-`TASKFORGE_RESEARCH_DUAL_ROUTE_ENABLED=true`. Ingestion then stores a Flat
-primary lane and a Parent/Child auxiliary lane in the same document version.
-The retriever searches Flat Top-30 and Child Top-20 independently, merges the
-two candidate lists, and keeps a small Flat head in the returned ranking as a
-deterministic query-level fallback. Parent context is attached only after a
-Child is selected; it does not replace the Child citation text. The six
-dual-route knobs are lane budgets, first/optional tail multilingual rerank
-budgets, and Flat fallback-head size, so they can be tuned without changing
-the legacy path.
+`DocumentBlock` 是解析器无关的最小结构，包含：
 
-The dual route is opt-in and validated as a pair: enabling it without
-`hybrid` chunking, or selecting `hybrid` without enabling the route, fails
-configuration validation. This prevents a document from being written with
-two lanes while the search service silently uses the old single-lane path.
+- 页码和 bbox；
+- 阅读顺序；
+- 标题、段落、表格、公式、图片、代码等类型；
+- 文本或结构化内容；
+- 内容哈希；
+- 相邻块和章节关系。
 
-For an offline direct-upload evaluation, the equivalent flags are:
+表格、公式、图片、代码和算法块会尽量保持原子性，图注会绑定到相邻对象。
 
-```powershell
-.\.venv\Scripts\python.exe scripts\evaluate_qasper_direct_upload.py `
-  --rag-profile optimized --rag-ablation c `
-  --pdf-chunking-mode hybrid --dual-route `
-  --dual-route-flat-candidate-k 30 --dual-route-child-candidate-k 20 `
-  --dual-route-flat-head-k 2
+## 分块方式
+
+TaskForge 支持：
+
+- `flat`：固定长度文本块；
+- `parent_child`：较大的 Parent 作为阅读上下文，较小的 Child 作为检索和引用单位；
+- `hybrid`：Flat 主通道加 Child 辅助通道；
+- `sliding`：滑动窗口实验通道。
+
+当前本地运行配置使用 `parent_child`。用户选定论文后的正式冻结评测基线使用 `Flat 2000/0`，两者不能当作完全相同的链路。修改分块方式后必须重新解析或重建相关论文索引。
+
+在 `parent_child` 模式中：
+
+- Child 用于检索、排序和引用；
+- Parent 只用于补充阅读上下文；
+- `paper_read` 可以从 Child 展开到同文档、同版本的 Parent；
+- 引用核验仍检查 Child 原文，不能用更宽的 Parent 替代。
+
+## 向量化与索引
+
+当前本地百炼组合为：
+
+```text
+Embedding：text-embedding-v4
+维度：1024
+Reranker：qwen3-rerank
+生成模型：qwen-plus
 ```
 
-The command is an experiment only; it does not promote the optimized profile
-or rewrite the current production index.
+正文在入库时完成向量化。缓存键包含 Provider、模型、维度、文本类型和内容哈希，避免把不同模型的向量混用。
 
-For CJK/cross-lingual Dual evaluation, configure a real multilingual
-cross-encoder.  The supported local FastEmbed checkpoint is
-`jinaai/jina-reranker-v2-base-multilingual`; the evaluator can select it with:
+`BAAI/bge-small-en-v1.5` 和 BM25-only 路径仍可作为本地替代配置，但不能与百炼索引直接混合查询。
 
-```powershell
-.\.venv\Scripts\python.exe scripts\evaluate_qasper_direct_upload.py `
-  --rag-profile optimized --rag-ablation c `
-  --pdf-chunking-mode hybrid --dual-route `
-  --multilingual-reranker-backend fastembed `
-  --multilingual-reranker-model jinaai/jina-reranker-v2-base-multilingual `
-  --dual-route-rerank-candidate-k 10 `
-  --dual-route-min-confidence 0.35
+## 查询与排序
+
+当前证据检索顺序为：
+
+```text
+用户问题
+  → Scope、tenant、ACL、版本和全文状态过滤
+  → BM25 召回
+  → Dense 向量召回
+  → RRF 合并 Candidate@50
+  → qwen3-rerank
+  → 结构和来源补充排序
+  → 重复与低质量片段过滤
+  → 返回 Evidence Cards
 ```
 
-On CPU, the default first-pass rerank budget is 10 candidates. The remaining
-Dual candidate tail stays available for recall and score fusion without
-invoking the expensive cross-encoder. A second pass over up to 20 tail
-candidates is available for explicitly selected difficult-query experiments;
-the production-safe default is
-`TASKFORGE_RESEARCH_DUAL_ROUTE_TAIL_RERANK_CANDIDATE_K=0`.
+Agent 默认只看到有限数量的证据卡，完整候选轨迹保留在 Host 和离线评测中，避免把大段检索轨迹塞入模型上下文。
 
-If the optional multilingual checkpoint is absent or cannot be loaded, Dual
-does not invoke the configured English reranker.  It keeps the Flat/RRF order
-and applies the query-level Flat fallback when coverage is missing or the
-fused confidence is below the configured threshold.  Parent-aware sorting is
-disabled for Dual; Parent data is reserved for final context expansion.
+## 证据质量过滤
 
-The previous locked 100-case QASPER A/B promoted the flat baseline:
-with identical MinerU 3.4.4 parsing, local embedding/reranker, Candidate@50,
-an eight-card Agent head and the original Query, flat reached paragraph
-Recall@1/5/10/50 `0.2728/0.7367/0.8625/0.9830`. Agent-visible Recall@8 was
-`0.8250`, with no additional presentation-window loss. The full Parent–Child
-locked report reached `0.7022/0.8447` at Recall@5/10 and Agent-visible
-Recall@8=`0.7938`. Those figures describe the pre-Parent-aware ranking chain,
-not the current implementation. Parent–Child is now the application default;
-its new title enrichment, Parent-aware rerank and lineage diversity have not
-yet been evaluated and no uplift is claimed.
-These are paragraph-aligned metrics; page overlap is not used. The current
-top-8 reports are [`flat-v2-top8`](../eval/reports/qasper-real-pdf-locked100-current-original-flat-v2-top8.json)
-and [`parent-child-v2-top8`](../eval/reports/qasper-real-pdf-locked100-current-original-parent-child-v2-top8.json).
+入库和返回前会过滤：
 
-A local no-API 20-case chunk-strategy screen tested Flat 500/1000/1500/2000-
-character targets, whole-Block overlap, and raw same-page sliding windows.
-Flat 500 reduced Recall@5 to `0.5350`; sliding 500/100 and 1000/200 failed the
-Gold alignment gate; sliding 2000/400 improved Recall@10 but reduced Recall@5.
-No strategy improved both Recall@5 and Recall@10 in that historical screen, so
-Flat 2000/0 remains the frozen comparison baseline. The screen's @5/@10 ordering is unchanged by the production Top-8
-cut; the locked v2 report additionally measures Agent-visible Recall@8.
-The machine-readable screen is
-[`qasper-pdf-chunk-strategy-screen20-v1`](../eval/reports/qasper-pdf-chunk-strategy-screen20-v1.json).
+- 参考文献、Bibliography、Works Cited 等目录；
+- 只有标题、关键词、作者邮箱或模板字段的片段；
+- `relevant doc 1` 等占位表格；
+- 空文本和过短无意义内容；
+- 同一论文内高度重合或重复的片段；
+- 解析得到的元数据包装文本。
 
-Parent–Child parameter screening also tested smaller and larger Parents,
-Children and overlaps. The original 2,000/3,000 Parent + 400/500 Child +
-60-token overlap remained the best of the tested hierarchy settings, but still
-trailed Flat 2000/0 at both Recall@5 and Recall@10. The hierarchy report is
-[`qasper-pdf-parent-child-screen20-v2-top8`](../eval/reports/qasper-real-pdf-screen20-parent2000-3000-child400-500-overlap60-v2-top8.json),
-and the promotion decision is frozen in
-[`chunking-gate-v2-top8`](../eval/reports/qasper-pdf-chunking-gate-v2-top8.json).
+前端默认显示短证据片段，用户可以按需查看完整原文。截断只影响展示，不会改变 Evidence ID 和引用关系。
 
-The text-only DeepSeek model never receives raw image pixels. It receives only
-trusted caption/OCR/table/LaTeX/chart-analysis text plus page/bbox/artifact
-provenance. A separately configured OpenAI-compatible VLM may convert an image
-or chart into a validated `VisualEvidence` object containing axes, legends,
-data points, nodes, edges, a textual rendering, confidence and warnings. Its
-result is cached by image SHA-256, exact model ID and prompt version. Failure is
-preserved as `visual_pending`; it is never replaced by an invented description.
+## Evidence ID
 
-## Query and ranking order
+Evidence ID 绑定：
 
-`ResearchQuery` accepts the original query plus up to two variants. Each query
-runs BM25 and Dense retrieval over an enriched projection containing document
-title, heading path and, for obvious backward references, a bounded previous
-context. RRF merges retrieval methods and query variants before the first
-Cross-Encoder pass over Candidate@K. The leading candidates then load validated
-same-document/same-version Parents, build a bounded previous/current/following
-window, and receive a second score. Configurable weights fuse the Child,
-Parent-context and original retrieval signals; a soft lineage step discourages
-one Parent from occupying the whole Agent evidence head. Any missing Parent or
-second-pass failure falls back to the first ranking. A normal Child remains the
-returned citation unit, while `paper_read` expands it to its Parent without
-changing citation identity.
+- tenant 和 Scope；
+- Scope 版本；
+- 论文和文档版本；
+- chunk；
+- 原文位置与哈希。
 
-Language routing is explicit and does not replace the validated English
-profile. English-only corpora use the existing English embedding and
-Cross-Encoder. When the query or indexed paper contains enough CJK text, the
-retriever selects the optional multilingual embedding/reranker pair
-(`intfloat/multilingual-e5-large` and
-`jinaai/jina-reranker-v2-base-multilingual`) when configured. The dense-index
-cache includes the model identity, and a Chinese request without that pair is
-reported as `multilingual_fallback` rather than being counted as a multilingual
-result. English-only operator heuristics are disabled on the multilingual
-route until they have their own multilingual evaluation.
+因此 Writer 不能自行编造 Evidence ID，也不能把其他论文或旧 Scope 的证据带入当前报告。
 
-The configured local model pair has passed both route selection and a real-model
-two-case smoke test: Chinese and cross-lingual queries select `multilingual`
-and rank the expected local evidence first, while the unit regression confirms
-that an English-only corpus keeps the `english` model path. This is not a
-Chinese benchmark or a quality-uplift claim; see
-[`multilingual-retrieval-smoke-v2`](../eval/reports/multilingual-retrieval-smoke-v2.json)
-and [`multilingual-routing-smoke-v1`](../eval/reports/multilingual-routing-smoke-v1.json).
+## 当前评测基线
 
-`TASKFORGE_RESEARCH_QUERY_EXPANSION_MODE` controls the ablation:
+selected-paper 冻结基线覆盖 60 篇真实中英文 PDF 和 177 个问题，使用 MinerU 3.4.4、Flat 2000/0、BM25、百炼 `text-embedding-v4`、RRF 和 `qwen3-rerank`。
 
-- `original`: original query only (portable default);
-- `keyword`: original plus one deterministic local keyword/entity query;
-- `synonym`: original plus one constrained semantic paraphrase;
-- `full`: original plus semantic paraphrase plus keyword/entity query.
+| 指标 | 结果 |
+|---|---:|
+| 整体 Recall@10 | 92.62% |
+| 中文 Recall@10 | 95.00% |
+| 英文 Recall@10 | 90.15% |
 
-The optional expander rejects variants that drop detected entities, numbers,
-negations or comparison terms. Expansion failure falls back to the original
-query and is recorded; it does not block retrieval. No model-specific absolute
-score threshold is used for evidence sufficiency.
+完整冻结配置见 [`paper-scoped-flat-bailian-v1.json`](../eval/baselines/paper-scoped-flat-bailian-v1.json)。评测任务限定为用户已经选定论文后的全文问答，不代表开放论文发现效果。
 
-## Evaluation order
+## 相关配置
 
-All previously published QASPER upload numbers based on page overlap are
-invalid for paragraph retrieval. The values and every comparison derived from
-them must not be used as current results.
-
-The new sequence is:
-
-1. prepare and hash real PDFs with `prepare_qasper_real_pdfs.py`;
-2. run `evaluate_qasper_direct_upload.py` on a paper-disjoint locked split;
-3. inspect Gold-to-Child alignment coverage and exclude/report unaligned units;
-4. report only paragraph Recall@1/5/10/50;
-5. compare `original`, `keyword`, `synonym`, and `full` with the same PDFs, split, parser
-   version, frozen query-variant manifest, Child IDs and ranking budgets;
-6. attribute misses to candidate generation, reranking or presentation window;
-7. run answer and four-Agent evaluation only after retrieval is frozen.
-
-```powershell
-.\.venv\Scripts\python.exe scripts\prepare_qasper_real_pdfs.py --help
-.\.venv\Scripts\python.exe scripts\generate_qasper_query_variants.py --help
-.\.venv\Scripts\python.exe scripts\evaluate_qasper_direct_upload.py --help
-.\.venv\Scripts\python.exe scripts\evaluate_qasper_corpus_native.py --help
+```dotenv
+TASKFORGE_GENERAL_TEXT_BACKEND=bailian
+TASKFORGE_BAILIAN_MODEL=text-embedding-v4
+TASKFORGE_BAILIAN_EMBEDDING_DIMENSION=1024
+TASKFORGE_RESEARCH_RERANKER_BACKEND=bailian
+TASKFORGE_BAILIAN_RERANK_MODEL=qwen3-rerank
+TASKFORGE_PDF_CHUNKING_MODE=parent_child
+TASKFORGE_RESEARCH_DUAL_ROUTE_ENABLED=false
 ```
 
-The evaluator must score only Child content aligned to Gold paragraphs. Page
-overlap is diagnostic provenance only and is never an acceptance metric.
-The default alignment gate requires at least 90% aligned Gold units and 90%
-alignment-eligible cases. If it fails, headline Recall values are written as
-`null`; lower-bound and eligible-subset values remain explicitly diagnostic.
-Expanded-query runs require `--query-variants` with a manifest bound to the
-locked split SHA-256; live LLM rewrites are never generated inside a scored
-run.
-
-The locked 100-case deterministic `keyword` ablation produced exactly the same
-Candidate@50, Recall@1/5/10/50 and failure-stage counts as the original Query,
-so the default remains `original`. A zero-API 20-case screen of the
-pre-generated synonym manifest also matched the original Query at Recall@5,
-Recall@10 and Agent-visible Recall@8, so a full synonym run was not started.
-The reports are [`qasper-query-expansion-locked100-v1`](../eval/reports/qasper-query-expansion-locked100-v1.json)
-and [`qasper-query-expansion-synonym-screen20-v1`](../eval/reports/qasper-query-expansion-synonym-screen20-v1.json).
-
-The current MinerU 3.4.4 100-case run passes the alignment gate: Gold-unit
-alignment is `97.03%` and `97/100` cases are fully eligible. With the original
-Query, flat chunks, Candidate@50 and the local Cross-Encoder, formal
-Recall@1/5/10/50 is `0.2728/0.7367/0.8625/0.9830`; the eight-window Agent-visible
-diagnostic is `0.8250`. The same locked inputs with Parent–Child produce
-`0.7022/0.8447` at Recall@5/10, so that ablation remains opt-in. The
-machine-readable reports are linked above; no page-overlap score is used.
+详细评测规则见 [评测说明](EVALUATION.md)。
