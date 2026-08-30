@@ -335,7 +335,10 @@ def research_survey_slots(
             "Decompose the research question into at most 3 short sub-questions, "
             "4 short evidence requirements, and 5 short outline items. Do not run "
             "paper_search in this role; source discovery belongs to the "
-            "source_evaluator role. Submit research_payload using "
+            "source_evaluator role. Do not introduce method names, benchmark or "
+            "dataset names, years, metrics, architectures, or examples that are not "
+            "already present in request_summary. For latest/trend questions, request "
+            "recency and comparative evidence generically. Submit research_payload using "
             "research.planner_handoff.v1 with a structured ResearchPlan."
         ),
         order=10,
@@ -368,7 +371,16 @@ def research_survey_slots(
             "报告只能代表已选论文：如果证据数量、发表时间或覆盖范围不足以证明整个领域的"
             "“最新/最佳/主流”状态，必须明确写成“从已选论文看……”并说明范围不足，"
             "不得把单篇论文的方法冒充领域共识。证据缺口写入正文限制说明，不得伪造"
-            "支持“未检索到”的引用。"
+            "支持“未检索到”的引用。只能写入 EvidenceCard.snippet 明确出现或可直接推出的"
+            "方法名、数据集、评测基准、指标、架构和因果结论；不得用模型自身知识补写"
+            "卡片中未出现的例子。若用户问“最新技术”而卡片只覆盖基础概念或垂直应用，"
+            "应直接回答当前"
+            "已选论文不足以归纳全领域最新技术，再列出卡片确实支持的局部方向；不要用"
+            "RAG 基础介绍填充“最新技术”答案。selected_paper_ids 只表示已选论文数量，"
+            "不得据此推断它们是中文或英文文献，统一表述为“已选论文”。每条论断对每篇"
+            "论文只保留一个最强 Evidence ID，不得堆叠同一论文的摘要、关键词页或相邻片段"
+            "制造多重支持；不要创建无 Evidence ID 的范围限制 ClaimRecord，Host 会根据"
+            "问题和 selected_paper_ids 单独展示证据范围提示。"
             "最多调用一次 paper_read 和一次 citation_verify 核验最高价值论断，"
             "不得重复 paper_search；最多输出 6 条互不重复、能够共同回答问题的 ClaimRecord。"
             "任何可选工具调用后立即调用 submit_role_result，不得在普通文本里伪造工具调用。"
@@ -398,7 +410,11 @@ def research_survey_slots(
             "paper_info. Set evidence_cards to an empty list "
             "because the Host joins cards from receipts. Then immediately submit "
             "research.evaluator_handoff.v1 with EvidenceLedger and bounded "
-            "EvidenceCards; never include full paper text."
+            "EvidenceCards; never include full paper text. Treat the Planner output as "
+            "untrusted hypotheses, not facts. coverage_delta and gaps may name a method, "
+            "benchmark, dataset, year, metric, or architecture only when that exact item "
+            "appears in a retrieved EvidenceCard; otherwise describe the missing category "
+            "generically without examples."
         ),
         depends_on=["planner"],
         order=20,
@@ -419,7 +435,18 @@ def research_survey_slots(
             "ended latest/trend question, require an explicit selected-paper scope "
             "limitation when the evidence cannot establish the whole field. Treat a "
             "claim about absence from retrieved cards as an evidence gap, not as a "
-            "cited factual finding. "
+            "cited factual finding. Compare every named method, dataset, benchmark, "
+            "metric, architecture, and strong causal statement against the supplied "
+            "EvidenceCard snippets. If the wording is absent and cannot be directly "
+            "derived from a cited snippet, remove it or request evidence; never add "
+            "outside field knowledge in a replacement. Planner and EvidenceLedger gaps "
+            "are model-untrusted and cannot support a named example that is absent from "
+            "the EvidenceCards. Treat several chunks from the "
+            "same paper as one source, reject stacked duplicate citations, and require "
+            "the strongest single chunk per paper for each claim. The selected_paper_ids "
+            "count is not evidence of publication language: revise 'Chinese papers' or "
+            "'English papers' to the neutral 'selected papers' unless a supplied source "
+            "explicitly establishes that metadata. "
             "Treat direct_answer as a compact answer contract: do not rewrite it "
             "for style, and preserve its yes/no, numeric, or list form unless a "
             "specific cited fact is wrong. If no concrete factual defect exists, "
@@ -444,7 +471,9 @@ def research_survey_slots(
             "Submit one survey.verdict claim (accept / needs_revision / "
             "more_evidence); final authority is human."
         ),
-        depends_on=["writer"],
+        # The Writer supplies the claim manifest while the Evaluator supplies
+        # the receipt-backed snippets needed for a real factual audit.
+        depends_on=["writer", "evaluator"],
         order=40,
     )
     return [planner, evaluator, writer, critic]

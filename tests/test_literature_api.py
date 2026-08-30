@@ -360,13 +360,15 @@ def test_literature_selection_ingestion_and_bounded_evidence_api(tmp_path: Path)
         writer_delta = writer_task.metadata["case_context"]["dependency_results"][0][
             "blackboard_delta"
         ]
-        critic_delta = critic_task.metadata["case_context"]["dependency_results"][0][
-            "blackboard_delta"
-        ]
+        critic_dependencies = critic_task.metadata["case_context"]["dependency_results"]
+        critic_delta = critic_dependencies[0]["blackboard_delta"]
+        critic_evidence_delta = critic_dependencies[1]["blackboard_delta"]
         assert set(writer_delta) >= {"evidence_ledger", "evidence_cards"}
         assert "research_plan" not in writer_delta
         assert set(critic_delta) >= {"draft", "claim_manifest"}
         assert "evidence_cards" not in critic_delta
+        assert set(critic_evidence_delta) >= {"evidence_ledger", "evidence_cards"}
+        assert critic_evidence_delta["evidence_cards"]
 
         stranger = client.get(
             f"/api/research/scopes/{scope['scope_id']}",

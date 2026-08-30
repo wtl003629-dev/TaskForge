@@ -55,6 +55,7 @@ import type {
 } from './types'
 
 type WorkbenchMode = 'research' | 'agent' | 'review'
+type ResearchWorkspaceView = 'sources' | 'ask' | 'report'
 
 const activeMode = ref<WorkbenchMode>('research')
 
@@ -80,8 +81,8 @@ const demoMode = ref(false)
 const demoWarning = ref('')
 let pollTimer: number | undefined
 
-const literatureQuery = ref('检索增强生成在学术论文问答中的应用')
-const researchQuestionsText = ref('如何提高论文问答中的检索准确率？')
+const literatureQuery = ref('')
+const researchQuestionsText = ref('')
 const yearFrom = ref<number | undefined>(2020)
 const yearTo = ref<number | undefined>(new Date().getFullYear())
 const literatureResultLimit = ref(50)
@@ -95,7 +96,7 @@ const ingestionStatuses = ref<IngestionStatus[]>([])
 const uploadedPaperIds = ref<string[]>([])
 const researchIntent = ref('')
 const allowExpansion = ref(true)
-const evidenceQuery = ref('论文中的哪些证据支持其主要检索设计？')
+const evidenceQuery = ref('')
 const evidenceIntent = ref('general_fact')
 const scopeEvidence = ref<ScopeEvidenceResult | null>(null)
 const showAllEvidence = ref(false)
@@ -108,6 +109,13 @@ const reportGenerating = ref(false)
 const researchError = ref('')
 const researchMessage = ref('')
 const directUploadTitle = ref('')
+const researchWorkspaceView = ref<ResearchWorkspaceView>('sources')
+
+const exampleResearchQueries = [
+  'RAG 的最新技术方向与评测方法有哪些？',
+  '大语言模型在医疗问答中的可靠性如何评估？',
+  '多模态检索增强生成有哪些代表性研究？',
+] as const
 
 const reviewCases = ref<ReviewCase[]>([])
 const selectedCaseId = ref('')
@@ -176,6 +184,9 @@ const pendingIngestionCount = computed(() => {
   )
   return researchScope.value.selectedPaperIds.filter((paperId) => !indexed.has(paperId)).length
 })
+const indexedPaperCount = computed(() =>
+  ingestionStatuses.value.filter((item) => item.status === 'indexed').length,
+)
 const reportAvailabilityReason = computed(() => {
   if (!researchScope.value) return '保存论文清单后即可进入报告生成。'
   if (reportGenerating.value) return 'Planner、Evaluator、Writer、Critic 正在依次处理论文证据。'
@@ -638,6 +649,41 @@ function clearSelectedPapers(): void {
   if (!researchScope.value) selectedPaperIds.value = []
 }
 
+function useExampleQuery(query: string): void {
+  literatureQuery.value = query
+  researchIntent.value = query
+  reportQuestion.value = query
+}
+
+function startNewResearch(): void {
+  literatureQuery.value = ''
+  researchQuestionsText.value = ''
+  requiredTermsText.value = ''
+  excludedTermsText.value = ''
+  literatureResult.value = null
+  selectedPaperIds.value = []
+  researchScope.value = null
+  ingestionStatuses.value = []
+  uploadedPaperIds.value = []
+  researchIntent.value = ''
+  evidenceQuery.value = ''
+  scopeEvidence.value = null
+  showAllEvidence.value = false
+  closeEvidenceDrawer()
+  researchAgentDetail.value = null
+  reportQuestion.value = ''
+  reportEvidence.value = []
+  researchError.value = ''
+  researchMessage.value = ''
+  directUploadTitle.value = ''
+  researchWorkspaceView.value = 'sources'
+}
+
+function showResearchView(view: ResearchWorkspaceView): void {
+  if (view !== 'sources' && researchScope.value?.status !== 'ready') return
+  researchWorkspaceView.value = view
+}
+
 function verificationLabel(status: PaperCard['verificationStatus']): string {
   return {
     cross_source_verified: '多源核验',
@@ -660,6 +706,23 @@ function publicationTypeLabel(publicationType?: string): string | undefined {
     'book-chapter': '书籍章节',
     'peer-review': '同行评议',
   }[publicationType.toLowerCase()] ?? publicationType
+}
+
+function paperTrustLabel(paper: PaperCard): string {
+  if (paper.verificationStatus === 'cross_source_verified') return '多源学术核验'
+  if (paper.verificationStatus === 'provider_verified' && (paper.venue || paper.publisher)) {
+    return '来源可核对'
+  }
+  if (paper.venue || paper.publisher || paper.doi) return '出版信息可核对'
+  return '来源信息有限'
+}
+
+function paperTrustTone(paper: PaperCard): string {
+  if (paper.verificationStatus === 'cross_source_verified') return 'strong'
+  if (paper.verificationStatus === 'provider_verified' || paper.venue || paper.publisher || paper.doi) {
+    return 'standard'
+  }
+  return 'limited'
 }
 
 function fullTextLabel(status: string): string {
@@ -697,7 +760,8 @@ function paperLanguageLabel(paper: PaperCard): string | undefined {
   if (paper.language?.toLowerCase().startsWith('zh')) return '中文'
   if (paper.language?.toLowerCase().startsWith('en')) return '英文'
   if (paper.language) return paper.language.toUpperCase()
-  return isChinesePaper(paper) ? '中文' : undefined
+  if (isChinesePaper(paper)) return '中文'
+  return /[a-z]/iu.test(paper.title) ? '英文' : undefined
 }
 
 function isChinesePaper(paper: PaperCard): boolean {
@@ -740,6 +804,7 @@ async function handleLiteratureSearch(): Promise<void> {
     closeEvidenceDrawer()
     researchAgentDetail.value = null
     reportEvidence.value = []
+    researchWorkspaceView.value = 'sources'
     researchIntent.value = query
     reportQuestion.value = query
     const chineseCount = result.papers.filter(isChinesePaper).length
@@ -804,6 +869,7 @@ async function handleConfirmScope(): Promise<void> {
     researchMessage.value = '论文清单已保存，正在自动获取可合法下载的开放 PDF…'
     ingestionStatuses.value = await ingestResearchScope(researchScope.value.scopeId)
     researchScope.value = await getResearchScope(researchScope.value.scopeId)
+    researchWorkspaceView.value = researchScope.value.status === 'ready' ? 'ask' : 'sources'
     const indexed = ingestionStatuses.value.filter((item) => item.status === 'indexed').length
     const manual = ingestionStatuses.value.filter((item) => item.status === 'failed').length
     researchMessage.value = manual
@@ -823,6 +889,7 @@ async function handleScopeIngestion(): Promise<void> {
   try {
     ingestionStatuses.value = await ingestResearchScope(researchScope.value.scopeId)
     researchScope.value = await getResearchScope(researchScope.value.scopeId)
+    if (researchScope.value.status === 'ready') researchWorkspaceView.value = 'ask'
     const indexed = ingestionStatuses.value.filter((item) => item.status === 'indexed').length
     const manual = ingestionStatuses.value.filter((item) => item.status === 'failed').length
     researchMessage.value = manual
@@ -865,13 +932,14 @@ async function handlePaperUpload(paperId: string, event: Event): Promise<void> {
 async function handleDirectResearchUpload(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
-  if (!file || !researchIntent.value.trim()) return
+  const uploadIntent = researchIntent.value.trim() || literatureQuery.value.trim()
+  if (!file || !uploadIntent) return
   researchLoading.value = true
   researchError.value = ''
   try {
     const result = await uploadResearchPdfDirect({
       conversationId: createClientCommandKey('direct-upload-conversation'),
-      userIntent: researchIntent.value.trim(),
+      userIntent: uploadIntent,
       title: directUploadTitle.value.trim() || undefined,
       file,
     })
@@ -890,8 +958,10 @@ async function handleDirectResearchUpload(event: Event): Promise<void> {
     showAllEvidence.value = false
     closeEvidenceDrawer()
     researchAgentDetail.value = null
-    reportQuestion.value = researchIntent.value.trim()
+    researchIntent.value = uploadIntent
+    reportQuestion.value = uploadIntent
     reportEvidence.value = []
+    researchWorkspaceView.value = 'sources'
     researchMessage.value = 'PDF 已直接上传并建立研究边界，可以开始解析和索引。'
   } catch (error) {
     researchError.value = error instanceof Error ? error.message : 'PDF 直接上传失败。'
@@ -904,6 +974,7 @@ async function handleDirectResearchUpload(event: Event): Promise<void> {
 async function handleEvidenceSearch(): Promise<void> {
   if (!researchScope.value || researchScope.value.status !== 'ready' || !evidenceQuery.value.trim()) return
   researchLoading.value = true
+  researchWorkspaceView.value = 'ask'
   researchError.value = ''
   showAllEvidence.value = false
   closeEvidenceDrawer()
@@ -926,6 +997,7 @@ async function handleResearchAgents(): Promise<void> {
   const question = reportQuestion.value.trim()
   if (!researchScope.value || researchScope.value.status !== 'ready' || !question) return
   researchLoading.value = true
+  researchWorkspaceView.value = 'report'
   reportGenerating.value = true
   researchError.value = ''
   reportEvidence.value = []
@@ -1148,28 +1220,100 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="page-shell">
-    <header class="hero">
-      <div>
+    <header class="hero app-header">
+      <div class="app-brand">
         <div class="brand-mark" aria-hidden="true">TF</div>
-        <p class="eyebrow">TASKFORGE</p>
-        <h1>Research Console</h1>
-        <p class="hero-subtitle">论文发现、PDF 解析、RAG 检索与引用</p>
+        <div>
+          <p class="eyebrow">TASKFORGE</p>
+          <h1>论文研究助手</h1>
+        </div>
       </div>
-      <div class="hero-note">
-        <strong>论文研究助手</strong>
-        <p>中英文论文 · PDF 全文检索</p>
+      <div class="app-header-actions">
+        <span class="service-status"><i aria-hidden="true" />学术检索服务已连接</span>
+        <button
+          v-if="literatureResult || researchScope"
+          class="new-research-button"
+          type="button"
+          :disabled="researchLoading"
+          @click="startNewResearch"
+        >新建研究</button>
       </div>
     </header>
 
     <template v-if="activeMode === 'research'">
-      <div v-if="researchError" class="notice notice-error" role="alert">
-        <strong>研究流程失败</strong><span>{{ researchError }}</span>
-      </div>
-      <div v-if="researchMessage" class="notice research-notice" role="status">
-        <strong>研究状态</strong><span>{{ researchMessage }}</span>
+      <div class="research-status-stack">
+        <div v-if="researchError" class="notice notice-error" role="alert">
+          <strong>这次研究没有完成</strong><span>{{ researchError }}</span>
+        </div>
+        <div v-if="researchMessage" class="notice research-notice" role="status">
+          <strong>当前进度</strong><span>{{ researchMessage }}</span>
+        </div>
       </div>
 
-      <nav class="research-stepper" aria-label="论文研究流程">
+      <section
+        class="research-home"
+        :class="{ compact: Boolean(literatureResult || researchScope) }"
+        data-stage="consensus-home"
+      >
+        <div v-if="!literatureResult && !researchScope" class="research-home-copy">
+          <span class="home-kicker">基于真实论文的研究工作台</span>
+          <h2>从论文出发，找到可信答案</h2>
+          <p>发现中英文研究，核对全文证据，再生成带原文引用的中文报告。</p>
+        </div>
+        <div v-else class="research-home-context">
+          <span>当前研究</span>
+          <strong>{{ researchIntent || literatureQuery }}</strong>
+        </div>
+
+        <div class="query-composer">
+          <textarea
+            id="research-query"
+            v-model="literatureQuery"
+            rows="2"
+            maxlength="4000"
+            :disabled="researchLoading"
+            aria-label="研究问题"
+            placeholder="输入一个研究问题，例如：RAG 的最新技术方向与评测方法有哪些？"
+            @keydown.ctrl.enter.prevent="handleLiteratureSearch"
+            @keydown.meta.enter.prevent="handleLiteratureSearch"
+          />
+          <div class="query-composer-footer">
+            <div class="language-choice" role="group" aria-label="论文语言偏好">
+              <button
+                v-for="choice in [
+                  { value: 'balanced', label: '综合' },
+                  { value: 'chinese_first', label: '中文优先' },
+                  { value: 'english_first', label: '英文优先' },
+                ]"
+                :key="choice.value"
+                type="button"
+                :class="{ active: languagePreference === choice.value }"
+                :aria-pressed="languagePreference === choice.value"
+                @click="languagePreference = choice.value as LiteratureLanguagePreference"
+              >{{ choice.label }}</button>
+            </div>
+            <span class="query-source-note">四个开放学术数据源</span>
+            <button
+              class="query-submit"
+              data-action="search-literature"
+              :disabled="researchLoading || !literatureQuery.trim()"
+              @click="handleLiteratureSearch"
+            >
+              <span>{{ researchLoading ? '正在查找论文…' : literatureResult ? '重新检索' : '查找论文' }}</span>
+              <i aria-hidden="true">→</i>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="!literatureResult && !researchScope" class="example-queries" aria-label="示例研究问题">
+          <span>试试这些问题</span>
+          <button v-for="query in exampleResearchQueries" :key="query" type="button" @click="useExampleQuery(query)">
+            {{ query }}
+          </button>
+        </div>
+      </section>
+
+      <nav v-if="literatureResult || researchScope" class="research-journey" aria-label="论文研究流程">
         <ol>
           <li
             v-for="step in researchSteps"
@@ -1177,78 +1321,63 @@ onBeforeUnmount(() => {
             :data-state="step.number < researchStep ? 'done' : step.number === researchStep ? 'active' : 'pending'"
           >
             <span>{{ step.number < researchStep ? '✓' : step.number }}</span>
-            <div><strong>{{ step.title }}</strong><small>{{ step.detail }}</small></div>
+            <strong>{{ step.title }}</strong>
           </li>
         </ol>
         <p>{{ researchStepGuide }}</p>
       </nav>
 
-      <section class="research-command" :class="{ completed: researchStep > 1 }">
-        <div class="research-command-heading">
-          <span>RESEARCH QUERY</span>
-          <strong>你想研究什么？</strong>
-        </div>
-        <textarea
-          v-model="literatureQuery"
-          rows="2"
-          maxlength="4000"
-          :disabled="researchLoading"
-          aria-label="研究需求"
-          placeholder="输入研究问题，例如：多语言论文 RAG 中哪些检索策略最有效？"
-        />
-        <div class="research-command-footer">
-          <span>中英文双路 · Semantic Scholar · OpenAlex · arXiv · Crossref</span>
-          <button :disabled="researchLoading || !literatureQuery.trim()" @click="handleLiteratureSearch">
-            {{ researchLoading ? '正在处理…' : literatureResult ? '重新检索' : '开始研究' }} <i aria-hidden="true">↗</i>
-          </button>
-        </div>
-      </section>
-
-      <details v-if="!researchScope" class="research-options">
+      <details v-if="!researchScope" class="research-options" data-panel="advanced-filters">
         <summary>
-          <div><strong>高级选项与 PDF 上传</strong><span>年份、关键词、返回数量和数据源状态</span></div>
+          <div><strong>筛选条件与 PDF 上传</strong><span>年份、关键词、返回数量和数据源状态</span></div>
           <i aria-hidden="true">⌄</i>
         </summary>
         <div class="research-options-content">
           <section class="direct-upload-card">
-            <strong>已有论文？直接上传 PDF</strong>
-            <p>无需联网发现，上传后直接进行全文检索。</p>
+            <div><strong>已有论文 PDF？</strong><p>使用当前研究问题，直接上传并建立全文索引。</p></div>
             <label class="field">
               <span>论文标题（可选）</span>
               <input v-model="directUploadTitle" maxlength="2000" :disabled="researchLoading" placeholder="默认使用文件名" />
             </label>
             <label class="secondary-button direct-upload-button">
-              选择 PDF
-              <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || !researchIntent.trim()" @change="handleDirectResearchUpload" />
+              上传 PDF
+              <input
+                type="file"
+                accept="application/pdf,.pdf"
+                :disabled="researchLoading || (!literatureQuery.trim() && !researchIntent.trim())"
+                @change="handleDirectResearchUpload"
+              />
             </label>
           </section>
           <div class="advanced-filter-grid">
-            <label class="field advanced-question"><span>补充研究问题（可选，逗号分隔）</span><textarea v-model="researchQuestionsText" rows="2" maxlength="2000" :disabled="researchLoading" /></label>
+            <label class="field advanced-question"><span>补充研究问题（可选，逗号分隔）</span><textarea v-model="researchQuestionsText" rows="2" maxlength="2000" :disabled="researchLoading" placeholder="例如：有哪些代表性方法？如何评测？" /></label>
             <label class="field"><span>起始年份</span><input v-model.number="yearFrom" type="number" min="1000" max="3000" /></label>
             <label class="field"><span>结束年份</span><input v-model.number="yearTo" type="number" min="1000" max="3000" /></label>
-            <label class="field"><span>论文语言</span><select v-model="languagePreference"><option value="balanced">综合</option><option value="chinese_first">中文优先</option><option value="english_first">英文优先</option></select></label>
-            <label class="field"><span>返回数量</span><select v-model.number="literatureResultLimit"><option :value="30">30 篇</option><option :value="50">50 篇</option><option :value="100">100 篇（广域）</option></select></label>
-            <label class="field"><span>必须包含（可选）</span><input v-model="requiredTermsText" placeholder="多个词用逗号分隔" /></label>
-            <label class="field"><span>排除词（可选）</span><input v-model="excludedTermsText" placeholder="多个词用逗号分隔" /></label>
+            <label class="field"><span>返回数量</span><select v-model.number="literatureResultLimit"><option :value="30">30 篇</option><option :value="50">50 篇</option><option :value="100">100 篇</option></select></label>
+            <label class="field"><span>必须包含</span><input v-model="requiredTermsText" placeholder="多个词用逗号分隔" /></label>
+            <label class="field"><span>排除词</span><input v-model="excludedTermsText" placeholder="多个词用逗号分隔" /></label>
           </div>
           <details v-if="literatureResult" class="provider-health provider-health-details">
-            <summary>查看数据源状态</summary>
+            <summary>数据源运行状态</summary>
             <article v-for="provider in literatureResult.providers" :key="provider.provider" :data-failed="Boolean(provider.failure)">
               <div><strong>{{ providerLabel(provider.provider) }}</strong><span>{{ provider.failure ? '部分不可用' : '正常' }}</span></div>
-              <small>{{ provider.resultCount }} 条结果 · {{ Math.round(provider.elapsedMs) }} 毫秒 · {{ provider.cacheHits }} 次缓存命中</small>
+              <small>{{ provider.resultCount }} 条结果 · {{ Math.round(provider.elapsedMs) }} 毫秒</small>
               <small v-if="provider.failure">{{ provider.failure }}</small>
             </article>
           </details>
         </div>
       </details>
 
-      <section v-if="literatureResult || researchScope" class="research-workspace" :class="{ 'scope-only': Boolean(researchScope) }">
+      <section v-if="literatureResult && !researchScope" class="research-workspace" data-stage="paper-selection">
 
-        <section v-if="!researchScope" class="research-results panel">
+        <section class="research-results panel" data-list="papers">
           <div class="section-heading research-results-heading">
-            <span>结果</span>
-            <div><p>按匹配度排序 · 中文 {{ chinesePaperCount }} 篇 · 已排除报告与非论文条目</p><h2>找到 {{ literatureResult?.papers.length ?? 0 }} 篇论文</h2></div>
-            <button class="secondary-button" :disabled="researchLoading || !selectedPaperIds.length || Boolean(researchScope)" @click="handleCitationExpansion">查找相关论文</button>
+            <div>
+              <span class="section-kicker">论文发现</span>
+              <h2>找到 {{ literatureResult?.papers.length ?? 0 }} 篇相关论文</h2>
+              <p>按匹配度排序，其中中文 {{ chinesePaperCount }} 篇；来源信息有限的条目会明确标记。</p>
+            </div>
+            <button class="secondary-button" :disabled="researchLoading || !selectedPaperIds.length" @click="handleCitationExpansion">沿引用继续查找</button>
           </div>
 
           <div v-if="!literatureResult" class="research-empty">
@@ -1264,171 +1393,227 @@ onBeforeUnmount(() => {
               :key="paper.paperId"
               class="paper-card"
               :class="{ selected: selectedPaperIds.includes(paper.paperId) }"
+              :data-paper-id="paper.paperId"
             >
-              <button class="paper-select" :disabled="Boolean(researchScope)" :aria-pressed="selectedPaperIds.includes(paper.paperId)" @click="togglePaper(paper.paperId)">
-                {{ selectedPaperIds.includes(paper.paperId) ? '✓ 已选择' : '+ 选择' }}
-              </button>
-              <div class="paper-score"><strong>{{ Math.round(paper.relevanceScore * 100) }}</strong><span>匹配度</span></div>
               <div class="paper-copy">
-                <div class="paper-badges">
-                  <span :data-verification="paper.verificationStatus">{{ verificationLabel(paper.verificationStatus) }}</span>
-                  <span>{{ fullTextLabel(paper.fullTextStatus) }}</span><span v-if="publicationTypeLabel(paper.publicationType)">{{ publicationTypeLabel(paper.publicationType) }}</span><span v-if="paperLanguageLabel(paper)">{{ paperLanguageLabel(paper) }}</span><span v-if="paper.year">{{ paper.year }}</span>
+                <div class="paper-card-topline">
+                  <div class="paper-badges">
+                    <span class="paper-trust" :data-tone="paperTrustTone(paper)">{{ paperTrustLabel(paper) }}</span>
+                    <span v-if="publicationTypeLabel(paper.publicationType)">{{ publicationTypeLabel(paper.publicationType) }}</span>
+                    <span v-if="paperLanguageLabel(paper)">{{ paperLanguageLabel(paper) }}</span>
+                    <span v-if="paper.year">{{ paper.year }}</span>
+                  </div>
+                  <span class="paper-score"><strong>{{ Math.round(paper.relevanceScore * 100) }}%</strong> 匹配</span>
                 </div>
                 <h3>{{ paper.title }}</h3>
                 <p class="paper-authors">{{ paper.authors.slice(0, 5).join(', ') || '作者信息缺失' }}<template v-if="paper.venue"> · {{ paper.venue }}</template><template v-if="paper.publisher && paper.publisher !== paper.venue"> · {{ paper.publisher }}</template></p>
                 <p class="paper-abstract">{{ paper.shortDescription || '暂无可验证的简短介绍。' }}</p>
-                <div class="paper-links">
-                  <a v-for="source in paper.sourceUrls.slice(0, 3)" :key="source" :href="source" target="_blank" rel="noreferrer">来源 ↗</a>
-                  <span v-if="paper.doi">DOI {{ paper.doi }}</span><span v-if="paper.citationCount !== undefined">被引 {{ paper.citationCount }}</span>
+                <div class="paper-card-footer">
+                  <div class="paper-links">
+                    <a v-for="source in paper.sourceUrls.slice(0, 2)" :key="source" :href="source" target="_blank" rel="noreferrer">查看来源 ↗</a>
+                    <span>{{ fullTextLabel(paper.fullTextStatus) }}</span>
+                    <span v-if="paper.citationCount !== undefined">被引 {{ paper.citationCount }}</span>
+                  </div>
+                  <button
+                    class="paper-select"
+                    data-action="toggle-paper"
+                    :disabled="Boolean(researchScope)"
+                    :aria-pressed="selectedPaperIds.includes(paper.paperId)"
+                    @click="togglePaper(paper.paperId)"
+                  >
+                    {{ selectedPaperIds.includes(paper.paperId) ? '✓ 已加入' : '+ 加入论文库' }}
+                  </button>
                 </div>
               </div>
             </article>
           </div>
         </section>
 
-        <aside class="scope-panel panel">
+        <aside class="scope-panel panel" data-list="selected-papers">
           <div class="section-heading">
-            <span>{{ researchScope ? '全文' : '已选' }}</span><div><p>{{ researchScope ? '论文获取与索引状态' : '保存前可以调整' }}</p><h2>{{ selectedPaperIds.length }} 篇论文</h2></div>
-            <button v-if="!researchScope && selectedPaperIds.length" class="clear-selection" type="button" @click="clearSelectedPapers">清空</button>
+            <div><span class="section-kicker">我的论文库</span><h2>{{ selectedPaperIds.length }} 篇论文</h2></div>
+            <button v-if="selectedPaperIds.length" class="clear-selection" type="button" @click="clearSelectedPapers">清空</button>
           </div>
           <template v-if="!researchScope">
-            <p class="scope-summary">已选择 <strong>{{ selectedPaperIds.length }}</strong> 篇论文。保存后会先自动获取开放 PDF，受限论文再提示手动上传。</p>
-            <p v-if="!selectedPapers.length" class="selected-empty">点击论文右上角的“选择”，论文会出现在这里。</p>
+            <p class="scope-summary">先加入与你的问题真正相关、且来源能够核对的论文。</p>
+            <p v-if="!selectedPapers.length" class="selected-empty">还没有选择论文。点击结果中的“加入论文库”即可开始。</p>
             <ul v-else class="selected-paper-list">
               <li v-for="paper in selectedPapers" :key="paper.paperId">
-                <span>{{ paper.title }}</span>
+                <span><strong>{{ paper.title }}</strong><small>{{ paper.year || '年份未知' }} · {{ paperTrustLabel(paper) }}</small></span>
                 <button type="button" :aria-label="`移除 ${paper.title}`" @click="togglePaper(paper.paperId)">移除</button>
               </li>
             </ul>
-            <label class="field"><span>你希望系统完成什么？</span><textarea v-model="researchIntent" rows="3" maxlength="4000" /></label>
-            <label class="scope-checkbox"><input v-model="allowExpansion" type="checkbox" /><span>允许补充相关论文（执行前会询问）</span></label>
-            <button class="primary-button" :disabled="researchLoading || !selectedPaperIds.length || !researchIntent.trim()" @click="handleConfirmScope">保存论文清单</button>
-          </template>
-          <template v-else>
-            <div class="scope-seal"><span>论文清单已保存</span><strong>{{ researchScope.selectedPaperIds.length }}</strong><small>{{ researchScope.status === 'ready' ? '全文已就绪' : '正在准备全文' }}</small></div>
-            <dl class="scope-facts">
-              <div><dt>论文</dt><dd>{{ researchScope.selectedPaperIds.length }}</dd></div>
-              <div><dt>补充相关论文</dt><dd>{{ researchScope.allowedExpansion ? '需要确认' : '关闭' }}</dd></div>
-            </dl>
-            <p class="scope-intent">{{ researchScope.userIntent }}</p>
-            <section v-if="researchScope.status !== 'ready'" class="paper-upload-list">
-              <p>系统只自动下载合法开放获取的 PDF；付费墙、登录限制或无开放地址的论文不会绕过权限。</p>
-              <label v-for="paper in selectedPapers" :key="paper.paperId" class="paper-upload-row">
-                <span>{{ ingestionForPaper(paper.paperId)?.status === 'indexed' ? '✓ 已自动获取并索引' : uploadedPaperIds.includes(paper.paperId) ? '✓ 已上传' : '需要自行下载' }}</span>
-                <strong>{{ paper.title }}</strong>
-                <small v-if="ingestionForPaper(paper.paperId)?.error">{{ ingestionForPaper(paper.paperId)?.error }}</small>
-                <div v-if="ingestionForPaper(paper.paperId)?.status !== 'indexed'" class="manual-source-links">
-                  <a v-for="source in paper.sourceUrls.slice(0, 3)" :key="source" :href="source" target="_blank" rel="noreferrer">打开来源 ↗</a>
-                </div>
-                <input v-if="ingestionForPaper(paper.paperId)?.status !== 'indexed'" type="file" accept="application/pdf,.pdf" :disabled="researchLoading || uploadedPaperIds.includes(paper.paperId)" @change="handlePaperUpload(paper.paperId, $event)" />
-              </label>
-            </section>
-            <button v-if="researchScope.status !== 'ready'" class="primary-button" :disabled="researchLoading || !canRetryScopeIngestion" @click="handleScopeIngestion">解析新上传的 PDF 并重试索引</button>
-            <div v-if="ingestionStatuses.length" class="ingestion-list">
-              <article v-for="item in ingestionStatuses" :key="item.jobId">
-                  <span :data-status="item.status">{{ ingestionStatusLabel(item.status) }}</span><strong>{{ paperTitle(item.paperId) }}</strong><small>{{ item.error || `${item.evidenceCount} 条全文证据` }}</small>
-              </article>
-            </div>
+            <label class="field scope-goal"><span>研究目标</span><textarea v-model="researchIntent" rows="3" maxlength="4000" placeholder="系统将围绕这个问题准备全文证据" /></label>
+            <details class="scope-extra-setting">
+              <summary>更多设置</summary>
+              <label class="scope-checkbox"><input v-model="allowExpansion" type="checkbox" /><span>允许后续补充相关论文（执行前仍需确认）</span></label>
+            </details>
+            <button class="primary-button scope-confirm" data-action="save-scope" :disabled="researchLoading || !selectedPaperIds.length || !researchIntent.trim()" @click="handleConfirmScope">
+              {{ researchLoading ? '正在准备…' : '确认论文并获取全文' }}
+            </button>
+            <small class="scope-legal-note">仅自动获取合法开放的 PDF；不会绕过登录或付费限制。</small>
           </template>
         </aside>
       </section>
 
-      <section v-if="researchScope" class="report-stage panel" :data-ready="researchScope.status === 'ready'">
-        <div class="agent-launch">
-          <div><p>研究报告</p><h2>基于已选论文回答研究问题</h2><span>{{ reportAvailabilityReason }}</span></div>
+      <section v-if="researchScope" class="research-studio">
+        <header class="studio-header">
+          <div class="studio-summary">
+            <span class="section-kicker">当前研究空间</span>
+            <strong>{{ researchScope.selectedPaperIds.length }} 篇论文</strong>
+            <small>{{ indexedPaperCount }} 篇已建立全文索引</small>
+          </div>
+          <nav class="studio-tabs" aria-label="研究空间">
+            <button type="button" :data-active="researchWorkspaceView === 'sources'" @click="showResearchView('sources')">论文库</button>
+            <button type="button" :data-active="researchWorkspaceView === 'ask'" :disabled="researchScope.status !== 'ready'" @click="showResearchView('ask')">证据问答</button>
+            <button type="button" :data-active="researchWorkspaceView === 'report'" :disabled="researchScope.status !== 'ready'" @click="showResearchView('report')">研究报告</button>
+          </nav>
           <button
-            class="approve-button"
-            :disabled="researchLoading || researchScope.status !== 'ready' || !reportQuestion.trim()"
-            @click="handleResearchAgents"
-          >
-            {{ reportGenerating ? '正在生成…' : researchAgentDetail?.case.status === 'failed' ? '重新生成报告' : '生成研究报告' }}
-          </button>
-        </div>
-        <label class="report-question field">
-          <span>这份报告要回答什么？</span>
-          <textarea v-model="reportQuestion" rows="2" maxlength="4000" placeholder="例如：从已选论文看，RAG 的最新技术方向有哪些？" />
-          <small>报告只基于当前已选论文；问题可以修改，不会改变论文清单。</small>
-        </label>
-        <ol v-if="reportGenerating" class="report-role-progress" aria-label="报告生成进度">
-          <li v-for="role in ['规划研究问题', '筛选可引用证据', '撰写报告草稿', '核对论断与引用']" :key="role"><i />{{ role }}</li>
-        </ol>
-        <article v-if="researchAgentDetail" class="research-report">
-          <header><span>研究结果</span><strong>{{ researchAgentDetail.case.status === 'failed' ? '生成失败' : researchAgentDetail.case.status === 'waiting_human_review' ? '待核对' : '处理中' }}</strong></header>
-          <h2>{{ researchAgentDetail.case.title }}</h2>
-          <p v-if="researchAgentDetail.case.failure" class="research-report-summary">{{ researchAgentDetail.case.failure.reason }}</p>
-          <template v-else-if="researchAgentDetail.researchAnswer">
-            <p v-if="researchAgentDetail.researchAnswer.directAnswer" class="research-report-direct"><strong>基于已选论文的结论</strong>{{ researchAgentDetail.researchAnswer.directAnswer }}</p>
-            <div class="research-report-body">
-              <p v-for="(paragraph, index) in reportParagraphs(researchAgentDetail.researchAnswer.answer)" :key="`${researchAgentDetail.case.caseId}-report-${index}`">{{ paragraph }}</p>
+            class="studio-report-shortcut"
+            type="button"
+            :disabled="researchScope.status !== 'ready'"
+            @click="showResearchView('report')"
+          >生成研究报告 <span aria-hidden="true">→</span></button>
+        </header>
+
+        <section v-if="researchWorkspaceView === 'sources'" class="studio-panel sources-workspace" data-stage="sources">
+          <div class="sources-overview">
+            <span class="sources-progress-icon" :data-ready="researchScope.status === 'ready'">{{ researchScope.status === 'ready' ? '✓' : indexedPaperCount }}</span>
+            <div>
+              <span class="section-kicker">全文准备</span>
+              <h2>{{ researchScope.status === 'ready' ? '论文全文已经就绪' : '正在准备论文全文' }}</h2>
+              <p>{{ researchScope.status === 'ready' ? '现在可以检索原文证据，或生成带引用的研究报告。' : '开放论文会自动下载；受限论文需要你从来源页面下载后上传。' }}</p>
             </div>
-          </template>
-          <p v-else class="research-report-summary">{{ writerSummary(researchAgentDetail) || '研究报告正在整理。' }}</p>
-          <div v-if="reportSources.length" class="research-report-sources">
-            <span>引用原文（编号对应正文）</span>
-            <button
-              v-for="source in reportSources"
-              :key="source.evidenceId"
-              type="button"
-              :disabled="!source.card"
-              @click="source.card && openEvidenceDrawer(source.card)"
-            >{{ reportSourceLabel(source) }}</button>
           </div>
-          <details v-if="researchAgentDetail.case.recommendation" class="research-report-review">
-            <summary>查看 Critic 审查意见</summary>
-            <p>{{ researchAgentDetail.case.recommendation.summary }}</p>
-            <p v-if="researchAgentDetail.case.recommendation.rationale">{{ researchAgentDetail.case.recommendation.rationale }}</p>
-          </details>
-        </article>
-      </section>
-
-      <section v-if="researchScope?.status === 'ready'" class="bounded-stage panel">
-        <div class="bounded-stage-heading">
-          <div><p>ASK YOUR PAPERS</p><h2>在已选论文中查找答案</h2></div>
-          <span>回答将附带原文引用</span>
-        </div>
-        <div class="bounded-controls">
-          <label class="field"><span>在已选论文内提问</span><textarea v-model="evidenceQuery" rows="3" maxlength="4000" /></label>
-          <label class="field"><span>检索意图</span>
-            <select v-model="evidenceIntent">
-              <option value="general_fact">一般事实</option><option value="method_definition">方法定义</option>
-              <option value="experimental_setup">实验设置</option><option value="numeric_table">数值/表格</option>
-              <option value="cross_paper_comparison">跨论文比较</option><option value="claim_verification">论断核验</option>
-              <option value="related_work">相关工作</option>
-            </select>
-          </label>
-          <button class="primary-button" :disabled="researchLoading || !evidenceQuery.trim()" @click="handleEvidenceSearch">搜索论文全文</button>
-        </div>
-
-        <div v-if="scopeEvidence" class="evidence-stage">
-          <section class="confidence-card" :data-sufficient="scopeEvidence.confidence.sufficient">
-            <div><p>证据质量</p><strong>{{ scopeEvidence.confidence.sufficient ? '证据充分' : '建议核对' }}</strong></div>
-            <p>找到 {{ scopeEvidence.confidence.citationReadyCount }} 条可引用证据，覆盖 {{ formatPercent(scopeEvidence.confidence.scopePaperCoverage) }} 的已选论文。</p>
-          </section>
-          <div class="research-evidence-list">
-            <article v-for="item in visibleEvidence" :key="item.evidenceId">
-              <header><span>{{ item.section || item.evidenceType }}</span><strong>{{ Math.round(item.score * 100) }}% 匹配</strong></header>
-              <h3>{{ item.title || paperTitle(item.paperId) }}</h3>
-              <p class="evidence-snippet">
-                <template v-for="(segment, index) in highlightEvidenceText(item.snippet)" :key="`${item.evidenceId}-${index}`">
-                  <mark v-if="segment.highlighted">{{ segment.text }}</mark>
-                  <template v-else>{{ segment.text }}</template>
-                </template>
-              </p>
-              <button class="evidence-view-button" type="button" @click="openEvidenceDrawer(item)">查看完整证据</button>
-              <footer><span>{{ item.page ? `第 ${item.page} 页` : '页码未知' }}</span><span>{{ item.section || '正文' }}</span></footer>
+          <div class="source-goal"><span>研究目标</span><p>{{ researchScope.userIntent }}</p></div>
+          <div class="source-library-list">
+            <article v-for="paper in selectedPapers" :key="paper.paperId">
+              <div class="source-paper-status" :data-status="ingestionForPaper(paper.paperId)?.status || 'queued'">
+                <i aria-hidden="true" />{{ ingestionStatusLabel(ingestionForPaper(paper.paperId)?.status || 'queued') }}
+              </div>
+              <h3>{{ paper.title }}</h3>
+              <p>{{ paper.authors.slice(0, 4).join(', ') || '作者信息缺失' }}<template v-if="paper.year"> · {{ paper.year }}</template></p>
+              <small v-if="ingestionForPaper(paper.paperId)?.error">{{ ingestionForPaper(paper.paperId)?.error }}</small>
+              <div v-if="ingestionForPaper(paper.paperId)?.status !== 'indexed'" class="source-paper-actions">
+                <a v-for="source in paper.sourceUrls.slice(0, 2)" :key="source" :href="source" target="_blank" rel="noreferrer">打开论文来源 ↗</a>
+                <label class="source-upload-button">
+                  {{ uploadedPaperIds.includes(paper.paperId) ? 'PDF 已上传' : '上传对应 PDF' }}
+                  <input type="file" accept="application/pdf,.pdf" :disabled="researchLoading || uploadedPaperIds.includes(paper.paperId)" @change="handlePaperUpload(paper.paperId, $event)" />
+                </label>
+              </div>
             </article>
-            <button
-              v-if="hasMoreEvidence"
-              class="evidence-list-toggle"
-              type="button"
-              :aria-expanded="showAllEvidence"
-              @click="showAllEvidence = !showAllEvidence"
-            >
-              {{ showAllEvidence ? '收起证据' : `查看更多证据（还有 ${sortedEvidence.length - 5} 条）` }}
-            </button>
           </div>
+          <button
+            v-if="researchScope.status !== 'ready'"
+            class="primary-button source-retry"
+            :disabled="researchLoading || !canRetryScopeIngestion"
+            @click="handleScopeIngestion"
+          >{{ researchLoading ? '正在解析…' : '解析已上传的 PDF 并刷新状态' }}</button>
+        </section>
+
+        <div v-else-if="researchWorkspaceView === 'ask'" class="notebook-layout" data-stage="evidence">
+          <aside class="notebook-sources">
+            <header><span class="section-kicker">论文来源</span><strong>{{ selectedPapers.length }} 篇</strong></header>
+            <ul>
+              <li v-for="paper in selectedPapers" :key="paper.paperId">
+                <i aria-hidden="true">{{ ingestionForPaper(paper.paperId)?.status === 'indexed' ? '✓' : '•' }}</i>
+                <span><strong>{{ paper.title }}</strong><small>{{ paper.year || '年份未知' }} · {{ paperLanguageLabel(paper) || '语言未知' }}</small></span>
+              </li>
+            </ul>
+          </aside>
+          <section class="ask-workspace">
+            <header class="workspace-heading">
+              <div><span class="section-kicker">基于已选论文</span><h2>查找可以核对的原文证据</h2><p>回答范围严格限制在当前论文库，并保留页码与原文位置。</p></div>
+            </header>
+            <div class="ask-composer">
+              <textarea id="evidence-query" v-model="evidenceQuery" rows="3" maxlength="4000" placeholder="例如：这些论文采用了哪些方法提高检索准确率？" />
+              <div class="ask-composer-footer">
+                <label><span>问题类型</span>
+                  <select id="evidence-intent" v-model="evidenceIntent">
+                    <option value="general_fact">一般事实</option><option value="method_definition">方法定义</option>
+                    <option value="experimental_setup">实验设置</option><option value="numeric_table">数值与表格</option>
+                    <option value="cross_paper_comparison">跨论文比较</option><option value="claim_verification">论断核验</option>
+                    <option value="related_work">相关工作</option>
+                  </select>
+                </label>
+                <button class="primary-button" :disabled="researchLoading || !evidenceQuery.trim()" @click="handleEvidenceSearch">
+                  {{ researchLoading ? '正在检索…' : '查找原文证据' }}
+                </button>
+              </div>
+            </div>
+
+            <div v-if="scopeEvidence" class="evidence-results">
+              <div class="evidence-summary" :data-sufficient="scopeEvidence.confidence.sufficient">
+                <div><strong>{{ scopeEvidence.confidence.sufficient ? '证据充分' : '建议继续核对' }}</strong><span>{{ scopeEvidence.confidence.citationReadyCount }} 条可引用片段</span></div>
+                <p>已有 {{ formatPercent(scopeEvidence.confidence.scopePaperCoverage) }} 的论文至少命中一个片段；这不代表全文内容已被完整覆盖。</p>
+              </div>
+              <div class="research-evidence-list">
+                <article v-for="(item, evidenceIndex) in visibleEvidence" :key="item.evidenceId" :data-evidence-id="item.evidenceId">
+                  <header><span>证据 {{ evidenceIndex + 1 }} · {{ item.section || '正文' }}</span><strong>{{ Math.round(item.score * 100) }}% 匹配</strong></header>
+                  <h3>{{ item.title || paperTitle(item.paperId) }}</h3>
+                  <p class="evidence-snippet">
+                    <template v-for="(segment, index) in highlightEvidenceText(item.snippet)" :key="`${item.evidenceId}-${index}`">
+                      <mark v-if="segment.highlighted">{{ segment.text }}</mark>
+                      <template v-else>{{ segment.text }}</template>
+                    </template>
+                  </p>
+                  <footer>
+                    <span>{{ item.page ? `第 ${item.page} 页` : '页码未知' }}</span>
+                    <button class="evidence-view-button" type="button" @click="openEvidenceDrawer(item)">核对完整原文 →</button>
+                  </footer>
+                </article>
+                <button v-if="hasMoreEvidence" class="evidence-list-toggle" type="button" :aria-expanded="showAllEvidence" @click="showAllEvidence = !showAllEvidence">
+                  {{ showAllEvidence ? '收起其余证据' : `再看 ${sortedEvidence.length - 5} 条证据` }}
+                </button>
+              </div>
+            </div>
+            <div v-else class="ask-empty-state"><span aria-hidden="true">⌕</span><strong>先提出一个具体问题</strong><p>系统会返回短小、可追溯的原文片段，不会用目录或参考文献凑数量。</p></div>
+          </section>
         </div>
 
+        <section v-else class="studio-panel report-workspace" data-stage="report">
+          <header class="report-workspace-heading">
+            <div><span class="section-kicker">中文研究报告</span><h2>把论文证据整理成可核对的报告</h2><p>{{ reportAvailabilityReason }}</p></div>
+          </header>
+          <div class="report-composer">
+            <label for="report-question">这份报告需要回答什么？</label>
+            <textarea id="report-question" v-model="reportQuestion" rows="3" maxlength="4000" placeholder="例如：从已选论文看，RAG 的最新技术方向有哪些？" />
+            <div><span>仅使用当前 {{ researchScope.selectedPaperIds.length }} 篇论文，默认使用中文撰写。</span>
+              <button
+                class="primary-button generate-report-button"
+                data-action="generate-report"
+                :disabled="researchLoading || researchScope.status !== 'ready' || !reportQuestion.trim()"
+                @click="handleResearchAgents"
+              >{{ reportGenerating ? '正在生成报告…' : researchAgentDetail?.case.status === 'failed' ? '重新生成报告' : '生成研究报告' }}</button>
+            </div>
+          </div>
+          <ol v-if="reportGenerating" class="report-role-progress" aria-label="报告生成进度">
+            <li v-for="role in ['理解研究问题', '筛选原文证据', '撰写中文草稿', '核对论断与引用']" :key="role"><i />{{ role }}</li>
+          </ol>
+          <article v-if="researchAgentDetail" class="research-report">
+            <header><span>研究报告</span><strong>{{ researchAgentDetail.case.status === 'failed' ? '生成失败' : researchAgentDetail.case.status === 'waiting_human_review' ? '引用待核对' : '处理中' }}</strong></header>
+            <h2>{{ researchAgentDetail.case.title }}</h2>
+            <p v-if="researchAgentDetail.case.failure" class="research-report-summary">{{ researchAgentDetail.case.failure.reason }}</p>
+            <template v-else-if="researchAgentDetail.researchAnswer">
+              <p v-if="researchAgentDetail.researchAnswer.scopeNote" class="research-report-scope"><strong>证据范围提示</strong>{{ researchAgentDetail.researchAnswer.scopeNote }}</p>
+              <p v-if="researchAgentDetail.researchAnswer.directAnswer && researchAgentDetail.researchAnswer.directAnswer !== researchAgentDetail.researchAnswer.scopeNote" class="research-report-direct"><strong>基于已选论文的结论</strong>{{ researchAgentDetail.researchAnswer.directAnswer }}</p>
+              <div class="research-report-body" data-content="report-body">
+                <p v-for="(paragraph, index) in reportParagraphs(researchAgentDetail.researchAnswer.answer)" :key="`${researchAgentDetail.case.caseId}-report-${index}`">{{ paragraph }}</p>
+              </div>
+            </template>
+            <p v-else class="research-report-summary">{{ writerSummary(researchAgentDetail) || '研究报告正在整理。' }}</p>
+            <div v-if="reportSources.length" class="research-report-sources">
+              <span>引用原文</span>
+              <button v-for="source in reportSources" :key="source.evidenceId" type="button" :data-source-id="source.evidenceId" :disabled="!source.card" @click="source.card && openEvidenceDrawer(source.card)">{{ reportSourceLabel(source) }}</button>
+            </div>
+            <details v-if="researchAgentDetail.case.recommendation" class="research-report-review" data-panel="report-review">
+              <summary>查看报告核验详情</summary>
+              <p>{{ researchAgentDetail.case.recommendation.summary }}</p>
+              <p v-if="researchAgentDetail.case.recommendation.rationale">{{ researchAgentDetail.case.recommendation.rationale }}</p>
+            </details>
+          </article>
+          <div v-else class="report-empty-state"><span aria-hidden="true">✦</span><strong>一键生成带原文引用的中文草稿</strong><p>生成后仍会明确提示证据范围，方便逐条核对引用。</p></div>
+        </section>
       </section>
     </template>
 
@@ -1441,6 +1626,7 @@ onBeforeUnmount(() => {
       >
         <aside
           class="evidence-drawer"
+          data-panel="evidence-drawer"
           role="dialog"
           aria-modal="true"
           aria-labelledby="evidence-drawer-title"
@@ -1450,14 +1636,18 @@ onBeforeUnmount(() => {
               <p>完整证据片段</p>
               <h2 id="evidence-drawer-title">{{ activeEvidence.title || paperTitle(activeEvidence.paperId) }}</h2>
             </div>
-            <button class="evidence-drawer-close" type="button" aria-label="关闭完整证据" @click="closeEvidenceDrawer">关闭</button>
+            <button class="evidence-drawer-close" type="button" aria-label="关闭完整证据" @click="closeEvidenceDrawer">关闭 ×</button>
           </header>
           <dl class="evidence-drawer-meta">
-            <div><dt>Evidence ID</dt><dd><code>{{ activeEvidence.evidenceId }}</code></dd></div>
             <div><dt>页码</dt><dd>{{ activeEvidence.page ? `第 ${activeEvidence.page} 页` : '页码未知' }}</dd></div>
             <div><dt>章节</dt><dd>{{ activeEvidence.section || '正文' }}</dd></div>
           </dl>
           <p class="evidence-drawer-text">{{ activeEvidence.snippet }}</p>
+          <details class="evidence-technical-details">
+            <summary>技术信息</summary>
+            <span>Evidence ID</span>
+            <code>{{ activeEvidence.evidenceId }}</code>
+          </details>
         </aside>
       </div>
     </Teleport>

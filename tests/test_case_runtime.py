@@ -16,6 +16,7 @@ from taskforge.case_runtime import (
     _bounded_research_evidence_card,
     _bounded_research_receipt_text,
     _bounded_selected_research_evidence_cards,
+    _validate_writer_claim_citations,
     submit_role_result_spec,
 )
 from taskforge.checkpoints import CheckpointNotFoundError, SQLiteCheckpointStore
@@ -39,6 +40,7 @@ from taskforge.orchestration import (
     SQLiteOrchestrationStore,
 )
 from taskforge.providers import ProviderError, ScriptedProvider
+from taskforge.research_protocol import DraftArtifact, WriterHandoff
 from taskforge.runtime import AgentRuntime
 from taskforge.tooling import CapabilityPolicy, ToolRegistry, ToolRisk, ToolSpec
 
@@ -828,6 +830,34 @@ def test_research_submit_schema_uses_short_nonduplicating_envelope() -> None:
     ] == 4
     assert "research_payload" in properties
     assert "research_payload" in spec.parameters["required"]
+
+
+def test_writer_submit_schema_and_host_reject_uncited_report_claims() -> None:
+    spec = submit_role_result_spec(
+        role_id="synthesis_writer",
+        require_research_payload=True,
+    )
+    assert spec.parameters["$defs"]["ClaimRecord"]["properties"]["evidence_ids"][
+        "minItems"
+    ] == 1
+    writer = WriterHandoff(
+        direct_answer="The bounded scope is insufficient.",
+        draft=DraftArtifact(
+            draft_id="draft-uncited",
+            claim_ids=["claim-uncited"],
+            section_count=1,
+        ),
+        claim_manifest=[
+            {
+                "claim_id": "claim-uncited",
+                "claim_text": "An uncited scope limitation with outside examples.",
+                "evidence_ids": [],
+            }
+        ],
+    )
+
+    with pytest.raises(CaseBindingError, match="at least one Evidence ID"):
+        _validate_writer_claim_citations(writer)
 
 
 @pytest.mark.asyncio

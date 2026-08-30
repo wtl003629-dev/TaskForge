@@ -564,6 +564,9 @@ function normalizeResearchAnswer(value: unknown): ReviewCaseDetail['researchAnsw
     removedClaimIds: stringArray(item.removed_claim_ids),
     unresolvedClaimIds: stringArray(item.unresolved_claim_ids),
     criticVerdict: text(item.critic_verdict),
+    scopeLimited: Boolean(item.scope_limited),
+    scopeNote: text(item.scope_note) || undefined,
+    citedPaperCount: numberValue(item.cited_paper_count) ?? 0,
   }
 }
 

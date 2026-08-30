@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Mapping
 from uuid import uuid4
 
 from pydantic import Field, field_validator, model_validator
@@ -317,6 +317,15 @@ class ClaimRecord(StrictModel):
     ] = "unverified"
     verification_status: Literal["unverified", "verified", "needs_review"] = "unverified"
 
+    @field_validator("paper_ids", "evidence_ids", mode="before")
+    @classmethod
+    def unique_reference_lists(cls, value: object) -> object:
+        if isinstance(value, (list, tuple)):
+            return list(
+                dict.fromkeys(str(item).strip() for item in value if str(item).strip())
+            )
+        return value
+
 
 class LiteraturePlan(StrictModel):
     protocol: Literal["research.literature_plan.v1"] = "research.literature_plan.v1"
@@ -497,6 +506,9 @@ class FinalResearchAnswer(StrictModel):
     removed_claim_ids: list[str] = Field(default_factory=list, max_length=6)
     unresolved_claim_ids: list[str] = Field(default_factory=list, max_length=6)
     critic_verdict: Literal["accept", "needs_revision", "more_evidence"]
+    scope_limited: bool = False
+    scope_note: str = Field(default="", max_length=1_000)
+    cited_paper_count: int = Field(default=0, ge=0, le=128)
 
 
 _INTERNAL_EVIDENCE_PAREN = re.compile(
@@ -509,6 +521,20 @@ _INTERNAL_EVIDENCE_TOKEN = re.compile(
     flags=re.IGNORECASE,
 )
 _INTERNAL_PAPER_TOKEN = re.compile(r"\bpaper-[0-9a-f]{16,}\b", flags=re.IGNORECASE)
+_MODEL_AUTHORED_SCOPE_GAP = re.compile(
+    r"(?:"
+    r"(?:当前)?(?:已选|所选)论文[^。.!?]{0,180}"
+    r"(?:未(?:命名|提供|覆盖|涉及|出现|检索到|发现)|没有|缺乏)"
+    r"|(?:selected|chosen) papers?[^.!?]{0,180}"
+    r"(?:do not|did not|does not|lack|without|no named|not provide|not cover)"
+    r")",
+    flags=re.IGNORECASE,
+)
+_CROSS_PAPER_UNIVERSAL = re.compile(
+    r"(?:[两2]\s*篇论文\s*(?:均|都)|所选论文\s*(?:均|都)|"
+    r"\bboth papers\b|\ball selected papers\b)",
+    flags=re.IGNORECASE,
+)
 
 
 def _reader_facing_claim_text(value: str) -> str:
@@ -523,6 +549,22 @@ def _reader_facing_claim_text(value: str) -> str:
     text = _INTERNAL_EVIDENCE_TOKEN.sub("", text)
     paper_label = "该论文" if re.search(r"[\u3400-\u9fff]", text) else "The selected paper"
     text = _INTERNAL_PAPER_TOKEN.sub(paper_label, text)
+    # A selected-paper count is host-owned scope metadata.  The model cannot
+    # infer publication language merely from the question or the rendered
+    # title, so keep this limitation wording accurate and neutral.
+    text = re.sub(
+        r"((?:仅?基于|受限于仅?)\s*[一二两三四五六七八九十百\d]+\s*篇)"
+        r"中文(?:论文|文献)",
+        r"\1已选论文",
+        text,
+    )
+    text = re.sub(
+        r"\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+"
+        r"Chinese\s+(?:papers?|articles?)\b",
+        r"\1 selected papers",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = text.replace("该论文 ", "该论文")
     text = re.sub(r"[（(]\s*[）)]", "", text)
     text = re.sub(r"\s+([,.;:!?，。；：！？])", r"\1", text)
@@ -533,6 +575,10 @@ def _reader_facing_claim_text(value: str) -> str:
 def project_final_research_answer(
     writer: WriterHandoff,
     critic: CriticHandoff,
+    *,
+    evidence_paper_ids: Mapping[str, str] | None = None,
+    scope_limited: bool = False,
+    scope_note: str = "",
 ) -> FinalResearchAnswer:
     """Apply Critic patches without inventing new evidence or claim IDs.
 
@@ -544,6 +590,7 @@ def project_final_research_answer(
     """
 
     claims = {claim.claim_id: claim for claim in writer.claim_manifest}
+    evidence_paper_ids = evidence_paper_ids or {}
     patches: dict[str, ReviewPatch] = {}
     for patch in critic.patches:
         if patch.claim_id not in claims:
@@ -568,6 +615,14 @@ def project_final_research_answer(
             if patch.action == "request_evidence":
                 unresolved.append(claim.claim_id)
             continue
+        # A model-authored limitation paragraph without a source can still
+        # smuggle outside examples into the report (for example by naming
+        # methods that were *not* retrieved). Field-wide scope warnings are
+        # projected separately from host-owned question/scope metadata, so
+        # uncited model prose never belongs in the final answer.
+        if not claim.evidence_ids:
+            removed.append(claim.claim_id)
+            continue
         text = (
             patch.replacement.strip()
             if patch is not None and patch.action == "revise" and patch.replacement
@@ -578,8 +633,35 @@ def project_final_research_answer(
         text = _reader_facing_claim_text(text)
         if not text:
             continue
+        if scope_limited and _MODEL_AUTHORED_SCOPE_GAP.search(text):
+            removed.append(claim.claim_id)
+            continue
+        cited_papers = {
+            evidence_paper_ids[evidence_id]
+            for evidence_id in claim.evidence_ids
+            if evidence_id in evidence_paper_ids
+        }
+        # Universal cross-paper wording needs independent support from at
+        # least two papers. One passage cannot establish what both/all papers
+        # state, even if the model phrases it as a corpus-level synthesis.
+        if _CROSS_PAPER_UNIVERSAL.search(text) and len(cited_papers) < 2:
+            removed.append(claim.claim_id)
+            continue
         citation_numbers: list[int] = []
+        claim_evidence_ids: set[str] = set()
+        claim_paper_ids: set[str] = set()
         for evidence_id in claim.evidence_ids:
+            if evidence_id in claim_evidence_ids:
+                continue
+            claim_evidence_ids.add(evidence_id)
+            paper_id = evidence_paper_ids.get(evidence_id)
+            # Several adjacent chunks from one paper are not independent
+            # corroboration.  Keep the strongest/first citation selected by
+            # the Writer and avoid citation-number inflation in one claim.
+            if paper_id and paper_id in claim_paper_ids:
+                continue
+            if paper_id:
+                claim_paper_ids.add(paper_id)
             if evidence_id not in evidence_ids:
                 evidence_ids.append(evidence_id)
             citation_numbers.append(evidence_ids.index(evidence_id) + 1)
@@ -593,14 +675,29 @@ def project_final_research_answer(
 
     if not answer_parts:
         raise ValueError("critic projection removed every answer claim")
+    reader_direct_answer = _reader_facing_claim_text(writer.direct_answer)
+    # For field-wide latest/trend questions, the bounded-scope conclusion is
+    # host-owned. This prevents an uncited compact answer from reintroducing
+    # outside method or benchmark names after the cited body was filtered.
+    if scope_limited and scope_note.strip():
+        reader_direct_answer = scope_note.strip()
     return FinalResearchAnswer(
         answer="\n\n".join(answer_parts),
-        direct_answer=_reader_facing_claim_text(writer.direct_answer),
+        direct_answer=reader_direct_answer,
         evidence_ids=evidence_ids,
         included_claim_ids=included,
         removed_claim_ids=removed,
         unresolved_claim_ids=unresolved,
         critic_verdict=critic.verdict,
+        scope_limited=scope_limited,
+        scope_note=scope_note.strip(),
+        cited_paper_count=len(
+            {
+                evidence_paper_ids[evidence_id]
+                for evidence_id in evidence_ids
+                if evidence_id in evidence_paper_ids
+            }
+        ),
     )
 
 

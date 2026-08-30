@@ -50,12 +50,16 @@ def test_research_survey_rigorous_keeps_full_chain() -> None:
     assert by_id["planner"].depends_on == []
     assert by_id["evaluator"].depends_on == ["planner"]
     assert by_id["writer"].depends_on == ["evaluator"]
-    assert by_id["critic"].depends_on == ["writer"]
+    assert by_id["critic"].depends_on == ["writer", "evaluator"]
     # The critic owns the verdict only at rigorous depth.
     assert "survey.verdict" in by_id["critic"].instruction
     assert "survey.verdict" not in by_id["writer"].instruction
     assert "protocol 只能放在 research_payload 内部" in by_id["writer"].instruction
     assert "exactly one strongest Evidence ID" in by_id["critic"].instruction
+    assert "Compare every named method" in by_id["critic"].instruction
+    assert "Planner and EvidenceLedger gaps" in by_id["critic"].instruction
+    assert "Do not introduce method names" in by_id["planner"].instruction
+    assert "describe the missing category" in by_id["evaluator"].instruction
 
 
 def test_research_survey_standard_drops_critic_writer_owns_verdict() -> None:

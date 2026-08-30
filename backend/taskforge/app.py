@@ -857,8 +857,38 @@ def _review_role_run_summary(role_run: RoleRun) -> ReviewRoleRunSummary:
     )
 
 
+_FIELD_WIDE_RESEARCH_QUESTION = re.compile(
+    r"(?:最新|前沿|趋势|主流|最佳|综述|研究现状|发展现状|"
+    r"\blatest\b|state[ -]of[ -]the[ -]art|\btrends?\b|"
+    r"\bmainstream\b|\bbest\b|\bsurveys?\b|\breviews?\b)",
+    flags=re.IGNORECASE,
+)
+
+
+def _research_scope_notice(question: str, selected_paper_count: int) -> tuple[bool, str]:
+    """Return a host-owned warning for field-wide questions over a fixed Scope."""
+
+    if not _FIELD_WIDE_RESEARCH_QUESTION.search(question):
+        return False, ""
+    if re.search(r"[\u3400-\u9fff]", question):
+        return (
+            True,
+            f"当前问题涉及全领域判断，但报告仅基于 {selected_paper_count} 篇已选论文，"
+            "只能说明这些论文支持的局部方向，不能代表整个领域的最新进展。",
+        )
+    return (
+        True,
+        "This field-wide question is assessed from only "
+        f"{selected_paper_count} selected paper(s). The report can describe the "
+        "directions supported by that bounded corpus, not the latest state of the field.",
+    )
+
+
 def _project_review_research_answer(
     role_runs: list[RoleRun],
+    *,
+    question: str = "",
+    selected_paper_count: int = 0,
 ) -> FinalResearchAnswer | None:
     """Project Writer claims and Critic patches into the user-facing report.
 
@@ -868,6 +898,7 @@ def _project_review_research_answer(
     """
 
     payloads: dict[str, Mapping[str, Any]] = {}
+    evidence_paper_ids: dict[str, str] = {}
     for role_run in role_runs:
         if role_run.status.value != "succeeded":
             continue
@@ -880,14 +911,36 @@ def _project_review_research_answer(
         )
         if isinstance(research_payload, Mapping):
             payloads[role_run.role_id] = research_payload
+        blackboard = output.get("blackboard")
+        cards = blackboard.get("evidence_cards") if isinstance(blackboard, Mapping) else None
+        if isinstance(cards, list):
+            for card in cards:
+                if not isinstance(card, Mapping):
+                    continue
+                evidence_id = card.get("evidence_id")
+                paper_id = card.get("paper_id")
+                if (
+                    isinstance(evidence_id, str)
+                    and evidence_id
+                    and isinstance(paper_id, str)
+                    and paper_id
+                ):
+                    evidence_paper_ids[evidence_id] = paper_id
     writer_payload = payloads.get("synthesis_writer")
     critic_payload = payloads.get("critical_reviewer")
     if writer_payload is None or critic_payload is None:
         return None
     try:
+        scope_limited, scope_note = _research_scope_notice(
+            question,
+            selected_paper_count,
+        )
         return project_final_research_answer(
             WriterHandoff.model_validate(writer_payload),
             CriticHandoff.model_validate(critic_payload),
+            evidence_paper_ids=evidence_paper_ids,
+            scope_limited=scope_limited,
+            scope_note=scope_note,
         )
     except ValueError:
         # Older persisted runs can predate the structured handoff contract.
@@ -2041,7 +2094,16 @@ def create_app(
             audit_events=[_review_audit_summary(item) for item in audit_events],
             execution=container.review_execution.model_copy(deep=True),
             research_answer=(
-                _project_review_research_answer(role_runs)
+                _project_review_research_answer(
+                    role_runs,
+                    question=state.review_case.submission.request_summary,
+                    selected_paper_count=len(
+                        state.review_case.submission.attributes.get(
+                            "selected_paper_ids",
+                            [],
+                        )
+                    ),
+                )
                 if state.review_case.kind == CaseKind.RESEARCH_SURVEY
                 else None
             ),

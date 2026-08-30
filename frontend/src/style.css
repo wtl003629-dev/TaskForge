@@ -3784,6 +3784,27 @@ body {
   font-weight: 600;
 }
 
+.research-report-scope {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin: 14px 0 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(224, 167, 69, 0.28);
+  border-radius: 7px;
+  background: rgba(224, 167, 69, 0.07);
+  color: #d8c39c !important;
+  font-size: 11px !important;
+  line-height: 1.65 !important;
+}
+
+.research-report-scope strong {
+  flex: 0 0 auto;
+  color: #e0a745;
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .research-report-body p,
 .research-report-review p {
   color: #c3c6cf;

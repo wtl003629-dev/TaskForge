@@ -454,6 +454,22 @@ def submit_role_result_spec(
         raw_definitions = payload_schema.pop("$defs", {})
         if isinstance(raw_definitions, Mapping):
             schema_definitions.update(deepcopy(dict(raw_definitions)))
+        if role_id == "synthesis_writer":
+            claim_schema = schema_definitions.get("ClaimRecord")
+            claim_properties = (
+                claim_schema.get("properties")
+                if isinstance(claim_schema, Mapping)
+                else None
+            )
+            evidence_schema = (
+                claim_properties.get("evidence_ids")
+                if isinstance(claim_properties, Mapping)
+                else None
+            )
+            if isinstance(evidence_schema, dict):
+                # Make the no-uncited-prose rule visible to the model before
+                # the same invariant is enforced on submission below.
+                evidence_schema["minItems"] = 1
         properties["research_payload"] = payload_schema
     required = ["claims", "summary", "handoff_summary"]
     if require_research_payload:
@@ -484,6 +500,19 @@ def submit_role_result_spec(
         strict=True,
         max_output_chars=100_000,
     )
+
+
+def _validate_writer_claim_citations(payload: WriterHandoff) -> None:
+    """Reject new Writer handoffs that contain uncited report paragraphs."""
+
+    if not payload.claim_manifest:
+        raise CaseBindingError("research Writer must submit at least one cited claim")
+    uncited = [claim.claim_id for claim in payload.claim_manifest if not claim.evidence_ids]
+    if uncited:
+        raise CaseBindingError(
+            "research Writer claims require at least one Evidence ID; "
+            "scope limitations are projected by the Host"
+        )
 
 
 async def _await_if_needed(value: Any) -> Any:
@@ -1184,6 +1213,8 @@ class CaseAgentExecutor:
                     raise CaseBindingError(
                         "scoped research role submitted the wrong structured handoff payload"
                     )
+                if isinstance(submission.research_payload, WriterHandoff):
+                    _validate_writer_claim_citations(submission.research_payload)
             return {
                 "receipt_type": _RECEIPT_TYPE,
                 "binding": binding.model_dump(mode="json"),
@@ -2049,6 +2080,35 @@ class CaseAgentExecutor:
                         delta["draft"] = deepcopy(payload.get("draft"))
                         delta["direct_answer"] = str(payload.get("direct_answer") or "")[:500]
                         delta["claim_manifest"] = list(payload.get("claim_manifest", []))[:64]
+                    elif payload_protocol == "research.evaluator_handoff.v1":
+                        ledger = payload.get("ledger")
+                        ledger = ledger if isinstance(ledger, Mapping) else {}
+                        delta["evidence_ledger"] = deepcopy(ledger)
+                        raw_cards = [
+                            card
+                            for card in list(board.get("evidence_cards", []))[:10]
+                            if isinstance(card, Mapping)
+                        ]
+                        raw_ids = ledger.get("evidence_ids", [])
+                        selected_ids = (
+                            [str(value) for value in raw_ids]
+                            if isinstance(raw_ids, list)
+                            else []
+                        )
+                        selected_cards = _bounded_selected_research_evidence_cards(
+                            raw_cards,
+                            selected_ids,
+                        )
+                        # The Critic also receives the Writer manifest. Use a
+                        # tighter per-card excerpt here so both the claims and
+                        # their source text survive the 16k context envelope.
+                        delta["evidence_cards"] = [
+                            _bounded_research_evidence_card(
+                                card,
+                                snippet_budget=600,
+                            )
+                            for card in selected_cards
+                        ]
                     else:
                         delta["claim_manifest"] = list(board.get("claim_manifest", []))[:32]
                 else:

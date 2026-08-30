@@ -20,7 +20,7 @@ from taskforge.literature.providers.crossref import CrossrefProvider
 from taskforge.literature.providers.openalex import OpenAlexProvider
 from taskforge.literature.providers.openalex import _paper as openalex_paper
 from taskforge.literature.providers.unpaywall import UnpaywallResolver
-from taskforge.literature.ranker import rank_papers
+from taskforge.literature.ranker import _is_chinese_paper, rank_papers
 from taskforge.literature.repository import (
     LiteratureAccessError,
     LiteratureNotFoundError,
@@ -468,6 +468,47 @@ def test_merge_provider_papers_preserves_openalex_language() -> None:
     )[0]
 
     assert card.language == "zh"
+
+
+@pytest.mark.parametrize("papers", [
+    pytest.param(
+        [
+            _provider_paper("semantic_scholar", "s2-zh-order").model_copy(
+                update={"language": "en"}
+            ),
+            _provider_paper("openalex", "WZH-order").model_copy(
+                update={"language": "zh"}
+            ),
+        ],
+        id="english-first",
+    ),
+    pytest.param(
+        [
+            _provider_paper("openalex", "WZH-order").model_copy(
+                update={"language": "zh"}
+            ),
+            _provider_paper("semantic_scholar", "s2-zh-order").model_copy(
+                update={"language": "en"}
+            ),
+        ],
+        id="chinese-first",
+    ),
+])
+def test_merge_provider_papers_prefers_chinese_language_in_either_order(
+    papers: list[ProviderPaper],
+) -> None:
+    assert merge_provider_papers(papers)[0].language == "zh"
+
+
+def test_english_title_with_chinese_language_is_a_chinese_candidate() -> None:
+    paper = PaperCard(
+        paper_id="paper-english-title-zh",
+        canonical_title="Retrieval Augmented Generation: Recent Advances",
+        abstract="retrieval augmented generation methods and evaluation",
+        language="zh",
+        provider_ranks={"openalex": 1},
+    )
+    assert _is_chinese_paper(paper)
 
 
 def test_openalex_excludes_reports_and_retracted_works() -> None:

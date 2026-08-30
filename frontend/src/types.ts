@@ -319,6 +319,9 @@ export interface ResearchFinalAnswer {
   removedClaimIds: string[]
   unresolvedClaimIds: string[]
   criticVerdict: 'accept' | 'needs_revision' | 'more_evidence' | string
+  scopeLimited: boolean
+  scopeNote?: string
+  citedPaperCount: number
 }
 
 export interface ReviewCaseDetail {

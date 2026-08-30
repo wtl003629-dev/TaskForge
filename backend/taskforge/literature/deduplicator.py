@@ -118,6 +118,19 @@ def merge_provider_papers(papers: Iterable[ProviderPaper]) -> list[PaperCard]:
                 provider_ranks.get(leg, item.provider_rank),
                 item.provider_rank,
             )
+        languages = [
+            item.language.casefold()
+            for item in group
+            if item.language and item.language.strip()
+        ]
+        # OpenAlex's language metadata is authoritative for native-language
+        # retrieval.  A corroborating provider may label the same work ``en``
+        # (especially when only an English title/abstract is indexed), so keep
+        # ``zh`` stable regardless of provider result order.
+        language = next(
+            (value for value in languages if value == "zh" or value.startswith("zh-")),
+            languages[0] if languages else None,
+        )
         cards.append(
             PaperCard(
                 paper_id=canonical_paper_id(
@@ -134,14 +147,7 @@ def merge_provider_papers(papers: Iterable[ProviderPaper]) -> list[PaperCard]:
                 abstract=_best_text(item.abstract for item in group),
                 short_description="",
                 year=year,
-                language=next(
-                    (
-                        item.language.casefold()
-                        for item in group
-                        if item.language and item.language.strip()
-                    ),
-                    None,
-                ),
+                language=language,
                 publication_type=_best_publication_type(
                     item.publication_type for item in group
                 ),
