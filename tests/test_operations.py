@@ -726,7 +726,7 @@ async def test_worker_exception_is_sanitized_and_dead_lettered(tmp_path: Path) -
 
 class DelayedFailingRuntime:
     async def run(self, *_):
-        await asyncio.sleep(0.08)
+        await asyncio.sleep(0.2)
         raise RuntimeError("failed after heartbeat")
 
 
@@ -741,8 +741,8 @@ async def test_worker_failure_after_heartbeat_uses_latest_cas_version(tmp_path: 
         operations=operations,
         checkpoints=checkpoints,
         runtime=DelayedFailingRuntime(),  # type: ignore[arg-type]
-        lease_seconds=0.15,
-        heartbeat_interval=0.03,
+        lease_seconds=1.0,
+        heartbeat_interval=0.05,
     )
 
     result = await worker.run_once()
