@@ -26,6 +26,8 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+import evaluate_mixed_optimized_e as source_eval  # noqa: E402
+
 from taskforge.config import Settings  # noqa: E402
 from taskforge.knowledge import (  # noqa: E402
     AccessContext,
@@ -39,15 +41,15 @@ from taskforge.qasper_alignment import (  # noqa: E402
     align_gold_unit,
 )
 from taskforge.rag_evaluation import load_qasper_dataset  # noqa: E402
-from taskforge.rag_experiment_profile import resolve_rag_experiment_profile  # noqa: E402
+from taskforge.rag_experiment_profile import (
+    resolve_rag_experiment_profile,  # noqa: E402
+)
 from taskforge.research_reranking import build_research_reranker  # noqa: E402
 from taskforge.research_retrieval import (  # noqa: E402
     ResearchQuery,
     ResearchRetrievalService,
 )
 from taskforge.semantic_providers import BailianDenseEmbedder  # noqa: E402
-
-import evaluate_mixed_optimized_e as source_eval  # noqa: E402
 
 RECALL_KS = source_eval.RECALL_KS
 TENANT_ID = "mixed-optimized-e-30x30-mineru"

@@ -17,13 +17,13 @@ if str(BACKEND_ROOT) not in sys.path:
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from taskforge.literature.normalizer import normalise_arxiv_id  # noqa: E402
-from taskforge.research_protocol import PaperCard  # noqa: E402
 from scripts.evaluate_literature_discovery import (  # noqa: E402
     _dcg,
     _paper_arxiv_id,
     quality_gate,
 )
+from taskforge.literature.normalizer import normalise_arxiv_id  # noqa: E402
+from taskforge.research_protocol import PaperCard  # noqa: E402
 
 
 def _papers(connection: sqlite3.Connection, case_id: str) -> list[PaperCard]:

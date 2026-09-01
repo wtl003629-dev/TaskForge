@@ -16,6 +16,7 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+from taskforge.config import Settings  # noqa: E402
 from taskforge.hybrid_retrieval import FastEmbedEmbedder  # noqa: E402
 from taskforge.knowledge import (  # noqa: E402
     AccessContext,
@@ -24,13 +25,12 @@ from taskforge.knowledge import (  # noqa: E402
 )
 from taskforge.qasper_alignment import paragraph_recall_at_k  # noqa: E402
 from taskforge.rag_evaluation import load_qasper_dataset  # noqa: E402
-from taskforge.config import Settings  # noqa: E402
 from taskforge.research_reranking import build_research_reranker  # noqa: E402
-from taskforge.semantic_providers import BailianDenseEmbedder  # noqa: E402
 from taskforge.research_retrieval import (  # noqa: E402
     ResearchQuery,
     ResearchRetrievalService,
 )
+from taskforge.semantic_providers import BailianDenseEmbedder  # noqa: E402
 
 
 def _sha256(path: Path) -> str:

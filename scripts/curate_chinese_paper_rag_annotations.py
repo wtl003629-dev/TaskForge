@@ -12,7 +12,6 @@ The original ``chinese-paper-rag-30-v1`` directory is never modified.
 from __future__ import annotations
 
 import argparse
-import gzip
 import json
 import re
 import sys
@@ -26,7 +25,6 @@ PROJECT_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import build_chinese_paper_rag_annotations as builder  # noqa: E402
-
 
 DEFAULT_SOURCE = PROJECT_ROOT / ".taskforge" / "datasets" / "chinese-ai-oa-jos-v2" / "corpus.jsonl.gz"
 DEFAULT_INPUT = PROJECT_ROOT / "eval" / "queries" / "chinese-paper-rag-30-v1"

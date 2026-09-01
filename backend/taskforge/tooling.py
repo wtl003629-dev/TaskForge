@@ -16,8 +16,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
-from pydantic import ValidationError as PydanticValidationError
 from pydantic import Field, model_validator
+from pydantic import ValidationError as PydanticValidationError
 
 from .domain import (
     AgentProfile,

@@ -248,7 +248,6 @@ def _scoped_research_turn(
         elif role_id == "source_evaluator":
             result = _tool_result(history, "paper_search")
             output = result.get("output") if isinstance(result, Mapping) else None
-            cards = output.get("evidence", []) if isinstance(output, Mapping) else []
             confidence = output.get("confidence", {}) if isinstance(output, Mapping) else {}
             payload = {
                 "protocol": "research.evaluator_handoff.v1",

@@ -20,7 +20,6 @@ import hashlib
 import json
 import math
 import re
-import sys
 import time
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -29,7 +28,6 @@ from typing import Any, Iterable
 
 import httpx
 from pypdf import PdfReader
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = PROJECT_ROOT / ".taskforge" / "datasets" / "chinese-ai-oa-v1"

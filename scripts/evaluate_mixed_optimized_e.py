@@ -21,7 +21,7 @@ from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterable
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = PROJECT_ROOT / "backend"
@@ -36,14 +36,16 @@ from taskforge.knowledge import (  # noqa: E402
 )
 from taskforge.pdf_parsing.contracts import (  # noqa: E402
     DocumentBlock,
-    ParseQualityReport,
     ParsedDocument,
+    ParseQualityReport,
 )
 from taskforge.pdf_parsing.structure_policy import (  # noqa: E402
     build_structure_aware_units,
 )
 from taskforge.rag_evaluation import load_qasper_dataset  # noqa: E402
-from taskforge.rag_experiment_profile import resolve_rag_experiment_profile  # noqa: E402
+from taskforge.rag_experiment_profile import (
+    resolve_rag_experiment_profile,  # noqa: E402
+)
 from taskforge.research_reranking import build_research_reranker  # noqa: E402
 from taskforge.research_retrieval import (  # noqa: E402
     ResearchQuery,
