@@ -21,7 +21,7 @@ jobs:
       - name: Lint (ruff E4/E7/E9/F/I)
         run: ruff check .
       - name: Run tests
-        run: pytest -q
+        run: python -m pytest -q
 
   frontend:
     runs-on: ubuntu-latest
